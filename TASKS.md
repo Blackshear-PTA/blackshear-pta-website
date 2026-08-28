@@ -1,6 +1,6 @@
 # Blackshear PTA Website — Task Board
 
-**Last updated:** 2026-08-28 (session 3)
+**Last updated:** 2026-08-28 (session 4)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -10,10 +10,10 @@
 
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
-| U1 | **Confirm `blackshearpta.org` auto-renew is ON and the card on file is valid** | JON | **Registry expiry is 2026-09-03 — six days from today.** If this lapses, everything else stops. |
-| U2 | **Resolve the two overlapping Google for Nonprofits applications** | JON | Gabe applied ~1 yr ago using blackshearpta.org; Jon reapplied 2026-08-28 using the Gmail address. See [F2](#f2), [F8](#f8). |
+| U1 | **RENEW `blackshearpta.org` AT GODADDY** | **Gabe** | **Expires 2026-09-03 — 5 days.** The Cloudflare transfer was rejected ([F15](#f15)), so the fallback that would have added a year is gone. Renewal is now the only thing preventing loss of the domain. |
+| U2 | Invite `jon-flowers` to the GitHub org as Owner | JON | Blocks all deploy work — see [F16](#f16) |
 
-Everything else can wait until these two are answered.
+U1 is the whole ballgame. Everything else in this document is worthless if the domain lapses.
 
 ---
 
@@ -21,7 +21,7 @@ Everything else can wait until these two are answered.
 
 *Runs first; several Track A items depend on it.*
 
-- [~] **C1** — Confirm auto-renew ON + valid payment method at GoDaddy — `JON` → **Gabe** — **see U1.** Jon's delegate access is *Domains Only*, which cannot see billing. Gabe must confirm.
+- [!] **C1** — **Renew the domain at GoDaddy** — **Gabe** — **see U1.** Escalated from "confirm auto-renew" to "renew it now" after the transfer was rejected. Jon's *Domains Only* access cannot see or act on billing
 - [x] **C2** — Determine what's behind the existing Google MX records — `JON` — Gabe started a Workspace/Nonprofits signup ~1 year ago on blackshearpta.org and abandoned it. Domain is already Google-verified. See [F8](#f8)
 - [x] **C3** — Confirm GoDaddy delegate access level — `JON` — **"Domains Only"** on Gabe Hernandez's account. Sufficient for nameservers/DNS. *Not* sufficient for billing (C1) or product subscriptions
 - [x] **C4** — Create Cloudflare account — `JON` — Created 2026-08-28. ⚠️ Confirm it was created as `blackshearpta@gmail.com`, not a personal address
@@ -29,7 +29,7 @@ Everything else can wait until these two are answered.
 - [x] **C6** — Change nameservers at GoDaddy to Cloudflare — `JON` — `elias` + `sandra.ns.cloudflare.com`. Zone active, registry delegation confirmed, records verified live. DNSSEC was already unsigned so no disable step was needed
 - [!] **C7** — Decide: Cloudflare Email Routing vs. Google mail — `JON` + `CLAUDE` — **Blocked on B2.** Do not enable Email Routing while the Workspace application is live — it overwrites the MX records
 - [ ] **C8** — Establish `webmaster@blackshearpta.org` — `JON` — Method depends on C7
-- [ ] **C9** — Registrar transfer GoDaddy → Cloudflare — `BOARD` — *(DNS already moved; this is registration only.)* **Deferred to October.** Owner must unlock (`clientTransferProhibited` is set) and supply the auth code. Possible 60-day lock until ~Oct 11 (F5)
+- [!] **C9** — Registrar transfer GoDaddy → Cloudflare — `JON` + **Gabe** — **Attempted 2026-08-28, rejected by GoDaddy within minutes.** Domain was unlocked and the auth code was valid, so neither was the cause. See [F15](#f15). **Retry after 2026-10-11.** Confirm Cloudflare refunds the $11.20
 
 ---
 
@@ -50,9 +50,9 @@ Everything else can wait until these two are answered.
 
 ### Phase 0 — Accounts & scaffold
 
-- [ ] **A1** — Create GitHub Organization — `JON` — Register as `webmaster@blackshearpta.org` if it exists by then; otherwise bootstrap and change later
-- [ ] **A2** — Create repo, invite Jon as owner — `JON`
-- [ ] **A3** — Scaffold Astro + Tailwind v4 — `CLAUDE`
+- [x] **A1** — Create GitHub Organization — `JON` — **`Blackshear-PTA`**, Free plan, created under the PTA account (not Jon's personal). Correct per §3.6. GitHub for Nonprofits (free Team) deferred — converts an existing org in place, so no rework later ([F17](#f17))
+- [~] **A2** — Create repo, grant Jon access — `JON` — Repo live and **public** at `Blackshear-PTA/blackshear-pta-website`. ⚠️ Still empty — `jon-flowers` has read-only and cannot push. See [F16](#f16)
+- [x] **A3** — Scaffold Astro + Tailwind v4 — `CLAUDE` — Astro 7.2.9 + Tailwind 4.3.3, 4 commits local. Build clean, `astro check` 0 errors. **Node pinned to 22.22.3** via `.node-version` (Astro 7 needs ≥22.12). Tailwind default palette verified genuinely unreachable, not just discouraged
 - [ ] **A4** — Wire GitHub → Cloudflare Workers deploy on push — `CLAUDE` + `JON` — Jon supplies the Cloudflare API token
 - [ ] **A5** — Deploy a trivial placeholder page end-to-end — `CLAUDE` — **Prove the pipeline before building anything real**
 - [ ] **A6** — `X-Robots-Tag: noindex` on the entire zone — `CLAUDE` — Comes off at cutover. Prevents indexing a second copy of the site while Weebly is still canonical
@@ -121,6 +121,15 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 **F14 — No website URL was requested during the application.** The application asked only for an EIN. The concern about pointing reviewers at a parking page is therefore deferred, not resolved — a URL will be requested at Google for Nonprofits account setup and/or Workspace provisioning. **Use the Weebly URL when it comes up**, not `blackshearpta.org`.
 
+<a name="f15"></a>
+**F15 — GoDaddy rejected the registrar transfer.** Initiated from Cloudflare 2026-08-28 with a valid auth code and paid ($11.20); rejected within minutes. Diagnostics rule out the obvious causes: the domain shows `Domain Status: ok` (unlocked, not re-locked), and Creation Date is 2025-09-03, so Cloudflare's boilerplate "recently registered" guess does not apply. **The rejection arrived too fast to have been a human decision** — Gabe had not yet acted. Two credible causes remain: (a) ICANN's 60-day Change-of-Registrant lock triggered by the 2026-08-12 registrant update, which would run to **2026-10-11**; or (b) GoDaddy policy refusing transfers inside 30 days of expiry. Both point to the same plan: renew now, retry after Oct 11. GoDaddy emails the definitive reason to the registrant — that's Gabe's inbox.
+
+<a name="f16"></a>
+**F16 — Jon's personal GitHub account cannot push to the org.** The org was created under the PTA account, which is architecturally correct. But `jon-flowers` is not a member (`pull: true, push: false`), so the scaffold cannot be pushed. Fix: invite `jon-flowers` to `Blackshear-PTA` as an **Owner**. Correct end state is the PTA account owning the org so it survives turnover, with Jon's personal account as a second Owner for day-to-day work.
+
+<a name="f17"></a>
+**F17 — GitHub for Nonprofits is free Team, but not worth blocking on.** Verified 501(c)(3) orgs get GitHub Team free. It converts an *existing* org in place, so starting on Free costs nothing later. The delta over Free is negligible here — the useful parts (branch protection, secret scanning with push protection, unlimited Actions minutes) are already free on **public** repos, which is why the repo is public. Expect the same "PTA TEXAS CONGRESS" group-exemption wrinkle as Goodstack ([F13](#f12)) whenever it is pursued.
+
 **F3 — The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 
 <a name="f4"></a>
@@ -146,7 +155,9 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 - **GoDaddy:** domain sits in **Gabe Hernandez's** personal account; Jon has *Domains Only* delegate access (DNS yes, billing no)
 - **PTA phone:** (512) 402-2023
 - **Committees:** Fine Arts / Little EAST · Fundraising · Staff Appreciation · Garden
-- **Stack:** Astro · Tailwind v4 · Cloudflare Workers (static assets) · D1 · R2 · GitHub Org
+- **Stack:** Astro 7.2.9 · Tailwind 4.3.3 · Node 22.22.3 (pinned) · Cloudflare Workers (static assets) · D1 · R2
+- **GitHub:** org `Blackshear-PTA` (Free) · repo `blackshear-pta-website` (**public**)
+- **Cloudflare:** zone `blackshearpta.org` active, Free plan · registrar still GoDaddy
 
 <a name="appendix-a--dns-snapshot-2026-08-28"></a>
 ### Appendix A — DNS snapshot, 2026-08-28
