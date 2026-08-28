@@ -1,6 +1,6 @@
 # Blackshear PTA Website — Task Board
 
-**Last updated:** 2026-08-28
+**Last updated:** 2026-08-28 (session 2)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -11,7 +11,7 @@
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
 | U1 | **Confirm `blackshearpta.org` auto-renew is ON and the card on file is valid** | JON | **Registry expiry is 2026-09-03 — six days from today.** If this lapses, everything else stops. |
-| U2 | **Find out what Google email is already configured on the domain** | JON | Live Google MX records + a Google site-verification TXT already exist. Something is set up that we didn't know about. See [Finding F2](#f2). |
+| U2 | **Resolve the two overlapping Google for Nonprofits applications** | JON | Gabe applied ~1 yr ago using blackshearpta.org; Jon reapplied 2026-08-28 using the Gmail address. See [F2](#f2), [F8](#f8). |
 
 Everything else can wait until these two are answered.
 
@@ -21,10 +21,10 @@ Everything else can wait until these two are answered.
 
 *Runs first; several Track A items depend on it.*
 
-- [ ] **C1** — Confirm auto-renew ON + valid payment method at GoDaddy — `JON` — **see U1**
-- [ ] **C2** — Determine what's behind the existing Google MX records — `JON` — **see U2, F2**
-- [ ] **C3** — Confirm GoDaddy delegate access level includes DNS management — `JON` — Needs "Products & Domains" or higher; "Products only" can't change nameservers
-- [ ] **C4** — Create Cloudflare account — `JON` — Bootstrap with `blackshearpta@gmail.com`; we change the account email later (see F4)
+- [~] **C1** — Confirm auto-renew ON + valid payment method at GoDaddy — `JON` → **Gabe** — **see U1.** Jon's delegate access is *Domains Only*, which cannot see billing. Gabe must confirm.
+- [x] **C2** — Determine what's behind the existing Google MX records — `JON` — Gabe started a Workspace/Nonprofits signup ~1 year ago on blackshearpta.org and abandoned it. Domain is already Google-verified. See [F8](#f8)
+- [x] **C3** — Confirm GoDaddy delegate access level — `JON` — **"Domains Only"** on Gabe Hernandez's account. Sufficient for nameservers/DNS. *Not* sufficient for billing (C1) or product subscriptions
+- [x] **C4** — Create Cloudflare account — `JON` — Created 2026-08-28. ⚠️ Confirm it was created as `blackshearpta@gmail.com`, not a personal address
 - [ ] **C5** — Add `blackshearpta.org` to Cloudflare, review the imported DNS records — `CLAUDE` + `JON` — **Must verify MX / SPF / DMARC / TXT survive the import or email breaks.** Full current record set captured in [Appendix A](#appendix-a--dns-snapshot-2026-08-28)
 - [ ] **C6** — Change nameservers at GoDaddy to Cloudflare — `JON` — Root currently serves a GoDaddy parking page, so nothing user-facing breaks (F3)
 - [ ] **C7** — Decide: Cloudflare Email Routing vs. existing Google mail — `JON` + `CLAUDE` — **Blocked by C2.** Do not enable Email Routing before this is answered — it overwrites MX
@@ -62,8 +62,8 @@ Everything else can wait until these two are answered.
 
 - [ ] **A8** — "Coming soon" page at `/`, linking to the Weebly site — `CLAUDE`
 - [ ] **A9** — Extract copy from Weebly into `src/content/home.yaml` — `CLAUDE` — Single source of truth; all six themes consume it
-- [ ] **A10** — Salvage the four usable photos from Weebly — `CLAUDE` — See F6 for the inventory
-- [ ] **A11** — Design a wordmark + yellow jacket mark — `CLAUDE` + `JON` — No logo files exist anywhere today
+- [x] **A10** — Salvage the four usable photos from Weebly — `CLAUDE` — In `assets/from-weebly/`
+- [~] **A11** — Brand marks — `CLAUDE` + `JON` — Four assets received, see `assets/brand/README.md`. Remaining: trace crest + Buzz to SVG; **confirm with the board whether the PTA should use school marks directly or carry a distinct PTA lockup**
 - [ ] **A12** — Build the theme token architecture — `CLAUDE` — `registry.ts`, per-theme token blocks, 3–4 structural layouts
 - [ ] **A13** — Build six themes — `CLAUDE` — Civic Letterpress · Warm Editorial · Schoolyard Bold · East Austin Print Shop · Quiet Utility · Jacket
 - [ ] **A14** — Instant theme switcher at `/preview` — `CLAUDE` — All six rendered, toggled client-side; no reload
@@ -86,7 +86,7 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 | # | Decision | Status | Notes |
 |---|---|---|---|
-| D1 | **Content editing for future boards** | ⏳ **Needs Jon** | Recommendation: markdown in git + custom `/admin` behind Cloudflare Access w/ Google SSO. Alternative: Sveltia CMS, but every editor needs a GitHub account — that's structural to all git-based CMSes, not a Sveltia quirk. Not blocking Phase 1, but it fixes the content schema |
+| D1 | **Content editing for future boards** | ✅ **Decided** | Markdown in git + custom `/admin` behind Cloudflare Access with Google SSO. Approved 2026-08-28, conditional on GitHub being free — it is (see [F9](#f9)) |
 | D2 | **Credential sharing across the board** | ⏳ Unresolved | Bitwarden Teams rejected on cost. Must be settled before a second person gets account access. Do not self-host a vault |
 | D3 | **Transactional email provider** (Phase 3) | ⏳ Deferred | Resend free tier, or route through Workspace once available |
 | D4 | **Parent-to-parent messaging** | 🛑 Out of scope | Needs the board *and* the school in the room. An unmaintained brochure site is stale; an unmaintained messaging platform holding family contact data is a live incident |
@@ -104,6 +104,16 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 **F2 — There is already Google email infrastructure on the domain.** MX records point at Google (`aspmx.l.google.com` et al.), and there's a `google-site-verification` TXT record. SPF uses GoDaddy's SPF-merge format (`_spfm`) and DMARC reports go to `onsecureserver.net` — both GoDaddy-managed. The likely explanation is a GoDaddy-resold Google Workspace subscription set up on a board member's personal account. **Two consequences:** it may be a recurring charge nobody is tracking, and an existing Workspace subscription on the domain can complicate the Nonprofits application (B3).
 
+<a name="f8"></a>
+**F8 — The Workspace history explains the stray DNS records, and two applications are now open.** Gabe attempted Google Workspace / Google for Nonprofits roughly a year ago using `blackshearpta.org`. It stalled, and he understood the blocker to be that no website existed on the .org domain. The MX, SPF, DMARC, and `google-site-verification` records are leftovers from that attempt. **The domain is therefore already verified with Google** — that step is done. Jon reapplied 2026-08-28 using `blackshearpta@gmail.com`. Possible outcomes: the applications merge, the old one reactivates, or Jon hits a "domain already in use" conflict. If a dormant Workspace account exists on the domain, Google will need to release or convert it.
+
+<a name="f9"></a>
+**F9 — The GitHub side of the architecture is free, permanently.** GitHub Free for Organizations covers unlimited private repos and unlimited collaborators; GitHub Apps and the REST API cost nothing. The only metered thing is Actions minutes (2,000/month free on private repos), and **a public repo gets unlimited Actions minutes** — plus we may not need Actions at all, since Cloudflare Workers Builds can build directly from the repo. No paid tier is required by anything in this design.
+
+**F10 — Real brand palette, sampled from the logos.** Blue `#0048A8`, lemon yellow `#F0E430`, black. Accessible in every combination except yellow-on-white (1.33:1), so **yellow is accent and background only, never text on white**. The original crest PDF is vector and uses Hussar Bold + Sriracha, both open-source. Full detail in `assets/brand/README.md`. This corrects the "jacket gold" guess in `PROJECT-BRIEF.md` §5.2 — the actual yellow is a brighter lemon.
+
+**F11 — All existing marks are school marks, not PTA marks.** The PTA is a legally separate org. Whether it fronts with Blackshear Fine Arts Academy branding or a distinct PTA lockup is a board question with real implications for donations and tax receipts. Tracked as A11.
+
 **F3 — The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 
 <a name="f4"></a>
@@ -114,17 +124,19 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 **F6 — The photo library is thin.** Fifteen unique images across all six Weebly pages, but almost all are event flyers, donor banners, and sponsor logos. Only four are actual photographs. The strongest by far is the E. 11th St. shot of the building with the mural and sponsor banners — and it contains no children's faces, so there's no release question. Getting 15–20 real photos from Instagram and the board is a parallel task.
 
-**F7 — No brand assets exist.** No logo files in Drive, Canva, or on AISD's site. Existing materials are eclectic Canva templates. De facto palette from the Field Day flyer: jacket gold, black, a strong mid-blue, grass green. The mascot is the **yellow jacket** — not a honeybee, so no hive/honeycomb/honey motifs.
+**F7 — ~~No brand assets exist.~~** *Superseded by [F10](#f9)* — four logo files surfaced 2026-08-28. The mascot is the **yellow jacket** (named **Buzz**), not a honeybee, so no hive/honeycomb/honey motifs.
 
 ---
 
 ## Reference
 
 - **School:** Blackshear Elementary Fine Arts Academy, 1712 E. 11th St., Austin, TX 78702 (Austin ISD)
-- **Mascot:** Yellow jacket · **Milestone:** 135 years in East Austin — Austin's oldest operating elementary school
+- **Mascot:** Yellow jacket, named **Buzz** · **Est. 1891** · **Milestone:** 135 years in East Austin — Austin's oldest operating elementary school
+- **Motto:** "Together we EDUCATE, ENRICH, and EXERCISE to EXCEL" · **Tagline:** "Growing Stronger Together"
+- **Palette:** blue `#0048A8` · lemon `#F0E430` · black — see `assets/brand/README.md`
 - **Current site:** https://blackshearpta.weebly.com/ · **New domain:** blackshearpta.org
 - **Primary account:** `blackshearpta@gmail.com` (Jon has access) · **Weebly:** Jon has access
-- **GoDaddy:** domain sits in *another board member's personal account*; Jon has delegate access only
+- **GoDaddy:** domain sits in **Gabe Hernandez's** personal account; Jon has *Domains Only* delegate access (DNS yes, billing no)
 - **PTA phone:** (512) 402-2023
 - **Committees:** Fine Arts / Little EAST · Fundraising · Staff Appreciation · Garden
 - **Stack:** Astro · Tailwind v4 · Cloudflare Workers (static assets) · D1 · R2 · GitHub Org
