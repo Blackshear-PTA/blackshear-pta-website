@@ -11,9 +11,11 @@
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
 | U1 | **RENEW `blackshearpta.org` AT GODADDY** | **Gabe** | **Expires 2026-09-03 — 5 days.** The Cloudflare transfer was rejected ([F15](#f15)), so the fallback that would have added a year is gone. Renewal is now the only thing preventing loss of the domain. |
-| U2 | Invite `jon-flowers` to the GitHub org as Owner | JON | Blocks all deploy work — see [F16](#f16) |
+| U2 | ~~Invite `jon-flowers` to the GitHub org~~ | JON | ✅ Done — scaffold pushed |
 
 U1 is the whole ballgame. Everything else in this document is worthless if the domain lapses.
+
+*Going forward, code changes land via branch → PR rather than direct pushes to `main`.*
 
 ---
 
@@ -51,9 +53,9 @@ U1 is the whole ballgame. Everything else in this document is worthless if the d
 ### Phase 0 — Accounts & scaffold
 
 - [x] **A1** — Create GitHub Organization — `JON` — **`Blackshear-PTA`**, Free plan, created under the PTA account (not Jon's personal). Correct per §3.6. GitHub for Nonprofits (free Team) deferred — converts an existing org in place, so no rework later ([F17](#f17))
-- [~] **A2** — Create repo, grant Jon access — `JON` — Repo live and **public** at `Blackshear-PTA/blackshear-pta-website`. ⚠️ Still empty — `jon-flowers` has read-only and cannot push. See [F16](#f16)
+- [x] **A2** — Create repo, grant Jon access — `JON` — Public at `Blackshear-PTA/blackshear-pta-website`. `jon-flowers` added as Owner; scaffold pushed, 5 commits live
 - [x] **A3** — Scaffold Astro + Tailwind v4 — `CLAUDE` — Astro 7.2.9 + Tailwind 4.3.3, 4 commits local. Build clean, `astro check` 0 errors. **Node pinned to 22.22.3** via `.node-version` (Astro 7 needs ≥22.12). Tailwind default palette verified genuinely unreachable, not just discouraged
-- [ ] **A4** — Wire GitHub → Cloudflare Workers deploy on push — `CLAUDE` + `JON` — Jon supplies the Cloudflare API token
+- [ ] **A4** — Wire GitHub → Cloudflare Workers deploy on push — `JON` — **Use Cloudflare Workers Builds** (dashboard → Workers & Pages → Create → Connect to Git → authorize the org → pick the repo). Preferred over GitHub Actions: no API token to store, no workflow file for the next volunteer to decipher
 - [ ] **A5** — Deploy a trivial placeholder page end-to-end — `CLAUDE` — **Prove the pipeline before building anything real**
 - [ ] **A6** — `X-Robots-Tag: noindex` on the entire zone — `CLAUDE` — Comes off at cutover. Prevents indexing a second copy of the site while Weebly is still canonical
 - [ ] **A7** — Cloudflare Web Analytics — `CLAUDE` — Free, cookieless, no consent banner required
