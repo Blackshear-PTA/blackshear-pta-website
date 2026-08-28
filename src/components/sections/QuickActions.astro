@@ -1,0 +1,82 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  quickActions: HomeData['quickActions'];
+}
+
+const { quickActions } = Astro.props;
+---
+
+<section class="quick-actions" aria-labelledby="quick-actions-heading">
+  <h2 id="quick-actions-heading">{quickActions.heading}</h2>
+  <ul>
+    {
+      quickActions.items.map((item) => (
+        <li>
+          <a href={item.href}>
+            <span class="label">{item.label}</span>
+            {item.note && <span class="note">{item.note}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .quick-actions {
+    padding-block: var(--pta-section-y);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--pta-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Mobile-first (§2). One column until there is room for more. */
+  @media (min-width: 40rem) {
+    ul {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  a {
+    display: block;
+    padding: var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
+    color: var(--pta-ink);
+    text-decoration: none;
+  }
+
+  a:hover {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+  }
+
+  .label {
+    display: block;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+  }
+
+  .note {
+    display: block;
+    font-size: var(--text-fine);
+    color: inherit;
+  }
+</style>

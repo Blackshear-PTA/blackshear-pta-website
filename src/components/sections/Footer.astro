@@ -1,0 +1,43 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  footer: HomeData['footer'];
+}
+
+const { footer } = Astro.props;
+const { contact } = footer;
+
+// Strip everything but digits so tel: works from a phone (§2: mobile-first).
+const telHref = `tel:${contact.phone.replace(/[^\d+]/g, '')}`;
+---
+
+<footer class="footer">
+  <p class="org">{footer.orgName}</p>
+  <address>
+    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+    <a href={telHref}>{contact.phone}</a>
+    <span>{contact.address}</span>
+  </address>
+</footer>
+
+<style>
+  .footer {
+    padding-block: var(--pta-section-y);
+    border-block-start: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  .org {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    text-transform: var(--pta-display-transform);
+  }
+
+  address {
+    display: grid;
+    gap: 0.25rem;
+    font-style: normal;
+    font-size: var(--text-fine);
+  }
+</style>

@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Blackshear PTA — global theme
+   PROJECT-BRIEF §3.3: "Tailwind-with-defaults is the single largest contributor
+   to the generic-AI look. The default palette, type scale, and radii get
+   replaced wholesale. We never ship a blue-500."
+
+   Two layers live in this file:
+
+   1. @theme — brand PRIMITIVES. Tailwind's defaults are wiped and replaced with
+      the four sampled brand colors, a role-based type scale, and a tight radius
+      set. These are facts about the brand and do not change between themes.
+
+   2. :root  — the SEMANTIC token contract (--pta-*). Every section component
+      styles itself exclusively from these. Each theme in src/themes/*.css
+      redefines them under [data-theme="..."]. The values here are the neutral
+      fallback so a page renders sanely with no theme applied.
+   ========================================================================= */
+
+@theme {
+  /* ── Wipe Tailwind's defaults ──────────────────────────────────────────
+     Without these resets `bg-blue-500`, `rounded-xl`, `shadow-lg`,
+     `font-sans` (Inter-ish) and the rest stay reachable, and they will get
+     used. Anything not defined below simply does not exist as a utility. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --tracking-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+
+  /* ── Color ─────────────────────────────────────────────────────────────
+     Sampled from the actual logo files, not invented. See
+     assets/brand/README.md for provenance and the full contrast table.
+
+     CONTRAST WARNING — WCAG 2.1:
+       blue on white .... 8.43:1  AA + AAA
+       white on blue .... 8.43:1  AA + AAA
+       blue on lemon .... 6.36:1  AA
+       black on lemon ... 15.85:1 AA + AAA
+       black on white ... 21.00:1 AA + AAA
+       LEMON ON WHITE ... 1.33:1  FAILS AA AND AA-LARGE.
+
+     Lemon is an ACCENT and BACKGROUND color only. Never set lemon as text on
+     white or on any light ground. Lemon text requires a black or blue ground.
+     PROJECT-BRIEF §5.3 makes AA a hard gate: a theme that cannot clear it gets
+     cut regardless of how it looks. */
+  --color-brand-blue: #0048a8;
+  --color-brand-lemon: #f0e430;
+  --color-brand-black: #000000;
+  --color-brand-white: #ffffff;
+
+  /* ── Type ──────────────────────────────────────────────────────────────
+     Placeholder stacks. Each theme is expected to swap --font-display for a
+     real self-hosted face (§5.1: distinctive typefaces are the escape from the
+     generic look). Deliberately NOT Inter — the brief names it as a tell.
+     The scale is role-named, not t-shirt-sized, so nobody reaches for a
+     Tailwind-default step out of muscle memory. */
+  --font-body: "Charter", "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+  --font-display: "Hussar Bold", ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-fine: 0.8125rem;
+  --text-fine--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6;
+  --text-lede: clamp(1.1875rem, 1.05rem + 0.7vw, 1.5rem);
+  --text-lede--line-height: 1.45;
+  --text-title: clamp(1.375rem, 1.15rem + 1.1vw, 2rem);
+  --text-title--line-height: 1.2;
+  --text-display: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+  --text-display--line-height: 1.05;
+  --text-banner: clamp(2.75rem, 1.6rem + 5.5vw, 6rem);
+  --text-banner--line-height: 0.95;
+
+  --font-weight-book: 400;
+  --font-weight-medium: 500;
+  --font-weight-heavy: 700;
+  --font-weight-black: 900;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.06em;
+  --tracking-shout: 0.14em;
+
+  --leading-flat: 1;
+  --leading-snug: 1.2;
+  --leading-text: 1.6;
+
+  /* ── Shape ─────────────────────────────────────────────────────────────
+     No rounded-xl. Themes that want soft corners opt in via --pta-radius. */
+  --radius-none: 0;
+  --radius-hair: 2px;
+  --radius-soft: 6px;
+  --radius-pill: 9999px;
+
+  /* ── Shadow ────────────────────────────────────────────────────────────
+     Flat offset only. The soft blurred card shadow is part of the vocabulary
+     the brief rules out (§5.1), so it is not available as a utility. */
+  --shadow-hard: 4px 4px 0 0 var(--color-brand-black);
+  --shadow-hard-sm: 2px 2px 0 0 var(--color-brand-black);
+}
+
+/* ============================================================================
+   Semantic token contract — the interface between themes and components.
+
+   Section components in src/components/sections/ read ONLY from these. They
+   never reference --color-brand-* directly and never use a Tailwind color
+   utility. That is what makes a theme swap a real swap rather than a recolor.
+
+   A theme file must define every token in this block. See
+   src/themes/civic-letterpress.css for the reference implementation.
+   ========================================================================= */
+:root {
+  /* type */
+  --pta-font-display: var(--font-display);
+  --pta-font-body: var(--font-body);
+  --pta-display-weight: 700;
+  --pta-display-tracking: var(--tracking-normal);
+  --pta-display-transform: none;
+
+  /* color */
+  --pta-surface: var(--color-brand-white);
+  --pta-surface-alt: #f4f4f2;
+  --pta-ink: var(--color-brand-black);
+  --pta-ink-muted: #4a4a48;
+  --pta-ink-on-accent: var(--color-brand-white);
+  --pta-accent: var(--color-brand-blue);
+  --pta-accent-quiet: var(--color-brand-lemon);
+  --pta-link: var(--color-brand-blue);
+  --pta-rule: var(--color-brand-black);
+  --pta-focus: var(--color-brand-blue);
+
+  /* shape */
+  --pta-radius: var(--radius-none);
+  --pta-border-width: 1px;
+  --pta-rule-width: 1px;
+  --pta-shadow: none;
+
+  /* rhythm + density */
+  --pta-section-y: 3rem;
+  --pta-gap: 1rem;
+  --pta-measure: 62ch;
+  --pta-container: 68rem;
+  --pta-gutter: 1.25rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-text);
+  }
+
+  /* Real focus states are non-negotiable (§5.3). Never remove this. */
+  :focus-visible {
+    outline: 3px solid var(--pta-focus);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: var(--pta-link);
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Skip link — keyboard navigation is a hard requirement (§5.3). */
+.pta-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--pta-accent);
+  color: var(--pta-ink-on-accent);
+  font-family: var(--pta-font-display);
+}
+.pta-skip-link:focus {
+  left: 0;
+}

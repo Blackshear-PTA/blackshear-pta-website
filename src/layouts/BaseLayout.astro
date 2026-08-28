@@ -1,0 +1,28 @@
+---
+import '../styles/global.css';
+import '../themes/themes.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Sets [data-theme] on <html>; every theme token block hangs off it. */
+  themeId: string;
+}
+
+const { title, description, themeId } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme={themeId}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+  </head>
+  <body>
+    <a class="pta-skip-link" href="#main">Skip to main content</a>
+    <slot />
+  </body>
+</html>

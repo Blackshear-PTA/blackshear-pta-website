@@ -1,0 +1,40 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  hero: HomeData['hero'];
+}
+
+const { hero } = Astro.props;
+---
+
+<section class="hero" aria-labelledby="hero-headline">
+  <h1 id="hero-headline">{hero.headline}</h1>
+  <p>{hero.subhead}</p>
+</section>
+
+<style>
+  /* Tokens only. No Tailwind color/type utilities, no hard-coded hex —
+     that is what lets a theme swap actually change something. */
+  .hero {
+    padding-block: var(--pta-section-y);
+    border-block-end: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  h1 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-banner);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    line-height: var(--leading-flat);
+  }
+
+  p {
+    margin: 0;
+    max-width: var(--pta-measure);
+    font-size: var(--text-lede);
+    color: var(--pta-ink-muted);
+  }
+</style>

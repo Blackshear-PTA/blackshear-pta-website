@@ -1,0 +1,47 @@
+---
+import Hero from '../../components/sections/Hero.astro';
+import QuickActions from '../../components/sections/QuickActions.astro';
+import News from '../../components/sections/News.astro';
+import GetInvolved from '../../components/sections/GetInvolved.astro';
+import Committees from '../../components/sections/Committees.astro';
+import Footer from '../../components/sections/Footer.astro';
+import type { HomeData } from '../../types';
+
+interface Props {
+  home: HomeData;
+}
+
+const { home } = Astro.props;
+---
+
+{/*
+  Structure "stacked-rules" — PLACEHOLDER.
+
+  A structure owns the ARRANGEMENT: section order, container, nav treatment,
+  hero composition, grid asymmetry. Sections own their internals. That split is
+  what makes two structures genuinely different rather than two skins
+  (PROJECT-BRIEF §5.1 / §5.4).
+
+  This one is the most literal arrangement possible: single column, full-width
+  container, sections in reading order, rules between. Real structures should
+  diverge much harder than this — §5.4 calls for 3–4 that are actually different.
+*/}
+
+<div class="shell">
+  <main id="main">
+    <Hero hero={home.hero} />
+    <QuickActions quickActions={home.quickActions} />
+    <News news={home.news} />
+    <GetInvolved getInvolved={home.getInvolved} />
+    <Committees committees={home.committees} />
+  </main>
+  <Footer footer={home.footer} />
+</div>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+</style>

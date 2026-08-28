@@ -1,0 +1,65 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  committees: HomeData['committees'];
+}
+
+const { committees } = Astro.props;
+---
+
+<section class="committees" aria-labelledby="committees-heading">
+  <h2 id="committees-heading">{committees.heading}</h2>
+  {committees.intro && <p class="intro">{committees.intro}</p>}
+  <dl>
+    {
+      committees.items.map((committee) => (
+        <div class="row">
+          <dt>{committee.name}</dt>
+          <dd>{committee.description}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
+
+<style>
+  .committees {
+    padding-block: var(--pta-section-y);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .intro {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  .row {
+    padding-block: var(--pta-gap);
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+    max-width: var(--pta-measure);
+  }
+
+  dt {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    text-transform: var(--pta-display-transform);
+  }
+
+  dd {
+    margin: 0.25rem 0 0;
+    color: var(--pta-ink-muted);
+  }
+</style>

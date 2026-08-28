@@ -1,0 +1,28 @@
+---
+// Served by the Worker for unmatched paths — see `not_found_handling` in
+// wrangler.jsonc. Placeholder; real copy comes with the rest of the content.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { defaultThemeId } from '../themes/registry';
+---
+
+<BaseLayout title="Page not found" description="That page does not exist." themeId={defaultThemeId}>
+  <main id="main" class="shell">
+    <h1>Page not found</h1>
+    <p><a href="/">Back to the homepage</a></p>
+  </main>
+</BaseLayout>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding: var(--pta-section-y) var(--pta-gutter);
+  }
+
+  h1 {
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    text-transform: var(--pta-display-transform);
+  }
+</style>

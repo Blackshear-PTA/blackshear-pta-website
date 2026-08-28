@@ -1,0 +1,88 @@
+# Blackshear PTA — all homepage copy, in one file (PROJECT-BRIEF §5.4).
+#
+# EVERY VALUE HERE IS A PLACEHOLDER. Real copy is a separate task — see the
+# Phase 1 board in TASKS.md. Do not let TODO strings reach production; the
+# strings are deliberately loud so a stray one is obvious in a screenshot.
+#
+# Shape is enforced by src/content.config.ts. `npm run build` fails on a
+# mismatch, which is the point — the schema is the contract between the copy
+# and all six themes.
+#
+# The top-level `home:` key is the entry ID. Read it with
+# `getEntry('home', 'home')`.
+
+home:
+  meta:
+    title: "TODO — page title"
+    description: "TODO — meta description, roughly 150 characters, written for a parent searching for the school by name."
+
+  hero:
+    headline: "TODO — hero headline"
+    subhead: "TODO — hero subhead. One or two sentences saying who the PTA is and what it does."
+
+  quickActions:
+    heading: "TODO — quick actions heading"
+    items:
+      - label: "TODO — quick action 1"
+        href: "#todo"
+        note: "TODO — optional qualifier"
+      - label: "TODO — quick action 2"
+        href: "#todo"
+      - label: "TODO — quick action 3"
+        href: "#todo"
+        note: "TODO — optional qualifier"
+      - label: "TODO — quick action 4"
+        href: "#todo"
+
+  news:
+    heading: "TODO — news heading"
+    items:
+      - title: "TODO — news item 1 title"
+        body: "TODO — news item 1 body. Two or three sentences."
+        href: "#todo"
+        date: 2026-01-01
+      - title: "TODO — news item 2 title"
+        body: "TODO — news item 2 body. This one has no link, to prove the optional field renders."
+      - title: "TODO — news item 3 title"
+        body: "TODO — news item 3 body."
+        date: 2026-01-01
+
+  getInvolved:
+    heading: "TODO — get involved heading"
+    intro: "TODO — one sentence framing the tiers below."
+    tiers:
+      - commitment: "TODO — smallest time commitment"
+        description: "TODO — what this tier actually involves."
+        cta:
+          label: "TODO — CTA label"
+          href: "#todo"
+      - commitment: "TODO — medium time commitment"
+        description: "TODO — what this tier actually involves."
+        cta:
+          label: "TODO — CTA label"
+          href: "#todo"
+      - commitment: "TODO — largest time commitment"
+        description: "TODO — what this tier actually involves."
+        cta:
+          label: "TODO — CTA label"
+          href: "#todo"
+
+  committees:
+    heading: "TODO — committees heading"
+    intro: "TODO — one sentence introducing the committees."
+    items:
+      - name: "TODO — committee 1"
+        description: "TODO — one line on what this committee does."
+      - name: "TODO — committee 2"
+        description: "TODO — one line on what this committee does."
+      - name: "TODO — committee 3"
+        description: "TODO — one line on what this committee does."
+      - name: "TODO — committee 4"
+        description: "TODO — one line on what this committee does."
+
+  footer:
+    orgName: "TODO — organization name as it should appear in the footer"
+    contact:
+      email: "todo@example.org"
+      phone: "TODO — (512) 555-0100"
+      address: "TODO — street address, Austin, TX 787xx"

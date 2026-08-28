@@ -1,0 +1,77 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  news: HomeData['news'];
+}
+
+const { news } = Astro.props;
+
+// Fixed locale and time zone so the build machine's settings cannot shift a date.
+const formatDate = (date: Date): string =>
+  new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(date);
+---
+
+<section class="news" aria-labelledby="news-heading">
+  <h2 id="news-heading">{news.heading}</h2>
+  <ul>
+    {
+      news.items.map((item) => (
+        <li>
+          {item.date && <time datetime={item.date.toISOString()}>{formatDate(item.date)}</time>}
+          <h3>{item.href ? <a href={item.href}>{item.title}</a> : item.title}</h3>
+          <p>{item.body}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .news {
+    padding-block: var(--pta-section-y);
+    border-block-start: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--pta-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    max-width: var(--pta-measure);
+    padding-block-end: var(--pta-gap);
+    border-block-end: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  time {
+    display: block;
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  h3 {
+    margin: 0.25rem 0 0.5rem;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+  }
+
+  p {
+    margin: 0;
+  }
+</style>

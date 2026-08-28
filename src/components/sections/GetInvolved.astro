@@ -1,0 +1,93 @@
+---
+import type { HomeData } from '../../types';
+
+interface Props {
+  getInvolved: HomeData['getInvolved'];
+}
+
+const { getInvolved } = Astro.props;
+---
+
+<section class="get-involved" data-surface="alt" aria-labelledby="get-involved-heading">
+  <h2 id="get-involved-heading">{getInvolved.heading}</h2>
+  {getInvolved.intro && <p class="intro">{getInvolved.intro}</p>}
+  <ul>
+    {
+      getInvolved.tiers.map((tier) => (
+        <li>
+          <p class="commitment">{tier.commitment}</p>
+          <p class="description">{tier.description}</p>
+          <a href={tier.cta.href}>{tier.cta.label}</a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  /* data-surface="alt" lets a theme paint this band differently — and lets the
+     theme file enforce a safe ink on it (see civic-letterpress.css). */
+  .get-involved {
+    padding: var(--pta-section-y) var(--pta-gutter);
+    margin-inline: calc(var(--pta-gutter) * -1);
+    background: var(--pta-surface-alt);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .intro {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--pta-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 52rem) {
+    ul {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  li {
+    padding: var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  /* Leading with time cost, not job title — that is the point of the block. */
+  .commitment {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .description {
+    margin: 0.5rem 0 var(--pta-gap);
+  }
+
+  a {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+    font-family: var(--pta-font-display);
+    text-decoration: none;
+  }
+</style>
