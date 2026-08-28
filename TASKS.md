@@ -1,6 +1,6 @@
 # Blackshear PTA Website — Task Board
 
-**Last updated:** 2026-08-28 (session 2)
+**Last updated:** 2026-08-28 (session 3)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -25,11 +25,11 @@ Everything else can wait until these two are answered.
 - [x] **C2** — Determine what's behind the existing Google MX records — `JON` — Gabe started a Workspace/Nonprofits signup ~1 year ago on blackshearpta.org and abandoned it. Domain is already Google-verified. See [F8](#f8)
 - [x] **C3** — Confirm GoDaddy delegate access level — `JON` — **"Domains Only"** on Gabe Hernandez's account. Sufficient for nameservers/DNS. *Not* sufficient for billing (C1) or product subscriptions
 - [x] **C4** — Create Cloudflare account — `JON` — Created 2026-08-28. ⚠️ Confirm it was created as `blackshearpta@gmail.com`, not a personal address
-- [ ] **C5** — Add `blackshearpta.org` to Cloudflare, review the imported DNS records — `CLAUDE` + `JON` — **Must verify MX / SPF / DMARC / TXT survive the import or email breaks.** Full current record set captured in [Appendix A](#appendix-a--dns-snapshot-2026-08-28)
-- [ ] **C6** — Change nameservers at GoDaddy to Cloudflare — `JON` — Root currently serves a GoDaddy parking page, so nothing user-facing breaks (F3)
-- [ ] **C7** — Decide: Cloudflare Email Routing vs. existing Google mail — `JON` + `CLAUDE` — **Blocked by C2.** Do not enable Email Routing before this is answered — it overwrites MX
+- [x] **C5** — Add `blackshearpta.org` to Cloudflare, review imported DNS — `JON` — Free plan. All 13 records imported and verified against [Appendix A](#appendix-a--dns-snapshot-2026-08-28): 5 MX, SPF, `google-site-verification`, `_dmarc`, 2 A, 3 CNAME. Nothing lost
+- [x] **C6** — Change nameservers at GoDaddy to Cloudflare — `JON` — `elias` + `sandra.ns.cloudflare.com`. Zone active, registry delegation confirmed, records verified live. DNSSEC was already unsigned so no disable step was needed
+- [!] **C7** — Decide: Cloudflare Email Routing vs. Google mail — `JON` + `CLAUDE` — **Blocked on B2.** Do not enable Email Routing while the Workspace application is live — it overwrites the MX records
 - [ ] **C8** — Establish `webmaster@blackshearpta.org` — `JON` — Method depends on C7
-- [ ] **C9** — Registrar transfer GoDaddy → Cloudflare — `BOARD` — **Deferred to October.** Owner must unlock (`clientTransferProhibited` is set) and supply the auth code. Possible 60-day lock until ~Oct 11 (F5)
+- [ ] **C9** — Registrar transfer GoDaddy → Cloudflare — `BOARD` — *(DNS already moved; this is registration only.)* **Deferred to October.** Owner must unlock (`clientTransferProhibited` is set) and supply the auth code. Possible 60-day lock until ~Oct 11 (F5)
 
 ---
 
@@ -38,7 +38,7 @@ Everything else can wait until these two are answered.
 *Longest pole. Independent of the website. Do not let it block Track A.*
 
 - [x] **B1** — Initial Google for Nonprofits request submitted — `JON` — Submitted 2026-08-28
-- [ ] **B2** — Complete nonprofit validation (TechSoup or current partner) — `JON` — Can take weeks
+- [~] **B2** — Complete nonprofit validation — `JON` — Partner is **Goodstack** (We Are Percent Ltd), *not* TechSoup. Rep approval ✅ and identity verification ✅ both cleared 2026-08-28. Application processing. See [F12](#f12)
 - [ ] **B3** — Reconcile with whatever already exists on the domain — `JON` — **Depends on C2.** If a Workspace subscription is already active on `blackshearpta.org`, the nonprofit application may need it converted rather than created fresh
 - [ ] **B4** — Activate Workspace for Nonprofits on `blackshearpta.org` — `JON`
 - [ ] **B5** — Convert `webmaster@` to a real mailbox; migrate MX if needed — `JON` + `CLAUDE`
@@ -113,6 +113,13 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 **F10 — Real brand palette, sampled from the logos.** Blue `#0048A8`, lemon yellow `#F0E430`, black. Accessible in every combination except yellow-on-white (1.33:1), so **yellow is accent and background only, never text on white**. The original crest PDF is vector and uses Hussar Bold + Sriracha, both open-source. Full detail in `assets/brand/README.md`. This corrects the "jacket gold" guess in `PROJECT-BRIEF.md` §5.2 — the actual yellow is a brighter lemon.
 
 **F11 — All existing marks are school marks, not PTA marks.** The PTA is a legally separate org. Whether it fronts with Blackshear Fine Arts Academy branding or a distinct PTA lockup is a board question with real implications for donations and tax receipts. Tracked as A11.
+
+<a name="f12"></a>
+**F12 — Google's nonprofit validation partner is Goodstack, not TechSoup.** Goodstack (We Are Percent Ltd, London) handles validation for Google for Nonprofits. This resolves one of the `PROJECT-BRIEF.md` §7 verify items. Two verification steps cleared same-day on 2026-08-28: the PTA Gmail approved Jon as an authorized representative, and his personal identity was verified.
+
+**F13 — The EIN resolves to "PTA TEXAS CONGRESS," not Blackshear PTA.** Texas local PTA units operate under Texas PTA's IRS group exemption, and subordinates in a group ruling frequently don't appear individually in the IRS Business Master File that validators query. Expected, and usually approves fine. Two things to watch: benefits may be provisioned under the state org's identity rather than the local unit's, and if Texas PTA or another unit already holds a Google for Nonprofits account on that EIN there could be a conflict. Worth having Blackshear's standing letter from Texas PTA available if a reviewer asks.
+
+**F14 — No website URL was requested during the application.** The application asked only for an EIN. The concern about pointing reviewers at a parking page is therefore deferred, not resolved — a URL will be requested at Google for Nonprofits account setup and/or Workspace provisioning. **Use the Weebly URL when it comes up**, not `blackshearpta.org`.
 
 **F3 — The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 
