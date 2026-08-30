@@ -1,6 +1,6 @@
 # Blackshear PTA Website — Task Board
 
-**Last updated:** 2026-08-28 (session 4)
+**Last updated:** 2026-08-30 (session 5)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -35,9 +35,11 @@ U1 is the whole ballgame. Everything else in this document is worthless if the d
 
 ---
 
-## Track B — Google Workspace for Nonprofits
+## Track B — Nonprofit program enrollments
 
-*Longest pole. Independent of the website. Do not let it block Track A.*
+*Google and GitHub both gate on the same 501(c)(3) proof. Longest pole; independent of the website. Do not let either block Track A.*
+
+### Google Workspace for Nonprofits
 
 - [x] **B1** — Initial Google for Nonprofits request submitted — `JON` — Submitted 2026-08-28
 - [~] **B2** — Complete nonprofit validation — `JON` — Partner is **Goodstack** (We Are Percent Ltd), *not* TechSoup. Rep approval ✅ and identity verification ✅ both cleared 2026-08-28. Application processing. See [F12](#f12)
@@ -45,6 +47,14 @@ U1 is the whole ballgame. Everything else in this document is worthless if the d
 - [ ] **B4** — Activate Workspace for Nonprofits on `blackshearpta.org` — `JON`
 - [ ] **B5** — Convert `webmaster@` to a real mailbox; migrate MX if needed — `JON` + `CLAUDE`
 - [ ] **B6** — Re-point Cloudflare Access identity provider at Workspace SSO — `CLAUDE` — Config change only, no rework
+
+### GitHub for Nonprofits
+
+*Free GitHub Team for verified 501(c)(3) orgs. Not urgent — see [F17](#f17) — but free upside, and it converts the existing org in place with no rework.*
+
+- [ ] **B7** — Apply for GitHub for Nonprofits — `JON` — Request the discount from the org's billing settings, or via the GitHub for Nonprofits portal. Needs the same 501(c)(3) evidence as B2, so expect the "PTA TEXAS CONGRESS" group-exemption wrinkle ([F13](#f12))
+- [ ] **B8** — Look at the Nonprofit Developer Pack — `JON` — Bundled partner credits and discounts. Worth a skim once B7 lands; may cover things we're currently paying nothing for anyway
+- [ ] **B9** — Re-evaluate public vs. private repo once Team lands — `JON` + `CLAUDE` — Team makes private repos fully featured. Current call is **public** and I'd likely keep it: branch protection and secret-scanning push protection are already free on public repos, and transparency suits a parent-funded org
 
 ---
 
@@ -55,15 +65,15 @@ U1 is the whole ballgame. Everything else in this document is worthless if the d
 - [x] **A1** — Create GitHub Organization — `JON` — **`Blackshear-PTA`**, Free plan, created under the PTA account (not Jon's personal). Correct per §3.6. GitHub for Nonprofits (free Team) deferred — converts an existing org in place, so no rework later ([F17](#f17))
 - [x] **A2** — Create repo, grant Jon access — `JON` — Public at `Blackshear-PTA/blackshear-pta-website`. `jon-flowers` added as Owner; scaffold pushed, 5 commits live
 - [x] **A3** — Scaffold Astro + Tailwind v4 — `CLAUDE` — Astro 7.2.9 + Tailwind 4.3.3, 4 commits local. Build clean, `astro check` 0 errors. **Node pinned to 22.22.3** via `.node-version` (Astro 7 needs ≥22.12). Tailwind default palette verified genuinely unreachable, not just discouraged
-- [ ] **A4** — Wire GitHub → Cloudflare Workers deploy on push — `JON` — **Use Cloudflare Workers Builds** (dashboard → Workers & Pages → Create → Connect to Git → authorize the org → pick the repo). Preferred over GitHub Actions: no API token to store, no workflow file for the next volunteer to decipher
-- [ ] **A5** — Deploy a trivial placeholder page end-to-end — `CLAUDE` — **Prove the pipeline before building anything real**
-- [ ] **A6** — `X-Robots-Tag: noindex` on the entire zone — `CLAUDE` — Comes off at cutover. Prevents indexing a second copy of the site while Weebly is still canonical
+- [x] **A4** — Wire GitHub → Cloudflare Workers deploy on push — `JON` — Cloudflare **Workers Builds** connected to the repo. Worker `blackshear-pta`, build `npm run build`, deploy `npx wrangler deploy`, branch previews via `npx wrangler versions upload`. Build token `blackshear-pta-builds` is created and held by Cloudflare — nothing to store in GitHub
+- [~] **A5** — Deploy end-to-end — `CLAUDE` + `JON` — First `main` build triggered 2026-08-30. Branch builds confirmed working on [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1), which validates `versions upload` against an assets-only Worker with no `main` field
+- [~] **A6** — Site-wide `noindex` — `CLAUDE` — In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Two mechanisms: `public/_headers` (`X-Robots-Tag`) and a `<meta name="robots">` in `BaseLayout.astro`. **Both must be deleted at cutover, not before**
 - [ ] **A7** — Cloudflare Web Analytics — `CLAUDE` — Free, cookieless, no consent banner required
 
 ### Phase 1 — Coming-soon + six-theme demo
 
 - [ ] **A8** — "Coming soon" page at `/`, linking to the Weebly site — `CLAUDE`
-- [ ] **A9** — Extract copy from Weebly into `src/content/home.yaml` — `CLAUDE` — Single source of truth; all six themes consume it
+- [~] **A9** — Extract copy from Weebly into `src/content/home.yaml` — `CLAUDE` — In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Real copy and real links, no placeholders left. Meeting dates taken from the 2026-2027 calendar, not the Weebly homepage, which is a year stale ([F18](#f18))
 - [x] **A10** — Salvage the four usable photos from Weebly — `CLAUDE` — In `assets/from-weebly/`
 - [~] **A11** — Brand marks — `CLAUDE` + `JON` — Four assets received, see `assets/brand/README.md`. Remaining: trace crest + Buzz to SVG; **confirm with the board whether the PTA should use school marks directly or carry a distinct PTA lockup**
 - [ ] **A12** — Build the theme token architecture — `CLAUDE` — `registry.ts`, per-theme token blocks, 3–4 structural layouts
@@ -131,6 +141,12 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 <a name="f17"></a>
 **F17 — GitHub for Nonprofits is free Team, but not worth blocking on.** Verified 501(c)(3) orgs get GitHub Team free. It converts an *existing* org in place, so starting on Free costs nothing later. The delta over Free is negligible here — the useful parts (branch protection, secret scanning with push protection, unlimited Actions minutes) are already free on **public** repos, which is why the repo is public. Expect the same "PTA TEXAS CONGRESS" group-exemption wrinkle as Goodstack ([F13](#f12)) whenever it is pursued.
+
+<a name="f18"></a>
+**F18 — The current Weebly homepage is a year out of date.** It advertises the 2025-2026 PTA meeting dates (9/9, 11/18, 2/10, 4/14, 5/19) — all in the past — and "Last meeting: 5/19." The 2026-2027 calendar has seven meetings alternating mornings and evenings with one virtual. Content in the new site is sourced from the calendar where the two disagree. Reinforces why the editing workflow (D1) is the real long-term risk: the site went stale because updating it was harder than not.
+
+<a name="f19"></a>
+**F19 — Nearly every outbound link is a tinyurl.** `BlackshearStore`, `BlackshearSuppliesHelp`, `BlackshearBikeDayInfo`, `MonthlyBakeSaleInfo`, `BlackshearFamilyHandbook`, `BlackshearPTAMeetingSignups`, and roughly eight more. Opaque redirects owned by whoever holds that account: nobody can audit where they point without clicking, and losing the account breaks every link on the site simultaneously. Not blocking, but **find out who owns it**, and prefer direct links as Phase 2 builds out. Also unresolved: donations point at both a Zeffy link and `tinyurl.com/Donate2Blackshear` — somebody should confirm which is current.
 
 **F3 — The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 
