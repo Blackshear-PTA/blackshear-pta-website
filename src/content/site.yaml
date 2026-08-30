@@ -1,4 +1,4 @@
-# Blackshear PTA — site-wide identity and navigation.
+# Blackshear PTA - site-wide identity and navigation.
 #
 # Separate from home.yaml on purpose. This is chrome that appears on EVERY
 # page; home.yaml is one page's copy. Keeping them apart means adding /calendar
@@ -14,7 +14,7 @@ site:
     # Longer form for the footer and anywhere the full legal-ish name is right.
     fullName: "Blackshear Elementary PTA"
 
-  # Primary navigation. Order matters — this is the order it renders.
+  # Primary navigation. Order matters - this is the order it renders.
   #
   # Destinations that are still Weebly pages or external tools are marked
   # `external: true`, which renders the out-arrow and sets rel/target. As

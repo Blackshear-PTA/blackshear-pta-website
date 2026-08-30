@@ -10,7 +10,7 @@ interface Props {
   /**
    * Sets [data-theme] on <html>; every theme token block hangs off it.
    * Omitted on /preview, where six themes coexist and each panel carries its
-   * own [data-theme] instead — the selector works on any element.
+   * own [data-theme] instead - the selector works on any element.
    */
   themeId?: string;
 }
@@ -28,7 +28,7 @@ const { title, description, themeId } = Astro.props;
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
 
     {/*
-      One <Font> per family — this is what actually emits the @font-face rules
+      One <Font> per family - this is what actually emits the @font-face rules
       and defines each --font-* variable. Without it the variables are
       undefined, every --pta-font-display var() chain goes invalid, and all six
       themes quietly render in the browser default.
@@ -42,7 +42,7 @@ const { title, description, themeId } = Astro.props;
     {/*
       Pre-launch only. Weebly is still the canonical site, so this domain must
       not be indexed until cutover (TASKS.md A6). Belt and braces with the
-      X-Robots-Tag in public/_headers — a meta tag covers anything that reads
+      X-Robots-Tag in public/_headers - a meta tag covers anything that reads
       the HTML but not the response headers. Delete BOTH at cutover.
     */}
     <meta name="robots" content="noindex, nofollow" />

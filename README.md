@@ -9,7 +9,7 @@ and only one placeholder theme. Every string in `src/content/home.yaml` is a
 
 ## Running it
 
-Requires **Node 22.12+** — pinned in `.node-version`, so `fnm`/`nvm` will pick
+Requires **Node 22.12+** - pinned in `.node-version`, so `fnm`/`nvm` will pick
 it up automatically when you `cd` in.
 
 ```sh
@@ -33,7 +33,7 @@ npm run cf:deploy  # build + wrangler deploy
 ## Layout
 
 ```
-docs/PROJECT-BRIEF.md      architecture and locked decisions — read this first
+docs/PROJECT-BRIEF.md      architecture and locked decisions - read this first
 TASKS.md                   current status and the task board
 assets/brand/              logos + the sampled palette and its contrast table
 assets/from-weebly/        salvaged from the old site
@@ -58,5 +58,5 @@ See `PROJECT-BRIEF.md` §3.3 for why.
 outright. It is a background and accent color; yellow text needs a black or
 blue ground. `assets/brand/README.md` has the full contrast table.
 
-Everything else — why Workers and not Pages, why sessions go in D1, why there is
-no component library — is in [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md).
+Everything else - why Workers and not Pages, why sessions go in D1, why there is
+no component library - is in [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md).

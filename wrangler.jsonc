@@ -1,12 +1,12 @@
 {
-  // Blackshear PTA — Cloudflare Workers with static assets (PROJECT-BRIEF §3.2).
+  // Blackshear PTA - Cloudflare Workers with static assets (PROJECT-BRIEF §3.2).
   //
   // Deliberately NOT Cloudflare Pages: Durable Objects, Workflows, and Secrets
   // Store are Workers-only, and Phase 3 depends on Durable Objects. Starting on
   // Pages would mean a later migration with a domain switchover and downtime.
   //
   // There is intentionally no "main" field. The whole site is prerendered, so
-  // this Worker serves static assets only and never invokes JS — which also
+  // this Worker serves static assets only and never invokes JS, which also
   // means it does not consume Workers request quota for asset hits.
   //
   // When SSR arrives (/api/*, /admin), add @astrojs/cloudflare, point "main" at

@@ -5,10 +5,10 @@ import { structures } from '../layouts/structures';
 import { themes, defaultThemeId } from '../themes/registry';
 
 /**
- * /preview — the six-theme switcher (PROJECT-BRIEF §5.4).
+ * /preview - the six-theme switcher (PROJECT-BRIEF §5.4).
  *
  * All six render into the page; five are display:none. That is what makes the
- * switch instant, and instant is the whole point — a reload between variants
+ * switch instant, and instant is the whole point - a reload between variants
  * and people bail after two. Browsers also skip webfont downloads for
  * display:none subtrees, so a visitor pays for the active theme's two faces
  * rather than all ten.
@@ -29,14 +29,14 @@ const site = siteEntry.data;
 ---
 
 <BaseLayout
-  title="Choose a design — Blackshear PTA"
+  title="Choose a design - Blackshear PTA"
   description="Six design directions for the new Blackshear PTA website. Pick the one you like best."
 >
   <div class="switcher">
     <div class="switcher-inner">
       <p class="switcher-label">
         <strong>Six designs.</strong>{' '}
-        <span>Same words, same links — only the design changes. Tap through and tell Jon which one you like.</span>
+        <span>Same words, same links - only the design changes. Tap through and tell Jon which one you like.</span>
       </p>
       <div class="switcher-scroll">
         <div class="switcher-tabs" role="group" aria-label="Choose a design">
@@ -135,7 +135,7 @@ const site = siteEntry.data;
 
 <style>
   /* The switcher is chrome, not content. It deliberately inherits NOTHING from
-     the themes — otherwise it would restyle itself six times and stop reading
+     the themes - otherwise it would restyle itself six times and stop reading
      as a fixed control. Hard-coded values here are correct. */
   .switcher {
     position: sticky;

@@ -1,15 +1,15 @@
 /**
- * Blackshear PTA — theme registry (PROJECT-BRIEF §5.4).
+ * Blackshear PTA - theme registry (PROJECT-BRIEF §5.4).
  *
  * A theme is a token set AND a structure. Pairing them here is deliberate: it
  * makes a token-only recolor impossible to ship by accident, which is the
- * failure mode §5.1 warns about — six palettes on one layout still reads as
+ * failure mode §5.1 warns about - six palettes on one layout still reads as
  * one generic template. Six themes across four structures.
  *
- * ADDING A THEME — three steps, in this order:
- *   1. src/themes/<id>.css      — define every --pta-* token under [data-theme="<id>"]
- *   2. src/themes/themes.css    — add the @import so the CSS actually ships
- *   3. this file                — add the entry below
+ * ADDING A THEME - three steps, in this order:
+ *   1. src/themes/<id>.css - define every --pta-* token under [data-theme="<id>"]
+ *   2. src/themes/themes.css - add the @import so the CSS actually ships
+ *   3. this file - add the entry below
  * Miss step 2 and the theme silently falls back to the :root defaults.
  *
  * Then run `npm run check:contrast`. AA is a hard gate, not a preference.
@@ -18,7 +18,7 @@
  * their entries here, any structure left with no themes, and src/pages/preview.astro.
  */
 
-/** Structural arrangements — the ARRANGEMENT, not the skin. */
+/** Structural arrangements - the ARRANGEMENT, not the skin. */
 export const structureIds = ['stacked-rules', 'editorial', 'blocks', 'utility'] as const;
 export type StructureId = (typeof structureIds)[number];
 
@@ -80,7 +80,7 @@ export const themes: readonly Theme[] = [
 
 export const defaultThemeId = 'civic-letterpress';
 
-/** Throws rather than returning undefined — a bad theme id is a build-time bug. */
+/** Throws rather than returning undefined - a bad theme id is a build-time bug. */
 export function getTheme(id: string): Theme {
   const theme = themes.find((t) => t.id === id);
   if (!theme) {

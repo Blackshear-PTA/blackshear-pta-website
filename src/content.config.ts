@@ -3,10 +3,10 @@ import { z } from 'astro/zod';
 import { file } from 'astro/loaders';
 
 /**
- * Blackshear PTA — content schema.
+ * Blackshear PTA - content schema.
  *
  * PROJECT-BRIEF §5.4: "Content lives in exactly one place." All homepage copy
- * lives in src/content/home.yaml. Themes are consumers — none of them owns a
+ * lives in src/content/home.yaml. Themes are consumers - none of them owns a
  * word of copy, so there is no drift between the six variants.
  *
  * The YAML file is a mapping whose top-level keys become entry IDs, so the
@@ -27,7 +27,7 @@ const hero = z.object({
 /**
  * The "I came here to do one thing" row. Findability outranks visual ambition
  * (PROJECT-BRIEF §2), so this is the most important block on the page.
- * `note` is for the small qualifier under a link — "opens in Square", "PDF".
+ * `note` is for the small qualifier under a link - "opens in Square", "PDF".
  */
 const quickAction = link.extend({
   note: z.string().optional(),
@@ -63,7 +63,7 @@ const contact = z.object({
 });
 
 /**
- * Site-wide chrome — PROJECT-BRIEF §2 ("easy to use, easy to find things").
+ * Site-wide chrome - PROJECT-BRIEF §2 ("easy to use, easy to find things").
  *
  * Navigation is not homepage content, so it does not live in home.yaml. Themes
  * differ in how they RENDER the header; none of them owns what is in it.
