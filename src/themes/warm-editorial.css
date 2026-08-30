@@ -1,5 +1,5 @@
 /* ============================================================================
-   B — Warm Editorial                                    PROJECT-BRIEF §5.3
+   B - Warm Editorial                                    PROJECT-BRIEF §5.3
    Anchor: a well-made local-nonprofit annual report. Fraunces display over a
            Newsreader text face, warm paper, generous measure, hairline rules.
    Structure: editorial
@@ -34,11 +34,6 @@
   --pta-cta-bg: #f0e430;
   --pta-cta-ink: #1e1b18;
   --pta-cta-border: #1e1b18;
-
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #1e1b18;
-  --pta-mark-wing: #fbf7f0;
-  --pta-mark-ground: transparent;
 
   --pta-hero-size: clamp(2.1rem, 1.35rem + 3.4vw, 3.4rem);
   --pta-hero-leading: 1.1;

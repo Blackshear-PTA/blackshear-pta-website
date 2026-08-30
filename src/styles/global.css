@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Blackshear PTA — global theme
+   Blackshear PTA - global theme
    PROJECT-BRIEF §3.3: "Tailwind-with-defaults is the single largest contributor
    to the generic-AI look. The default palette, type scale, and radii get
    replaced wholesale. We never ship a blue-500."
 
    Two layers live in this file:
 
-   1. @theme — brand PRIMITIVES. Tailwind's defaults are wiped and replaced with
+   1. @theme - brand PRIMITIVES. Tailwind's defaults are wiped and replaced with
       the four sampled brand colors, a role-based type scale, and a tight radius
       set. These are facts about the brand and do not change between themes.
 
-   2. :root  — the SEMANTIC token contract (--pta-*). Every section component
+   2. :root - the SEMANTIC token contract (--pta-*). Every section component
       styles itself exclusively from these. Each theme in src/themes/*.css
       redefines them under [data-theme="..."]. The values here are the neutral
       fallback so a page renders sanely with no theme applied.
@@ -42,7 +42,7 @@
      Sampled from the actual logo files, not invented. See
      assets/brand/README.md for provenance and the full contrast table.
 
-     CONTRAST WARNING — WCAG 2.1:
+     CONTRAST WARNING - WCAG 2.1:
        blue on white .... 8.43:1  AA + AAA
        white on blue .... 8.43:1  AA + AAA
        blue on lemon .... 6.36:1  AA
@@ -62,7 +62,7 @@
   /* ── Type ──────────────────────────────────────────────────────────────
      Placeholder stacks. Each theme is expected to swap --font-display for a
      real self-hosted face (§5.1: distinctive typefaces are the escape from the
-     generic look). Deliberately NOT Inter — the brief names it as a tell.
+     generic look). Deliberately NOT Inter - the brief names it as a tell.
      The scale is role-named, not t-shirt-sized, so nobody reaches for a
      Tailwind-default step out of muscle memory. */
   --font-body: "Charter", "Bitstream Charter", "Iowan Old Style", Georgia, serif;
@@ -111,7 +111,7 @@
 }
 
 /* ============================================================================
-   Semantic token contract — the interface between themes and components.
+   Semantic token contract - the interface between themes and components.
 
    Section components in src/components/sections/ read ONLY from these. They
    never reference --color-brand-* directly and never use a Tailwind color
@@ -140,7 +140,7 @@
   --pta-rule: var(--color-brand-black);
   --pta-focus: var(--color-brand-blue);
 
-  /* header — a theme that leaves these alone still gets colour at the top,
+  /* header - a theme that leaves these alone still gets colour at the top,
      which is the point: the header is the first thing on every page and a
      black-and-white one reads as unfinished. */
   --pta-header-bg: var(--color-brand-blue);
@@ -157,13 +157,15 @@
   --pta-cta-ink: var(--color-brand-black);
   --pta-cta-border: var(--color-brand-black);
 
-  /* the yellow jacket mark — see src/components/BuzzMark.astro */
-  --pta-mark-body: var(--color-brand-lemon);
-  --pta-mark-ink: var(--color-brand-black);
-  --pta-mark-wing: var(--color-brand-white);
-  --pta-mark-ground: transparent;
+  /* The disc behind the mascot; see src/components/BuzzMascot.astro. The
+     mascot's own colours are fixed (it is a real logo), so only the disc is
+     themeable. White on black is what lets the same mark sit on a lemon header
+     band and a near-black one without the yellow body vanishing into either. */
+  --pta-mark-ground: var(--color-brand-white);
+  --pta-mark-ring: var(--color-brand-black);
+  --pta-mark-ring-width: 3;
 
-  /* hero — its own token rather than --text-banner so a theme can dial the
+  /* hero - its own token rather than --text-banner so a theme can dial the
      opening statement down without touching the type scale. */
   --pta-hero-size: var(--text-display);
 
@@ -229,7 +231,7 @@
   }
 }
 
-/* Skip link — keyboard navigation is a hard requirement (§5.3). */
+/* Skip link - keyboard navigation is a hard requirement (§5.3). */
 .pta-skip-link {
   position: absolute;
   left: -9999px;

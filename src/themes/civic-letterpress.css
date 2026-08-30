@@ -1,5 +1,5 @@
 /* ============================================================================
-   A — Civic Letterpress                                 PROJECT-BRIEF §5.3
+   A - Civic Letterpress                                 PROJECT-BRIEF §5.3
    Anchor: WPA and municipal print. Bevan slab over Archivo, two inks, heavy
            rules, zero radius, zero shadow. Weight does the work, not colour.
    Structure: stacked-rules
@@ -12,7 +12,7 @@
   --pta-display-transform: uppercase;
 
   --pta-surface: #ffffff;
-  --pta-surface-alt: #f0e430;   /* lemon panel — black text only */
+  --pta-surface-alt: #f0e430;   /* lemon panel - black text only */
   --pta-ink: #000000;
   --pta-ink-muted: #2e2e2e;     /* 14.0:1 on white */
   --pta-ink-on-accent: #ffffff; /* 8.43:1 on blue */
@@ -34,11 +34,6 @@
   --pta-cta-bg: #f0e430;
   --pta-cta-ink: #000000;       /* 15.85:1 */
   --pta-cta-border: #000000;
-
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #000000;
-  --pta-mark-wing: #ffffff;
-  --pta-mark-ground: transparent;
 
   --pta-hero-size: clamp(2rem, 1.3rem + 3.2vw, 3.25rem);
   --pta-hero-leading: 1.06;

@@ -1,9 +1,8 @@
 /* ============================================================================
-   E — Quiet Utility                                     PROJECT-BRIEF §5.3
+   E - Quiet Utility                                     PROJECT-BRIEF §5.3
    Anchor: the anti-decoration option. Public Sans (the US Web Design System
            face) throughout, hairline rules, tight neutral palette. Optimised
-           for finding one thing on a phone, fast. Restraint IS the identity —
-           do not "add interest" here; that is what the other five are for.
+           for finding one thing on a phone, fast. Restraint IS the identity - do not "add interest" here; that is what the other five are for.
    Structure: utility
    ========================================================================= */
 [data-theme="quiet-utility"] {
@@ -36,11 +35,6 @@
   --pta-cta-bg: #0048a8;
   --pta-cta-ink: #ffffff;
   --pta-cta-border: #0048a8;
-
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #1b1f24;
-  --pta-mark-wing: #ffffff;
-  --pta-mark-ground: transparent;
 
   --pta-hero-size: clamp(1.6rem, 1.15rem + 2.1vw, 2.4rem);
   --pta-hero-leading: 1.18;

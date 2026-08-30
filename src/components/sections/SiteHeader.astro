@@ -1,9 +1,9 @@
 ---
-import BuzzMark from '../BuzzMark.astro';
+import BuzzMascot from '../BuzzMascot.astro';
 import type { SiteData } from '../../types';
 
 /**
- * Site header — mark, stacked wordmark, navigation, one primary action.
+ * Site header - mark, stacked wordmark, navigation, one primary action.
  *
  * PROJECT-BRIEF §2 puts findability above visual ambition, so the nav WRAPS on
  * narrow screens rather than collapsing into a hamburger. Six short labels fit
@@ -24,7 +24,7 @@ const { identity, nav, primaryAction } = site;
 <header class="hdr">
   <div class="hdr-inner">
     <a class="brand" href="/">
-      <BuzzMark size={48} />
+      <BuzzMascot size={58} />
       <span class="brand-name">{identity.name}</span>
       <span class="brand-loc">{identity.location}</span>
     </a>
@@ -135,7 +135,7 @@ const { identity, nav, primaryAction } = site;
     /* Genuine 44px target without a visible box. min-height rather than
        padding alone: at --text-fine the padding maths lands around 37px, which
        is under the threshold and is exactly the kind of thing that only shows
-       up on a real phone (§2 — most parents are on phones). */
+       up on a real phone (§2 - most parents are on phones). */
     min-height: 44px;
     padding-block: 0.5rem;
     color: inherit;

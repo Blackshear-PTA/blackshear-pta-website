@@ -1,9 +1,9 @@
 /* ============================================================================
-   F — Jacket                                            PROJECT-BRIEF §5.3
+   F - Jacket                                            PROJECT-BRIEF §5.3
    Anchor: the mascot, taken seriously. Hard black-and-gold banding, angular
            geometry, Archivo at 900. The only dark theme in the set, which is
            most of why it belongs in the lineup.
-   Sriracha appears once, on the tagline — it is the face the original logo is
+   Sriracha appears once, on the tagline - it is the face the original logo is
    set in (assets/brand/README.md), so this reproduces it rather than guessing.
    NOTE: lemon-on-white fails AA at 1.33:1, but lemon on this near-black ground
    is 14.4:1, so lemon is a legitimate text colour HERE and nowhere else.
@@ -41,17 +41,12 @@
   --pta-cta-ink: #f0e430;
   --pta-cta-border: #111010;
 
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #111010;
-  --pta-mark-wing: #ffffff;
-  --pta-mark-ground: transparent;
 
   /* The header is already full lemon. Without this the hero band would be
-     lemon too and the two would fuse into one yellow slab — which would throw
+     lemon too and the two would fuse into one yellow slab, which would throw
      away the only reason this theme is in the lineup: it is the dark one. */
   --pta-hero-band-bg: #111010;
   --pta-hero-band-ink: #f5f5f0;
-
   --pta-hero-size: clamp(2.1rem, 1.3rem + 3.9vw, 3.9rem);
   --pta-hero-leading: 0.98;
   --pta-hero-measure: 15ch;

@@ -1,8 +1,8 @@
 /* ============================================================================
-   C — Schoolyard Bold                                   PROJECT-BRIEF §5.3
+   C - Schoolyard Bold                                   PROJECT-BRIEF §5.3
    Anchor: a modern summer-camp brand. Bricolage Grotesque over Figtree,
            saturated flat blocks, thick black keylines, hard offset shadows.
-           Energetic, deliberately not childish — no comic sans, no clip art.
+           Energetic, deliberately not childish - no comic sans, no clip art.
    Structure: blocks
    ========================================================================= */
 [data-theme="schoolyard-bold"] {
@@ -35,11 +35,6 @@
   --pta-cta-bg: #0048a8;
   --pta-cta-ink: #ffffff;       /* 8.43:1 */
   --pta-cta-border: #101010;
-
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #101010;
-  --pta-mark-wing: #ffffff;
-  --pta-mark-ground: #ffffff;   /* white disc pops the mark off the lemon band */
 
   --pta-hero-size: clamp(2.2rem, 1.4rem + 3.8vw, 3.75rem);
   --pta-hero-leading: 1.02;

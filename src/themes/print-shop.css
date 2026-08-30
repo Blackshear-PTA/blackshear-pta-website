@@ -1,5 +1,5 @@
 /* ============================================================================
-   D — East Austin Print Shop                            PROJECT-BRIEF §5.3
+   D - East Austin Print Shop                            PROJECT-BRIEF §5.3
    Anchor: screenprint and wood type. Alfa Slab One over Karla, newsprint
            ground, flat overprinted colour, no shadows. Leans on the 135 years.
    Structure: editorial
@@ -34,11 +34,6 @@
   --pta-cta-bg: #983418;
   --pta-cta-ink: #efe6d8;       /* 5.6:1 */
   --pta-cta-border: #18150f;
-
-  --pta-mark-body: #f0e430;
-  --pta-mark-ink: #18150f;
-  --pta-mark-wing: #efe6d8;
-  --pta-mark-ground: transparent;
 
   --pta-hero-size: clamp(1.9rem, 1.2rem + 3.2vw, 3.1rem);
   --pta-hero-leading: 1.08;

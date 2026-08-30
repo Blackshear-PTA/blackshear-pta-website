@@ -14,6 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const THEME_DIR = 'src/themes';
+const GLOBAL_CSS = 'src/styles/global.css';
 
 /** Pairings that put text on a ground. [foreground, background, label, minimum] */
 const PAIRS = [
@@ -25,7 +26,7 @@ const PAIRS = [
   ['--pta-header-ink', '--pta-header-bg', 'header text', 4.5],
   ['--pta-header-ink-muted', '--pta-header-bg', 'header muted text', 4.5],
   ['--pta-cta-ink', '--pta-cta-bg', 'primary action label', 4.5],
-  ['--pta-mark-ink', '--pta-mark-body', 'mark banding', 3.0], // graphical object
+  ['--pta-mark-ring', '--pta-mark-ground', 'mascot disc ring', 3.0], // graphical object
 ];
 
 const srgb = (c) => {
@@ -59,9 +60,45 @@ function parseThemes(css) {
   return out;
 }
 
+/**
+ * Resolve the :root defaults from global.css first, then layer each theme on
+ * top. A theme only overrides what it wants to change, so checking the
+ * [data-theme] block alone would silently skip every inherited token, and a
+ * skipped check reads like a pass in the summary line.
+ *
+ * :root values are written as var(--color-brand-*), so the @theme primitives
+ * have to be resolved before they mean anything.
+ */
+function parseBaseTokens(css) {
+  const primitives = {};
+  const themeBlock = css.match(/@theme\s*\{([\s\S]*?)\n\}/);
+  if (themeBlock) {
+    for (const [, prop, value] of themeBlock[1].matchAll(/(--color-[\w-]+)\s*:\s*([^;]+);/g)) {
+      const hex = value.trim().match(/^#[0-9a-fA-F]{3,8}$/);
+      if (hex) primitives[prop] = hex[0];
+    }
+  }
+  const base = {};
+  const rootBlock = css.match(/\n:root\s*\{([\s\S]*?)\n\}/);
+  if (rootBlock) {
+    for (const [, prop, raw] of rootBlock[1].matchAll(/(--pta-[\w-]+)\s*:\s*([^;]+);/g)) {
+      const value = raw.trim();
+      const direct = value.match(/^#[0-9a-fA-F]{3,8}$/);
+      if (direct) { base[prop] = direct[0]; continue; }
+      const ref = value.match(/^var\(\s*(--[\w-]+)\s*\)$/);
+      if (ref && primitives[ref[1]]) base[prop] = primitives[ref[1]];
+    }
+  }
+  return base;
+}
+
+const baseTokens = parseBaseTokens(readFileSync(GLOBAL_CSS, 'utf8'));
+
 const themes = {};
 for (const file of readdirSync(THEME_DIR).filter((f) => f.endsWith('.css') && f !== 'themes.css')) {
-  Object.assign(themes, parseThemes(readFileSync(join(THEME_DIR, file), 'utf8')));
+  for (const [id, tokens] of Object.entries(parseThemes(readFileSync(join(THEME_DIR, file), 'utf8')))) {
+    themes[id] = { ...baseTokens, ...(themes[id] ?? {}), ...tokens };
+  }
 }
 
 let failures = 0;
@@ -88,15 +125,15 @@ for (const [id, tokens] of Object.entries(themes)) {
 }
 
 if (skipped.length) {
-  console.log(`\nSkipped (token not a literal hex — check by hand):`);
+  console.log(`\nSkipped (token not a literal hex - check by hand):`);
   for (const s of skipped) console.log(`  - ${s}`);
 }
 
 console.log(
-  `\n${checks} checks across ${Object.keys(themes).length} themes — ${failures} failing.`,
+  `\n${checks} checks across ${Object.keys(themes).length} themes - ${failures} failing.`,
 );
 
 if (failures > 0) {
-  console.error('\nContrast gate FAILED. See PROJECT-BRIEF §5.3 — this is not advisory.');
+  console.error('\nContrast gate FAILED. See PROJECT-BRIEF §5.3 - this is not advisory.');
   process.exit(1);
 }
