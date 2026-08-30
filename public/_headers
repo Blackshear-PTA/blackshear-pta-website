@@ -1,0 +1,10 @@
+# Blackshear PTA — response headers for Cloudflare Workers static assets.
+#
+# noindex applies to the WHOLE SITE and must stay until cutover (TASKS.md A6).
+# Until Weebly is retired it is the canonical site; letting Google index a
+# second full copy of the same content on a new domain is a ranking mess to
+# unwind later. Remove this block as part of the cutover, not before.
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

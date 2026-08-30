@@ -20,6 +20,13 @@ const { title, description, themeId } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+    {/*
+      Pre-launch only. Weebly is still the canonical site, so this domain must
+      not be indexed until cutover (TASKS.md A6). Belt and braces with the
+      X-Robots-Tag in public/_headers — a meta tag covers anything that reads
+      the HTML but not the response headers. Delete BOTH at cutover.
+    */}
+    <meta name="robots" content="noindex, nofollow" />
   </head>
   <body>
     <a class="pta-skip-link" href="#main">Skip to main content</a>
