@@ -62,6 +62,30 @@ const contact = z.object({
   address: z.string(),
 });
 
+/**
+ * Site-wide chrome — PROJECT-BRIEF §2 ("easy to use, easy to find things").
+ *
+ * Navigation is not homepage content, so it does not live in home.yaml. Themes
+ * differ in how they RENDER the header; none of them owns what is in it.
+ */
+const navItem = link.extend({
+  /** Renders an out-arrow and sets rel/target. Flip to false as real pages land. */
+  external: z.boolean().default(false),
+});
+
+const site = defineCollection({
+  loader: file('src/content/site.yaml'),
+  schema: z.object({
+    identity: z.object({
+      name: z.string(),
+      location: z.string(),
+      fullName: z.string(),
+    }),
+    nav: z.array(navItem).min(1),
+    primaryAction: link,
+  }),
+});
+
 const home = defineCollection({
   loader: file('src/content/home.yaml'),
   schema: z.object({
@@ -95,4 +119,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { home };
+export const collections = { home, site };

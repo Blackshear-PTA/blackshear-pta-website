@@ -1,0 +1,78 @@
+---
+import SiteHeader from '../../components/sections/SiteHeader.astro';
+import Hero from '../../components/sections/Hero.astro';
+import QuickActions from '../../components/sections/QuickActions.astro';
+import News from '../../components/sections/News.astro';
+import GetInvolved from '../../components/sections/GetInvolved.astro';
+import Committees from '../../components/sections/Committees.astro';
+import Footer from '../../components/sections/Footer.astro';
+import type { HomeData, SiteData } from '../../types';
+
+interface Props {
+  home: HomeData;
+  site: SiteData;
+  /**
+   * id for the <main> landmark. /preview renders six structures on one page,
+   * and duplicate ids are invalid HTML and confuse assistive tech, so each
+   * panel passes its own. Defaults to "main" for real pages.
+   */
+  mainId?: string;
+}
+const { home, site, mainId = 'main' } = Astro.props;
+---
+
+{/*
+  STRUCTURE: blocks  →  Schoolyard Bold, Jacket
+
+  Full-bleed alternating bands. Every section is its own edge-to-edge stripe
+  with a hard keyline between, so the page reads as stacked posters rather than
+  a document. No section floats in whitespace; colour blocking does the
+  separating that rules do in stacked-rules.
+*/}
+
+<SiteHeader site={site} />
+<main id={mainId}>
+  <section class="band band-hero">
+    <div class="inner"><Hero hero={home.hero} /></div>
+  </section>
+
+  <section class="band">
+    <div class="inner"><QuickActions quickActions={home.quickActions} /></div>
+  </section>
+
+  <section class="band band-alt" data-surface="alt">
+    <div class="inner"><News news={home.news} /></div>
+  </section>
+
+  <section class="band">
+    <div class="inner"><GetInvolved getInvolved={home.getInvolved} /></div>
+  </section>
+
+  <section class="band band-alt" data-surface="alt">
+    <div class="inner"><Committees committees={home.committees} /></div>
+  </section>
+</main>
+<div class="inner"><Footer footer={home.footer} /></div>
+
+<style>
+  .band {
+    border-block-end: var(--pta-rule-width) solid var(--pta-rule);
+  }
+  .band-alt {
+    background: var(--pta-surface-alt);
+  }
+  .band-hero {
+    background: var(--pta-hero-band-bg);
+    color: var(--pta-hero-band-ink);
+  }
+  /* The hero band inverts, so its muted lede has to follow or it drops out. */
+  .band-hero :global(p) {
+    color: inherit;
+    opacity: 0.92;
+  }
+  .inner {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+</style>

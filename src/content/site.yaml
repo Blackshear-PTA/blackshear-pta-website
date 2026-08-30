@@ -1,0 +1,45 @@
+# Blackshear PTA — site-wide identity and navigation.
+#
+# Separate from home.yaml on purpose. This is chrome that appears on EVERY
+# page; home.yaml is one page's copy. Keeping them apart means adding /calendar
+# or /volunteer later does not mean touching homepage content.
+#
+# Shape is enforced by src/content.config.ts.
+
+site:
+  identity:
+    # Rendered under the mark in the header, stacked.
+    name: "Blackshear PTA"
+    location: "East Austin, TX"
+    # Longer form for the footer and anywhere the full legal-ish name is right.
+    fullName: "Blackshear Elementary PTA"
+
+  # Primary navigation. Order matters — this is the order it renders.
+  #
+  # Destinations that are still Weebly pages or external tools are marked
+  # `external: true`, which renders the out-arrow and sets rel/target. As
+  # Phase 2 builds real pages, these flip to internal paths one at a time.
+  nav:
+    - label: "Join"
+      href: "https://tinyurl.com/BlackshearStore"
+      external: true
+    - label: "Volunteer"
+      href: "https://blackshearpta.weebly.com/volunteer.html"
+      external: true
+    - label: "Calendar"
+      href: "https://blackshearpta.weebly.com/calendar.html"
+      external: true
+    - label: "Little EAST"
+      href: "https://blackshearpta.weebly.com/little-east.html"
+      external: true
+    - label: "Sponsors"
+      href: "https://blackshearpta.weebly.com/sponsors.html"
+      external: true
+    - label: "Contact"
+      href: "https://blackshearpta.weebly.com/contact.html"
+      external: true
+
+  # Single most important action. Rendered apart from the nav in every theme.
+  primaryAction:
+    label: "Donate"
+    href: "https://www.zeffy.com/en-US/ticketing/2026-2027-blackshear-elementary-shop"

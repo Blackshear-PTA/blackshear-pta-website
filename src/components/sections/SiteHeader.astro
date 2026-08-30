@@ -1,0 +1,199 @@
+---
+import BuzzMark from '../BuzzMark.astro';
+import type { SiteData } from '../../types';
+
+/**
+ * Site header — mark, stacked wordmark, navigation, one primary action.
+ *
+ * PROJECT-BRIEF §2 puts findability above visual ambition, so the nav WRAPS on
+ * narrow screens rather than collapsing into a hamburger. Six short labels fit
+ * in two or three lines on a phone, and every destination stays visible and
+ * thumb-sized. A hamburger would hide the whole site behind a guess.
+ *
+ * Colour comes from --pta-header-* so a theme can make this a saturated band,
+ * a hairline rule, or a paper-toned strip without touching this file.
+ */
+interface Props {
+  site: SiteData;
+}
+
+const { site } = Astro.props;
+const { identity, nav, primaryAction } = site;
+---
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <a class="brand" href="/">
+      <BuzzMark size={48} />
+      <span class="brand-name">{identity.name}</span>
+      <span class="brand-loc">{identity.location}</span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav-list">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                class="nav-link"
+                href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener' : undefined}
+              >
+                {item.label}
+                {item.external && (
+                  <svg class="ext" viewBox="0 0 12 12" aria-hidden="true" width="9" height="9">
+                    <path
+                      d="M4 2h6v6M10 2 3 9"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.75"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                )}
+                <span class="sr-only">{item.external ? ' (opens in a new tab)' : ''}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <a class="cta" href={primaryAction.href} target="_blank" rel="noopener">
+        {primaryAction.label}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    background: var(--pta-header-bg);
+    color: var(--pta-header-ink);
+    border-bottom: var(--pta-header-rule-width) solid var(--pta-header-rule);
+  }
+
+  .hdr-inner {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding: var(--pta-header-y) var(--pta-gutter);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem var(--pta-gap);
+  }
+
+  /* Stacked lockup: mark, then name, then location. */
+  .brand {
+    display: grid;
+    justify-items: start;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .brand-name {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    font-size: var(--text-title);
+    line-height: var(--leading-flat);
+  }
+
+  .brand-loc {
+    font-family: var(--pta-font-body);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-header-ink-muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    /* Optically aligns the nav row with the wordmark rather than the mark. */
+    padding-block-start: 0.35rem;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    /* Genuine 44px target without a visible box. min-height rather than
+       padding alone: at --text-fine the padding maths lands around 37px, which
+       is under the threshold and is exactly the kind of thing that only shows
+       up on a real phone (§2 — most parents are on phones). */
+    min-height: 44px;
+    padding-block: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-nav-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    border-bottom-color: currentColor;
+  }
+
+  .ext {
+    opacity: 0.65;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.6rem 1.1rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 40rem) {
+    .hdr-inner {
+      /* Brand above nav on a phone, both full width. */
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .nav {
+      justify-content: space-between;
+    }
+  }
+</style>

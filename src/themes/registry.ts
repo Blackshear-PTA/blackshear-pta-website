@@ -4,22 +4,22 @@
  * A theme is a token set AND a structure. Pairing them here is deliberate: it
  * makes a token-only recolor impossible to ship by accident, which is the
  * failure mode §5.1 warns about — six palettes on one layout still reads as
- * one generic template.
- *
- * SCAFFOLD STATE: one placeholder theme and one placeholder structure, enough
- * to prove the wiring builds. The six real directions (Civic Letterpress, Warm
- * Editorial, Schoolyard Bold, East Austin Print Shop, Quiet Utility, Jacket)
- * are listed in PROJECT-BRIEF §5.3 and are a separate task.
+ * one generic template. Six themes across four structures.
  *
  * ADDING A THEME — three steps, in this order:
  *   1. src/themes/<id>.css      — define every --pta-* token under [data-theme="<id>"]
  *   2. src/themes/themes.css    — add the @import so the CSS actually ships
  *   3. this file                — add the entry below
  * Miss step 2 and the theme silently falls back to the :root defaults.
+ *
+ * Then run `npm run check:contrast`. AA is a hard gate, not a preference.
+ *
+ * WHEN A WINNER IS PICKED: delete the five losing CSS files, their imports,
+ * their entries here, any structure left with no themes, and src/pages/preview.astro.
  */
 
-/** Structural arrangements. §5.4 calls for 3–4 genuinely different ones. */
-export const structureIds = ['stacked-rules'] as const;
+/** Structural arrangements — the ARRANGEMENT, not the skin. */
+export const structureIds = ['stacked-rules', 'editorial', 'blocks', 'utility'] as const;
 export type StructureId = (typeof structureIds)[number];
 
 export interface Theme {
@@ -27,7 +27,7 @@ export interface Theme {
   id: string;
   /** Shown in the theme switcher on /preview. */
   name: string;
-  /** One line on the design tradition this is anchored to. */
+  /** One line on the design tradition this is anchored to. Shown in the switcher. */
   description: string;
   /** Which layout arrangement this theme renders through. */
   structure: StructureId;
@@ -38,8 +38,43 @@ export const themes: readonly Theme[] = [
     id: 'civic-letterpress',
     name: 'Civic Letterpress',
     description:
-      'WPA and municipal print. Condensed display, thick rules, flat two-ink, zero shadows or rounded corners.',
+      'WPA and municipal print. Slab display, heavy rules, two inks, no radius or shadow anywhere.',
     structure: 'stacked-rules',
+  },
+  {
+    id: 'warm-editorial',
+    name: 'Warm Editorial',
+    description:
+      'A well-made local-nonprofit annual report. Warm paper, serif throughout, asymmetric grid.',
+    structure: 'editorial',
+  },
+  {
+    id: 'schoolyard-bold',
+    name: 'Schoolyard Bold',
+    description:
+      'A modern summer-camp brand. Saturated blocks, thick keylines, hard shadows. Energetic, not childish.',
+    structure: 'blocks',
+  },
+  {
+    id: 'print-shop',
+    name: 'East Austin Print Shop',
+    description:
+      'Screenprint and wood type on newsprint. Flat overprinted colour, leaning on the 135 years.',
+    structure: 'editorial',
+  },
+  {
+    id: 'quiet-utility',
+    name: 'Quiet Utility',
+    description:
+      'The anti-decoration option. Links first, above the hero. Built to find one thing fast on a phone.',
+    structure: 'utility',
+  },
+  {
+    id: 'jacket',
+    name: 'Jacket',
+    description:
+      'The mascot taken seriously. Black and gold banding, the only dark theme in the set.',
+    structure: 'blocks',
   },
 ];
 

@@ -1,12 +1,18 @@
 ---
+import { Font } from 'astro:assets';
+import { fontFamilies } from '../font-families.mjs';
 import '../styles/global.css';
 import '../themes/themes.css';
 
 interface Props {
   title: string;
   description: string;
-  /** Sets [data-theme] on <html>; every theme token block hangs off it. */
-  themeId: string;
+  /**
+   * Sets [data-theme] on <html>; every theme token block hangs off it.
+   * Omitted on /preview, where six themes coexist and each panel carries its
+   * own [data-theme] instead — the selector works on any element.
+   */
+  themeId?: string;
 }
 
 const { title, description, themeId } = Astro.props;
@@ -20,6 +26,19 @@ const { title, description, themeId } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+
+    {/*
+      One <Font> per family — this is what actually emits the @font-face rules
+      and defines each --font-* variable. Without it the variables are
+      undefined, every --pta-font-display var() chain goes invalid, and all six
+      themes quietly render in the browser default.
+
+      Deliberately NOT preloaded. /preview holds six themes at once and only
+      one is visible; browsers skip font downloads for display:none subtrees,
+      so leaving preload off means a visitor fetches the two faces they can
+      actually see instead of all ten.
+    */}
+    {fontFamilies.map((f) => <Font cssVariable={f.cssVariable} />)}
     {/*
       Pre-launch only. Weebly is still the canonical site, so this domain must
       not be indexed until cutover (TASKS.md A6). Belt and braces with the

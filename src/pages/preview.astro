@@ -1,0 +1,235 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { structures } from '../layouts/structures';
+import { themes, defaultThemeId } from '../themes/registry';
+
+/**
+ * /preview — the six-theme switcher (PROJECT-BRIEF §5.4).
+ *
+ * All six render into the page; five are display:none. That is what makes the
+ * switch instant, and instant is the whole point — a reload between variants
+ * and people bail after two. Browsers also skip webfont downloads for
+ * display:none subtrees, so a visitor pays for the active theme's two faces
+ * rather than all ten.
+ *
+ * THIS PAGE IS DISPOSABLE. When a winner is picked, delete it along with the
+ * five losing themes. Nothing else imports it.
+ */
+
+const [homeEntry, siteEntry] = await Promise.all([
+  getEntry('home', 'home'),
+  getEntry('site', 'site'),
+]);
+if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+
+const home = homeEntry.data;
+const site = siteEntry.data;
+---
+
+<BaseLayout
+  title="Choose a design — Blackshear PTA"
+  description="Six design directions for the new Blackshear PTA website. Pick the one you like best."
+>
+  <div class="switcher">
+    <div class="switcher-inner">
+      <p class="switcher-label">
+        <strong>Six designs.</strong>{' '}
+        <span>Same words, same links — only the design changes. Tap through and tell Jon which one you like.</span>
+      </p>
+      <div class="switcher-scroll">
+        <div class="switcher-tabs" role="group" aria-label="Choose a design">
+          {
+            themes.map((theme) => (
+              <button
+                type="button"
+                class="tab"
+                data-theme-btn={theme.id}
+                aria-pressed={theme.id === defaultThemeId ? 'true' : 'false'}
+              >
+                {theme.name}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <p class="switcher-desc" data-theme-desc aria-live="polite"></p>
+    </div>
+  </div>
+
+  {
+    themes.map((theme) => {
+      const Structure = structures[theme.structure];
+      return (
+        <div
+          class="panel"
+          data-theme={theme.id}
+          data-panel={theme.id}
+          hidden={theme.id !== defaultThemeId}
+        >
+          <Structure home={home} site={site} mainId={`main-${theme.id}`} />
+        </div>
+      );
+    })
+  }
+</BaseLayout>
+
+<script>
+  import { themes, defaultThemeId } from '../themes/registry';
+
+  const KEY = 'pta-preview-theme';
+  const ids = new Set(themes.map((t) => t.id));
+  const byId = new Map(themes.map((t) => [t.id, t]));
+
+  const panels = document.querySelectorAll<HTMLElement>('[data-panel]');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-btn]');
+  const desc = document.querySelector<HTMLElement>('[data-theme-desc]');
+  const skip = document.querySelector<HTMLAnchorElement>('.pta-skip-link');
+
+  function apply(id: string, persist = true) {
+    if (!ids.has(id)) return;
+
+    for (const panel of panels) panel.hidden = panel.dataset.panel !== id;
+    for (const button of buttons) {
+      button.setAttribute('aria-pressed', String(button.dataset.themeBtn === id));
+    }
+    if (desc) desc.textContent = byId.get(id)?.description ?? '';
+    // Keep the skip link pointing at the landmark that is actually visible.
+    if (skip) skip.href = `#main-${id}`;
+
+    if (persist) {
+      try {
+        localStorage.setItem(KEY, id);
+      } catch {
+        // Private browsing, or storage disabled. Switching still works.
+      }
+    }
+
+    // Shareable: /preview?theme=jacket opens straight to that one.
+    const url = new URL(window.location.href);
+    url.searchParams.set('theme', id);
+    history.replaceState(null, '', url);
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      apply(button.dataset.themeBtn!);
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    });
+  }
+
+  // URL wins over the remembered choice, so a shared link shows what was shared.
+  let initial = defaultThemeId;
+  try {
+    const stored = localStorage.getItem(KEY);
+    if (stored && ids.has(stored)) initial = stored;
+  } catch {
+    // ignore
+  }
+  const fromUrl = new URLSearchParams(window.location.search).get('theme');
+  if (fromUrl && ids.has(fromUrl)) initial = fromUrl;
+
+  apply(initial, false);
+</script>
+
+<style>
+  /* The switcher is chrome, not content. It deliberately inherits NOTHING from
+     the themes — otherwise it would restyle itself six times and stop reading
+     as a fixed control. Hard-coded values here are correct. */
+  .switcher {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #17181c;
+    color: #ffffff;
+    border-bottom: 1px solid #3a3d45;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  .switcher-inner {
+    max-width: 74rem;
+    margin-inline: auto;
+    padding: 0.7rem 1rem 0.8rem;
+  }
+
+  .switcher-label {
+    margin: 0 0 0.55rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #c8cbd2;
+  }
+  .switcher-label strong {
+    color: #ffffff;
+  }
+  .switcher-label span {
+    display: inline;
+  }
+
+  /* Six tabs do not fit on a phone. Scrolling keeps every option reachable and
+     visible; wrapping would push the page content off-screen. */
+  .switcher-scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .switcher-tabs {
+    display: flex;
+    gap: 0.4rem;
+    width: max-content;
+  }
+
+  .tab {
+    flex: none;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px; /* thumb target */
+    border: 1px solid #4a4e58;
+    border-radius: 999px;
+    background: transparent;
+    color: #e6e8ec;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .tab:hover {
+    border-color: #8b909c;
+  }
+
+  .tab[aria-pressed='true'] {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #17181c;
+  }
+
+  .tab:focus-visible {
+    outline: 3px solid #f0e430;
+    outline-offset: 2px;
+  }
+
+  .switcher-desc {
+    margin: 0.6rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #a9adb7;
+    min-height: 1.2em;
+  }
+
+  /* Each panel owns its own ground; without this the body background from
+     :root shows through and every theme looks like it is on white. */
+  .panel {
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-body);
+  }
+
+  @media (min-width: 48rem) {
+    .switcher-inner {
+      padding-block: 0.8rem 0.9rem;
+    }
+  }
+</style>

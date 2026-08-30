@@ -1,6 +1,6 @@
 # Blackshear PTA Website — Task Board
 
-**Last updated:** 2026-08-30 (session 5)
+**Last updated:** 2026-08-30 (session 6)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -75,11 +75,11 @@ U1 is the whole ballgame. Everything else in this document is worthless if the d
 - [ ] **A8** — "Coming soon" page at `/`, linking to the Weebly site — `CLAUDE`
 - [~] **A9** — Extract copy from Weebly into `src/content/home.yaml` — `CLAUDE` — In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Real copy and real links, no placeholders left. Meeting dates taken from the 2026-2027 calendar, not the Weebly homepage, which is a year stale ([F18](#f18))
 - [x] **A10** — Salvage the four usable photos from Weebly — `CLAUDE` — In `assets/from-weebly/`
-- [~] **A11** — Brand marks — `CLAUDE` + `JON` — Four assets received, see `assets/brand/README.md`. Remaining: trace crest + Buzz to SVG; **confirm with the board whether the PTA should use school marks directly or carry a distinct PTA lockup**
-- [ ] **A12** — Build the theme token architecture — `CLAUDE` — `registry.ts`, per-theme token blocks, 3–4 structural layouts
-- [ ] **A13** — Build six themes — `CLAUDE` — Civic Letterpress · Warm Editorial · Schoolyard Bold · East Austin Print Shop · Quiet Utility · Jacket
-- [ ] **A14** — Instant theme switcher at `/preview` — `CLAUDE` — All six rendered, toggled client-side; no reload
-- [ ] **A15** — Mobile QA across all six + WCAG AA contrast audit — `CLAUDE` — A theme that can't clear AA gets cut regardless of how it looks
+- [~] **A11** — Brand marks — `CLAUDE` + `JON` — Header now carries an **SVG yellow jacket drawn as geometry** (`src/components/BuzzMark.astro`), themed via four CSS tokens so it can be full-colour, one-ink, or silhouette per theme. A raster crop could not do that. **Still open: whether the PTA fronts with school marks or its own lockup** ([F11](#f11))
+- [x] **A12** — Theme token architecture — `CLAUDE` — Registry pairs each theme with a structure so a token-only recolor cannot ship by accident. 4 structures, ~40 `--pta-*` tokens, sections read tokens only
+- [x] **A13** — Six themes — `CLAUDE` — Each with its own self-hosted typeface pairing (10 families via `astro:fonts`, zero runtime Google requests)
+- [x] **A14** — Instant switcher at `/preview` — `CLAUDE` — All six rendered, five `display:none`. Switching is instant, choice persists, `?theme=` is shareable. Only the active theme's fonts download (verified: 2 of 38 faces loaded)
+- [~] **A15** — Mobile QA + WCAG AA audit — `CLAUDE` + `JON` — Contrast is now an automated gate: `npm run check:contrast`, **54 checks across 6 themes, 0 failing**. Two real bugs caught and fixed ([F20](#f20)). **Still wants a real-phone pass** — the browser pane stopped rendering mid-session, so late layout checks were DOM-measured rather than seen
 - [ ] **A16** — Provision D1 — `CLAUDE`
 - [ ] **A17** — `/api/feedback` vote capture → D1 — `CLAUDE` — Fast-follow; doubles as the Worker→D1 smoke test
 - [ ] **A18** — Send the preview link to the board and collect votes — `JON`
@@ -147,6 +147,9 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 <a name="f19"></a>
 **F19 — Nearly every outbound link is a tinyurl.** `BlackshearStore`, `BlackshearSuppliesHelp`, `BlackshearBikeDayInfo`, `MonthlyBakeSaleInfo`, `BlackshearFamilyHandbook`, `BlackshearPTAMeetingSignups`, and roughly eight more. Opaque redirects owned by whoever holds that account: nobody can audit where they point without clicking, and losing the account breaks every link on the site simultaneously. Not blocking, but **find out who owns it**, and prefer direct links as Phase 2 builds out. Also unresolved: donations point at both a Zeffy link and `tinyurl.com/Donate2Blackshear` — somebody should confirm which is current.
+
+<a name="f20"></a>
+**F20 — Two layout bugs the automated checks caught that screenshots did not.** (1) The `editorial` structure's full-bleed band used the common `margin-inline: calc(50% - 50vw)` trick, which is off by the scrollbar width — `50vw` counts it, `50%` does not — putting the page into horizontal scroll on any desktop with a classic scrollbar. Fixed by making the band a DOM sibling of the container so it is naturally full width, with no arithmetic. (2) Header nav links measured ~37px tall against the 44px touch minimum, because padding alone at `--text-fine` does not reach it. Both were invisible at a glance and only showed up under measurement — worth remembering that the visual pass is not the QA pass.
 
 **F3 — The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 

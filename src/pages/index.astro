@@ -1,25 +1,22 @@
 ---
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import StackedRules from '../layouts/structures/StackedRules.astro';
-import { defaultThemeId, getTheme, type StructureId } from '../themes/registry';
+import { structures } from '../layouts/structures';
+import { defaultThemeId, getTheme } from '../themes/registry';
 
-// Every structure in src/layouts/structures/, keyed by its registry id.
-// Add a structure here and to `structureIds` in the registry at the same time.
-const structures = {
-  'stacked-rules': StackedRules,
-} satisfies Record<StructureId, unknown>;
+const [homeEntry, siteEntry] = await Promise.all([
+  getEntry('home', 'home'),
+  getEntry('site', 'site'),
+]);
+if (!homeEntry) throw new Error('Missing home entry. Expected a top-level `home:` key in src/content/home.yaml.');
+if (!siteEntry) throw new Error('Missing site entry. Expected a top-level `site:` key in src/content/site.yaml.');
 
-const entry = await getEntry('home', 'home');
-if (!entry) {
-  throw new Error('Missing home entry. Expected a top-level `home:` key in src/content/home.yaml.');
-}
-
-const home = entry.data;
+const home = homeEntry.data;
+const site = siteEntry.data;
 const theme = getTheme(defaultThemeId);
 const Structure = structures[theme.structure];
 ---
 
 <BaseLayout title={home.meta.title} description={home.meta.description} themeId={theme.id}>
-  <Structure home={home} />
+  <Structure home={home} site={site} />
 </BaseLayout>

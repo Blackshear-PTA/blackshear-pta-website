@@ -140,6 +140,39 @@
   --pta-rule: var(--color-brand-black);
   --pta-focus: var(--color-brand-blue);
 
+  /* header — a theme that leaves these alone still gets colour at the top,
+     which is the point: the header is the first thing on every page and a
+     black-and-white one reads as unfinished. */
+  --pta-header-bg: var(--color-brand-blue);
+  --pta-header-ink: var(--color-brand-white);
+  --pta-header-ink-muted: rgb(255 255 255 / 0.74);
+  --pta-header-rule: var(--color-brand-black);
+  --pta-header-rule-width: 0px;
+  --pta-header-y: 1rem;
+  --pta-nav-weight: 600;
+  --pta-nav-transform: uppercase;
+
+  /* primary action (the one button that is not a nav link) */
+  --pta-cta-bg: var(--color-brand-lemon);
+  --pta-cta-ink: var(--color-brand-black);
+  --pta-cta-border: var(--color-brand-black);
+
+  /* the yellow jacket mark — see src/components/BuzzMark.astro */
+  --pta-mark-body: var(--color-brand-lemon);
+  --pta-mark-ink: var(--color-brand-black);
+  --pta-mark-wing: var(--color-brand-white);
+  --pta-mark-ground: transparent;
+
+  /* hero — its own token rather than --text-banner so a theme can dial the
+     opening statement down without touching the type scale. */
+  --pta-hero-size: var(--text-display);
+
+  /* The inverted hero band used by the `blocks` structure. Separate from
+     --pta-accent because a theme whose accent already IS its header colour
+     would otherwise merge the two into one undifferentiated slab. */
+  --pta-hero-band-bg: var(--pta-accent);
+  --pta-hero-band-ink: var(--pta-ink-on-accent);
+
   /* shape */
   --pta-radius: var(--radius-none);
   --pta-border-width: 1px;

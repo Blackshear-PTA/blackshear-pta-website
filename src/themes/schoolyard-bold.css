@@ -1,0 +1,58 @@
+/* ============================================================================
+   C — Schoolyard Bold                                   PROJECT-BRIEF §5.3
+   Anchor: a modern summer-camp brand. Bricolage Grotesque over Figtree,
+           saturated flat blocks, thick black keylines, hard offset shadows.
+           Energetic, deliberately not childish — no comic sans, no clip art.
+   Structure: blocks
+   ========================================================================= */
+[data-theme="schoolyard-bold"] {
+  --pta-font-display: var(--font-bricolage), system-ui, sans-serif;
+  --pta-font-body: var(--font-figtree), system-ui, sans-serif;
+  --pta-display-weight: 800;
+  --pta-display-tracking: -0.03em;
+  --pta-display-transform: none;
+
+  --pta-surface: #ffffff;
+  --pta-surface-alt: #f0e430;
+  --pta-ink: #101010;
+  --pta-ink-muted: #3d3d3d;     /* 10.9:1 on white */
+  --pta-ink-on-accent: #ffffff;
+  --pta-accent: #0048a8;
+  --pta-accent-quiet: #1e9e5a;  /* the grass green from the Field Day flyer */
+  --pta-link: #0048a8;
+  --pta-rule: #101010;
+  --pta-focus: #0048a8;
+
+  --pta-header-bg: #f0e430;     /* full lemon band */
+  --pta-header-ink: #101010;    /* 14.9:1 */
+  --pta-header-ink-muted: #3d3d3d;
+  --pta-header-rule: #101010;
+  --pta-header-rule-width: 4px;
+  --pta-header-y: 1.15rem;
+  --pta-nav-weight: 700;
+  --pta-nav-transform: none;
+
+  --pta-cta-bg: #0048a8;
+  --pta-cta-ink: #ffffff;       /* 8.43:1 */
+  --pta-cta-border: #101010;
+
+  --pta-mark-body: #f0e430;
+  --pta-mark-ink: #101010;
+  --pta-mark-wing: #ffffff;
+  --pta-mark-ground: #ffffff;   /* white disc pops the mark off the lemon band */
+
+  --pta-hero-size: clamp(2.2rem, 1.4rem + 3.8vw, 3.75rem);
+  --pta-hero-leading: 1.02;
+  --pta-hero-measure: 16ch;
+
+  --pta-radius: 14px;
+  --pta-border-width: 3px;
+  --pta-rule-width: 3px;
+  --pta-shadow: 5px 5px 0 0 #101010;
+
+  --pta-section-y: 3rem;
+  --pta-gap: 1.25rem;
+  --pta-measure: 58ch;
+  --pta-container: 68rem;
+  --pta-gutter: 1.25rem;
+}
