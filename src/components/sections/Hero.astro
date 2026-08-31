@@ -3,13 +3,27 @@ import type { HomeData } from '../../types';
 
 interface Props {
   hero: HomeData['hero'];
+  /**
+   * id for the <h1>, which aria-labelledby points at. /preview renders a hero
+   * per design, and three elements sharing one id is invalid HTML and gives
+   * assistive tech an ambiguous label. Same reason the nav and the <main>
+   * landmark take one.
+   */
+  headlineId?: string;
 }
 
-const { hero } = Astro.props;
+const { hero, headlineId = 'hero-headline' } = Astro.props;
 ---
 
-<section class="hero" aria-labelledby="hero-headline">
-  <h1 id="hero-headline">{hero.headline}</h1>
+<section class="hero" aria-labelledby={headlineId}>
+  <h1 id={headlineId}>{hero.headline}</h1>
+  {/*
+    Anything passed as a child lands between the headline and the subhead.
+    Civic Letterpress B puts the video here. A slot rather than splitting the
+    hero into two components: one section, one border, one padding block, and
+    the empty case in the other designs renders nothing at all.
+  */}
+  <slot />
   <p>{hero.subhead}</p>
 </section>
 
@@ -29,6 +43,11 @@ const { hero } = Astro.props;
     text-transform: var(--pta-display-transform);
     line-height: var(--pta-hero-leading, var(--leading-snug));
     max-width: var(--pta-hero-measure, 22ch);
+  }
+
+  /* Only applies when the slot is filled; an empty slot contributes nothing. */
+  .hero :global(.video) {
+    margin-block: var(--pta-gap);
   }
 
   p {
