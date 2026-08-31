@@ -80,6 +80,18 @@ const navItem = link.extend({
   external: z.boolean().default(false),
 });
 
+/**
+ * Footer follow/contact links. `platform` picks the glyph, so adding a service
+ * means adding an icon in Footer.astro too - the enum makes that a build error
+ * rather than a silently missing icon.
+ */
+const socialLink = z.object({
+  platform: z.enum(['instagram', 'facebook', 'email']),
+  /** Accessible name. The links are icon-only, so this is the only label. */
+  label: z.string(),
+  href: z.string(),
+});
+
 const site = defineCollection({
   loader: file('src/content/site.yaml'),
   schema: z.object({
@@ -89,6 +101,7 @@ const site = defineCollection({
       fullName: z.string(),
     }),
     nav: z.array(navItem).min(1),
+    social: z.array(socialLink).default([]),
     primaryAction: link,
   }),
 });

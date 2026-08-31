@@ -39,6 +39,20 @@ site:
       href: "https://blackshearpta.weebly.com/contact.html"
       external: true
 
+  # Follow / contact links, rendered as icons in the footer. Pulled off the
+  # current Weebly site: Instagram and Facebook were live links, the email was
+  # behind Cloudflare's address obfuscation and had to be decoded.
+  social:
+    - platform: instagram
+      label: "Blackshear PTA on Instagram"
+      href: "https://www.instagram.com/blackshearpta/"
+    - platform: facebook
+      label: "Blackshear PTA on Facebook"
+      href: "https://www.facebook.com/BlackshearArtsPTA"
+    - platform: email
+      label: "Email the PTA"
+      href: "mailto:blackshearpta@gmail.com"
+
   # Single most important action. Rendered apart from the nav in every theme.
   primaryAction:
     label: "Donate"

@@ -47,7 +47,7 @@ const { home, site, mainId = 'main' } = Astro.props;
     <hr />
     <Committees committees={home.committees} />
   </main>
-  <Footer footer={home.footer} />
+  <Footer footer={home.footer} social={site.social} />
 </div>
 
 <style>
