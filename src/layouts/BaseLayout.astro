@@ -1,5 +1,6 @@
 ---
-import { Font } from 'astro:assets';
+import { Font, getImage } from 'astro:assets';
+import socialSource from '../assets/photos/campus-front-walk.jpg';
 import { fontFamilies } from '../font-families.mjs';
 
 /**
@@ -27,6 +28,38 @@ interface Props {
 }
 
 const { title, description, themeId } = Astro.props;
+
+/**
+ * Link-preview image.
+ *
+ * Without an explicit og:image, scrapers pick something off the page
+ * themselves - which is how a shared link ended up previewing with the Staff
+ * Appreciation committee thumbnail. This makes the choice ours.
+ *
+ * Same frame as the page backdrop, but at full strength: the fade there is a
+ * scrim applied in CSS so body text stays readable over it, and it is not
+ * baked into the file. A preview card has no text on it and wants the photo
+ * as shot.
+ *
+ * 1200x630 rather than a square. Facebook, Slack, LinkedIn and X all crop
+ * og:image to roughly 1.91:1, so a square would be centre-cropped to this
+ * anyway - by them, not by us, and without the deliberate crop. Astro
+ * centre-crops the 3000x2000 source to keep the building, doors and walkway.
+ */
+const social = await getImage({
+  src: socialSource,
+  width: 1200,
+  height: 630,
+  quality: 72,
+  format: 'jpg', // some scrapers still will not render webp
+});
+
+// Absolute, not relative. Scrapers fetch the image out of the page context and
+// a root-relative path resolves against their own host, so the card comes back
+// blank.
+const socialUrl = new URL(social.src, Astro.site).href;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const socialAlt = 'The front walkway and entrance of Blackshear Elementary School';
 ---
 
 <!doctype html>
@@ -36,7 +69,25 @@ const { title, description, themeId } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+    <link rel="canonical" href={pageUrl} />
+
+    {/* Open Graph, used by iMessage, WhatsApp, Slack, Facebook and LinkedIn. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Blackshear Elementary PTA" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={socialUrl} />
+    <meta property="og:image:width" content={String(social.attributes.width ?? 1200)} />
+    <meta property="og:image:height" content={String(social.attributes.height ?? 630)} />
+    <meta property="og:image:alt" content={socialAlt} />
+
+    {/* X reads its own namespace and ignores og:* for the card type. */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialUrl} />
+    <meta name="twitter:image:alt" content={socialAlt} />
 
     {/*
       One <Font> per family - this is what actually emits the @font-face rules
