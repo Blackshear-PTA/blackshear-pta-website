@@ -52,14 +52,14 @@ export const themes: readonly Theme[] = [
     id: 'schoolyard-bold',
     name: 'Schoolyard Bold',
     description:
-      'A modern summer-camp brand. Saturated blocks, thick keylines, hard shadows. Energetic, not childish.',
+      'A modern summer-camp brand. Saturated blocks, thick keylines, hard shadows. Energetic.',
     structure: 'blocks',
   },
   {
     id: 'print-shop',
     name: 'East Austin Print Shop',
     description:
-      'Screenprint and wood type on newsprint. Flat overprinted colour, leaning on the 135 years.',
+      'Screenprint and wood type on newsprint. Flat overprinted colour.',
     structure: 'editorial',
   },
   {
@@ -73,7 +73,7 @@ export const themes: readonly Theme[] = [
     id: 'jacket',
     name: 'Jacket',
     description:
-      'The mascot taken seriously. Black and gold banding, the only dark theme in the set.',
+      'The branding and color design as the main focus. Black and gold banding, the only dark theme in the set.',
     structure: 'blocks',
   },
 ];
