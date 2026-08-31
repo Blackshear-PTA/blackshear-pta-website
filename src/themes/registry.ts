@@ -14,8 +14,10 @@
  *
  * Then run `npm run check:contrast`. AA is a hard gate, not a preference.
  *
- * WHEN A WINNER IS PICKED: delete the five losing CSS files, their imports,
- * their entries here, any structure left with no themes, and src/pages/preview.astro.
+ * WHEN A WINNER IS PICKED: set defaultThemeId below to the winner, then delete
+ * the five losing CSS files, their imports in themes.css, their entries here,
+ * any structure left with no themes, src/pages/preview.astro, and
+ * public/_redirects (which sends / to /preview for the duration of the vote).
  */
 
 /** Structural arrangements - the ARRANGEMENT, not the skin. */
