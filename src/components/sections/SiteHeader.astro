@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import BuzzMascot from '../BuzzMascot.astro';
-import headerPhoto from '../../assets/photos/header-blackshear.jpg';
+import mastheadPhoto from '../../assets/photos/campus-frontage.jpg';
 import type { SiteData } from '../../types';
 
 /**
@@ -51,6 +51,15 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
       it repeats nothing a screen reader needs, and announcing "photo of the
       school" before the navigation would be noise.
 
+      Sized so neither density upscales: the source is 1067px wide, and 520 at
+      2x lands at 1040. Asking for more would hand the browser a soft image
+      that merely looks high-resolution in the markup.
+
+      The requested ratio matches the SOURCE, not the strip. Cropping to the
+      strip's ratio here and then letting object-fit crop again throws away the
+      vertical range CSS needs, and the interesting part of this frame is not
+      in the middle. One crop, chosen below.
+
       Only appears where there is genuinely room. In themes whose nav wraps
       below the wordmark (Civic Letterpress, East Austin Print Shop, Jacket)
       that leaves a ~700x119 hole at the top right; in the other three the nav
@@ -59,7 +68,7 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
       by --pta-header-art, which defaults to none.
     */}
     <div class="hdr-art">
-      <Image src={headerPhoto} alt="" width={1200} height={520} densities={[1, 2]} loading="eager" />
+      <Image src={mastheadPhoto} alt="" width={520} height={390} densities={[1, 2]} loading="eager" />
     </div>
 
     <div class="hdr-right">
@@ -212,10 +221,18 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Biased upward. A dead-centre crop of this frame lands on the tree line
-       and power cables; pulling up catches the flagpole, the banner and some
-       sky, which is both brighter and more recognisably the school. */
-    object-position: center 34%;
+    /*
+      Not a guess. `cover` scales the 1067x800 source to fill the 480px box,
+      giving a 480x360 image against a 119px-tall window and 241px of vertical
+      overflow, of which this percentage scrolls off the top. At 20% the
+      visible band is source y 107-372: opening just above the roofline,
+      keeping the BLACKSHEAR SCHOOL lettering cut into the brick at y 150-200,
+      and running down through both rows of windows.
+
+      Anything past ~26% pushes the lettering off the top, which is the whole
+      reason to use this frame.
+    */
+    object-position: center 20%;
   }
 
   .hdr-right {
