@@ -2,6 +2,7 @@
 import { getImage } from 'astro:assets';
 import backdrop from '../../assets/photos/campus-front-walk.jpg';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
+import VideoEmbed from '../../components/sections/VideoEmbed.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
 import News from '../../components/sections/News.astro';
@@ -19,8 +20,15 @@ interface Props {
    * panel passes its own. Defaults to "main" for real pages.
    */
   mainId?: string;
+  /**
+   * Show the homepage video. Comes from the theme, not the content: the video
+   * exists in home.yaml either way and this decides whether this design shows
+   * it. Currently only Civic Letterpress B opts in, so the board can compare
+   * it against A with nothing else changed.
+   */
+  video?: boolean;
 }
-const { home, site, mainId = 'main' } = Astro.props;
+const { home, site, mainId = 'main', video = false } = Astro.props;
 
 // Same photo and the same request as the editorial structure, deliberately:
 // identical arguments mean Astro emits one asset both themes share rather than
@@ -48,6 +56,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
 <main id={mainId}>
   <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
     <div class="shell">
+      {video && home.video && <VideoEmbed video={home.video} />}
       <Hero hero={home.hero} />
       <QuickActions quickActions={home.quickActions} />
     </div>

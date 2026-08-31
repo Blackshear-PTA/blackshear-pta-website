@@ -19,6 +19,8 @@ interface Props {
    * panel passes its own. Defaults to "main" for real pages.
    */
   mainId?: string;
+  /** Accepted for a uniform structure interface; this arrangement has no video slot. */
+  video?: boolean;
 }
 const { home, site, mainId = 'main' } = Astro.props;
 

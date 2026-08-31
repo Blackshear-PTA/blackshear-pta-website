@@ -17,6 +17,12 @@ home:
     title: "Blackshear Elementary PTA - Austin, TX"
     description: "The PTA for Blackshear Fine Arts Academy in East Austin. Join, donate, volunteer, and keep up with what's happening at Austin's oldest operating elementary school."
 
+  # Shown only by themes that opt in (see `video` in src/themes/registry.ts).
+  # Currently Civic Letterpress B, so the board can compare it against A.
+  video:
+    youtubeId: "RKn8SJQcXEI"
+    title: "Blackshear Elementary: 135 years in East Austin"
+
   hero:
     headline: "Alone we can do so little, together we can do so much"
     subhead: "Blackshear Elementary PTA is a community of parents, caretakers, teachers, and staff supporting Austin's oldest operating elementary school - 135 years in East Austin and counting."

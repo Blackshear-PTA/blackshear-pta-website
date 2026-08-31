@@ -1,0 +1,63 @@
+/* ============================================================================
+   B - Civic Letterpress B                               PROJECT-BRIEF §5.3
+   Anchor: identical to Civic Letterpress A except for two things, so the two
+           can be compared without any other variable moving:
+             1. the masthead is brand blue rather than black, borrowing East
+                Austin Print Shop's header colour
+             2. it carries the YouTube embed above the hero (registry `video`)
+           Fonts, body colours, buttons, rules and spacing are all A's.
+   Structure: stacked-rules
+
+   Paired with civic-letterpress-b.css, which is this file with a blue masthead
+   and a video block. Keep shared values in step across both.
+   ========================================================================= */
+[data-theme="civic-letterpress-b"] {
+  --pta-font-display: var(--font-bevan), Georgia, serif;
+  --pta-font-body: var(--font-archivo), system-ui, sans-serif;
+  --pta-display-weight: 400; /* Bevan ships one weight; faux-bolding it smears */
+  --pta-display-tracking: 0.01em;
+  --pta-display-transform: uppercase;
+
+  --pta-surface: #ffffff;
+  --pta-surface-alt: #f0e430;   /* lemon panel - black text only */
+  --pta-ink: #000000;
+  --pta-ink-muted: #2e2e2e;     /* 14.0:1 on white */
+  --pta-ink-on-accent: #ffffff; /* 8.43:1 on blue */
+  --pta-accent: #0048a8;
+  --pta-accent-quiet: #f0e430;
+  --pta-link: #0048a8;
+  --pta-rule: #000000;
+  --pta-focus: #0048a8;
+
+  /* The only colour that differs from A. White ink and the lemon rule below
+     are kept deliberately: the brief was blue masthead, everything else the
+     same, so this is not a licence to redesign the header. */
+  --pta-header-bg: #0048a8;
+  --pta-header-ink: #ffffff;    /* 8.43:1 on this blue */
+  --pta-header-ink-muted: #cfcfcf; /* 5.5:1 on this blue */
+  --pta-header-rule: #f0e430;
+  --pta-header-rule-width: 8px; /* the lemon bar under the masthead */
+  --pta-header-y: 1.1rem;
+  --pta-nav-weight: 400;
+  --pta-nav-transform: uppercase;
+
+  --pta-cta-bg: #f0e430;
+  --pta-cta-ink: #000000;       /* 15.85:1 */
+  --pta-cta-border: #000000;
+
+  --pta-hero-size: clamp(2rem, 1.3rem + 3.2vw, 3.25rem);
+  --pta-hero-leading: 1.06;
+  --pta-hero-measure: 17ch;
+
+  --pta-radius: 0;
+  --pta-border-width: 3px;
+  --pta-rule-width: 6px;
+  --pta-shadow: none;
+
+  --pta-section-y: 3.25rem;
+  --pta-gap: 1.5rem;
+  --pta-measure: 60ch;
+  --pta-container: 64rem;
+  --pta-gutter: 1.25rem;
+}
+[data-theme="civic-letterpress-b"] [data-surface="alt"] { color: #000000; }

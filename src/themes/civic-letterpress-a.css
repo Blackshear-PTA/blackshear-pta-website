@@ -1,10 +1,13 @@
 /* ============================================================================
-   A - Civic Letterpress                                 PROJECT-BRIEF §5.3
+   A - Civic Letterpress A                               PROJECT-BRIEF §5.3
    Anchor: WPA and municipal print. Bevan slab over Archivo, two inks, heavy
            rules, zero radius, zero shadow. Weight does the work, not colour.
    Structure: stacked-rules
+
+   Paired with civic-letterpress-b.css, which is this file with a blue masthead
+   and a video block. Keep shared values in step across both.
    ========================================================================= */
-[data-theme="civic-letterpress"] {
+[data-theme="civic-letterpress-a"] {
   --pta-font-display: var(--font-bevan), Georgia, serif;
   --pta-font-body: var(--font-archivo), system-ui, sans-serif;
   --pta-display-weight: 400; /* Bevan ships one weight; faux-bolding it smears */
@@ -50,4 +53,4 @@
   --pta-container: 64rem;
   --pta-gutter: 1.25rem;
 }
-[data-theme="civic-letterpress"] [data-surface="alt"] { color: #000000; }
+[data-theme="civic-letterpress-a"] [data-surface="alt"] { color: #000000; }
