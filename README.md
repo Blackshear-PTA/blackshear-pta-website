@@ -95,3 +95,18 @@ Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
 `fnm` `use-on-cd` hook handles that on `cd`. The controller cannot rely on it,
 because tmux runs commands without an interactive shell, so every launch goes
 through `fnm exec`.
+
+### Domain watch
+
+```bash
+npm run check:domain
+```
+
+Reads the registry's RDAP API and exits non-zero if the domain is close to
+expiry, already lapsed, or in a suspended state. `.github/workflows/domain-watch.yml`
+runs it four times a day and opens a single GitHub issue when it fails, updating
+that same issue rather than filing new ones, and closing it once the registry
+looks healthy again.
+
+It is a smoke alarm, not a sprinkler. If the domain does lapse, nothing here
+buys it back - see F23 in `TASKS.md`.
