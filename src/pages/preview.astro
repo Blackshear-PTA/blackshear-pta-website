@@ -12,10 +12,11 @@ import { themes, defaultThemeId } from '../themes/registry';
  * and people bail. Browsers also skip webfont downloads for display:none
  * subtrees, so a visitor pays for the active theme's two faces, not all four.
  *
- * NARROWED 2026-08-31 from six to Civic Letterpress and East Austin Print
- * Shop, then Civic split into A and B on first feedback so the masthead colour
- * and the video could be judged against an otherwise identical page. The
- * switcher machinery is unchanged and still handles any number.
+ * DECIDED 2026-08-31: Civic Letterpress A won, and is what `/` now serves. This
+ * page stays up as a reference so the two runners-up remain viewable without a
+ * rebuild, and so the link already circulated to the board keeps working. It no
+ * longer asks for a vote - a page still soliciting a decision that has been made
+ * is how a board ends up thinking it is still open.
  *
  * One control at every width: a pill per design. The mobile <select> that used to sit
  * below 48rem is gone. It earned its place when there were six options, where
@@ -30,8 +31,8 @@ import { themes, defaultThemeId } from '../themes/registry';
  * thing it is asking you to judge, and at some point you want it out of the
  * way. Collapsed still shows which design you are looking at.
  *
- * THIS PAGE IS DISPOSABLE. When a winner is picked, delete it along with the
- * losing theme. Nothing else imports it.
+ * THIS PAGE IS DISPOSABLE. Delete it, and the reserve themes, whenever they
+ * stop being wanted. Nothing else imports it.
  */
 
 const [homeEntry, siteEntry] = await Promise.all([
@@ -46,14 +47,14 @@ const site = siteEntry.data;
 ---
 
 <BaseLayout
-  title="Choose a design - Blackshear PTA"
-  description="Three design directions for the new Blackshear PTA website. Pick the one you like best."
+  title="Design reference - Blackshear PTA"
+  description="The chosen design for the new Blackshear PTA website, with the two runners-up kept for reference."
 >
   <div class="switcher" data-collapsed="false">
     <div class="switcher-inner">
       <div class="switcher-top">
         <p class="switcher-title">
-          <strong>Three designs.</strong>{' '}
+          <strong>Design reference.</strong>{' '}
           <span class="showing">Showing <b data-current-name></b></span>
         </p>
         <button
@@ -73,11 +74,11 @@ const site = siteEntry.data;
 
       <div class="switcher-body" id="switcher-body">
         <p class="switcher-label">
-          <span>Copy is taken from the current site and is the same across all three. A and B differ only in the masthead colour and the video. Tap through and let Jon know which you prefer.</span>
+          <span><b>Civic Letterpress A was chosen, and is what the site now uses.</b> The other two are kept here for reference. Copy is the same across all three.</span>
         </p>
 
         <div class="switcher-scroll">
-          <div class="switcher-tabs" role="group" aria-label="Choose a design">
+          <div class="switcher-tabs" role="group" aria-label="View a design">
             {
               themes.map((theme) => (
                 <button
@@ -87,6 +88,7 @@ const site = siteEntry.data;
                   aria-pressed={theme.id === defaultThemeId ? 'true' : 'false'}
                 >
                   {theme.name}
+                  {!theme.reserve && <span class="pill-tag">Chosen</span>}
                 </button>
               ))
             }
@@ -329,6 +331,23 @@ const site = siteEntry.data;
 
   .tab:hover {
     border-color: #8b909c;
+  }
+
+  /* Marks the design the site actually uses, so a reserve is never mistaken for
+     a live option. currentColor at full strength rather than a dimmed grey: the
+     pill inverts when pressed, and anything with its own fixed colour would
+     fail contrast in one state or the other. */
+  .pill-tag {
+    display: inline-block;
+    margin-inline-start: 0.45rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: 1px;
   }
 
   .tab[aria-pressed='true'] {

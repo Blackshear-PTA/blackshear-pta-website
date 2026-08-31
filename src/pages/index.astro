@@ -2,7 +2,7 @@
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { structures } from '../layouts/structures';
-import { defaultThemeId, getTheme } from '../themes/registry';
+import { siteThemeId, getTheme } from '../themes/registry';
 
 const [homeEntry, siteEntry] = await Promise.all([
   getEntry('home', 'home'),
@@ -13,7 +13,10 @@ if (!siteEntry) throw new Error('Missing site entry. Expected a top-level `site:
 
 const home = homeEntry.data;
 const site = siteEntry.data;
-const theme = getTheme(defaultThemeId);
+// siteThemeId, not defaultThemeId: the live site's design is a separate
+// decision from whichever panel /preview happens to open on. See the note at
+// the top of the registry.
+const theme = getTheme(siteThemeId);
 const Structure = structures[theme.structure];
 ---
 
