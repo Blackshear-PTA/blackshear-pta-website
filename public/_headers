@@ -1,4 +1,4 @@
-# Blackshear PTA — response headers for Cloudflare Workers static assets.
+# Blackshear PTA - response headers for Cloudflare Workers static assets.
 #
 # noindex applies to the WHOLE SITE and must stay until cutover (TASKS.md A6).
 # Until Weebly is retired it is the canonical site; letting Google index a

@@ -1,0 +1,446 @@
+---
+import { Image } from 'astro:assets';
+import BuzzMascot from '../BuzzMascot.astro';
+import mastheadPhoto from '../../assets/photos/campus-frontage.jpg';
+import type { SiteData } from '../../types';
+
+/**
+ * Site header: mark, wordmark, navigation, one primary action.
+ *
+ * Below 48rem the links collapse behind a Menu button. I argued against a
+ * hamburger earlier on findability grounds and was overruled by the thing that
+ * actually matters more: seven wrapped links plus the lockup ate most of the
+ * first screen on a phone, and content you have to scroll past is worse than
+ * content behind a labelled button.
+ *
+ * Two concessions keep the findability cost down. The button is labelled
+ * "Menu" rather than being three bare lines, and DONATE stays outside the menu,
+ * so the one thing we most want a parent to be able to hit never gets hidden.
+ *
+ * Colour comes from --pta-header-* so a theme can make this a saturated band,
+ * a hairline rule, or a paper-toned strip without touching this file.
+ */
+interface Props {
+  site: SiteData;
+}
+
+const { site } = Astro.props;
+const { identity, nav, primaryAction } = site;
+
+/**
+ * /preview renders six headers on one page, so a fixed id would collide and
+ * every aria-controls would point at whichever one won. A build-scoped counter
+ * rather than a random id, so the same source produces the same HTML and the
+ * built output stays diffable.
+ */
+const g = globalThis as { __ptaHeaderSeq?: number };
+g.__ptaHeaderSeq = (g.__ptaHeaderSeq ?? 0) + 1;
+const navId = `site-nav-${g.__ptaHeaderSeq}`;
+---
+
+<header class="hdr" data-pta-header>
+  <div class="hdr-inner">
+    <a class="brand" href="/">
+      <BuzzMascot size={58} class="brand-mark" />
+      <span class="brand-name">{identity.name}</span>
+      <span class="brand-loc">{identity.location}</span>
+    </a>
+
+    {/*
+      Decorative masthead strip. Purely decorative, so alt="" and aria-hidden:
+      it repeats nothing a screen reader needs, and announcing "photo of the
+      school" before the navigation would be noise.
+
+      Sized so neither density upscales: the source is 1067px wide, and 520 at
+      2x lands at 1040. Asking for more would hand the browser a soft image
+      that merely looks high-resolution in the markup.
+
+      The requested ratio matches the SOURCE, not the strip. Cropping to the
+      strip's ratio here and then letting object-fit crop again throws away the
+      vertical range CSS needs, and the interesting part of this frame is not
+      in the middle. One crop, chosen below.
+
+      Only appears where there is genuinely room. In themes whose nav wraps
+      below the wordmark (Civic Letterpress, East Austin Print Shop, Jacket)
+      that leaves a ~700x119 hole at the top right; in the other three the nav
+      runs inline and there is no gap to fill, so forcing the photo in would
+      push the nav down and invent the very problem it is filling. Controlled
+      by --pta-header-art, which defaults to none.
+    */}
+    <div class="hdr-art">
+      <Image src={mastheadPhoto} alt="" width={520} height={390} densities={[1, 2]} loading="eager" />
+    </div>
+
+    <div class="hdr-right">
+      <nav class="nav" id={navId} aria-label="Primary">
+        <ul class="nav-list">
+          {
+            nav.map((item) => (
+              <li>
+                <a
+                  class="nav-link"
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener' : undefined}
+                >
+                  {item.label}
+                  {item.external && (
+                    <svg class="ext" viewBox="0 0 12 12" aria-hidden="true" width="9" height="9">
+                      <path
+                        d="M4 2h6v6M10 2 3 9"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.75"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  )}
+                  <span class="sr-only">{item.external ? ' (opens in a new tab)' : ''}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="hdr-actions">
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls={navId}>
+          <svg class="menu-icon" viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">
+            <path class="bar bar-top" d="M2 4h12" />
+            <path class="bar bar-mid" d="M2 8h12" />
+            <path class="bar bar-bot" d="M2 12h12" />
+          </svg>
+          <span>Menu</span>
+        </button>
+
+        <a class="cta" href={primaryAction.href} target="_blank" rel="noopener">
+          {primaryAction.label}
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // One bundled script wiring every header on the page: /preview has six.
+  for (const header of document.querySelectorAll<HTMLElement>('[data-pta-header]')) {
+    const button = header.querySelector<HTMLButtonElement>('.menu-btn');
+    const nav = header.querySelector<HTMLElement>('.nav');
+    if (!button || !nav) continue;
+
+    const setOpen = (open: boolean) => {
+      header.dataset.menuOpen = String(open);
+      button.setAttribute('aria-expanded', String(open));
+    };
+
+    button.addEventListener('click', () => {
+      setOpen(button.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // Escape closes and returns focus to the button, which is where a keyboard
+    // user expects to land rather than at the top of the document.
+    header.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        button.focus();
+      }
+    });
+
+    // Following a link should not leave the menu open behind the new page.
+    nav.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .hdr {
+    background: var(--pta-header-bg);
+    color: var(--pta-header-ink);
+    border-bottom: var(--pta-header-rule-width) solid var(--pta-header-rule);
+  }
+
+  .hdr-inner {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding: var(--pta-header-y) var(--pta-gutter);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem var(--pta-gap);
+  }
+
+  /* Desktop lockup is stacked: mark, then name, then location. */
+  .brand {
+    display: grid;
+    justify-items: start;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .brand-name {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    font-size: var(--text-title);
+    line-height: var(--leading-flat);
+  }
+
+  .brand-loc {
+    font-family: var(--pta-font-body);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-header-ink-muted);
+  }
+
+  .hdr-art {
+    display: var(--pta-header-art, none);
+    position: relative;
+    flex: 1 1 16rem;
+    max-width: 30rem;
+    align-self: stretch;
+    margin-inline-start: auto;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-header-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  /*
+    Absolutely positioned so the photo has no intrinsic height to contribute.
+    Left in flow it sets the flex line height instead of taking it from the
+    wordmark block, and the header grows by however tall the source crop
+    happens to be - changing the crop ratio would silently resize the header.
+  */
+  .hdr-art :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /*
+      Not a guess. `cover` scales the 1067x800 source to fill the 480px box,
+      giving a 480x360 image against a 119px-tall window and 241px of vertical
+      overflow, of which this percentage scrolls off the top. At 20% the
+      visible band is source y 107-372: opening just above the roofline,
+      keeping the BLACKSHEAR SCHOOL lettering cut into the brick at y 150-200,
+      and running down through both rows of windows.
+
+      Anything past ~26% pushes the lettering off the top, which is the whole
+      reason to use this frame.
+    */
+    object-position: center 20%;
+  }
+
+  .hdr-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    padding-block-start: 0.35rem;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    /* Genuine 44px target without a visible box. min-height rather than
+       padding alone: at --text-fine the padding maths lands around 37px. */
+    min-height: 44px;
+    padding-block: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-nav-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    border-bottom-color: currentColor;
+  }
+
+  .ext {
+    opacity: 0.65;
+  }
+
+  .hdr-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.6rem 1.1rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  /* Desktop shows the links inline, so the button has nothing to do. */
+  .menu-btn {
+    display: none;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.6rem 0.9rem;
+    border: var(--pta-border-width) solid currentColor;
+    border-radius: var(--pta-radius);
+    background: transparent;
+    color: inherit;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-nav-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+  }
+
+  .bar {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 47.99rem) {
+    .hdr-inner {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    /* The phone header is already as short as we can get it; a decorative
+       photo is the first thing that should go. */
+    .hdr-art {
+      display: none;
+    }
+
+    /*
+      Mark beside the wordmark rather than above it. Stacked, plus the nav, put
+      the mobile header at roughly 600px, most of the first screen on a 375x812
+      device before any content appeared. Grid areas do it, so the markup is
+      identical to the desktop arrangement.
+    */
+    .brand {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        'mark name'
+        'mark loc';
+      align-items: center;
+      column-gap: 0.7rem;
+      row-gap: 0;
+    }
+    /* :global because the mark is a child component with its own style scope. */
+    .brand :global(.brand-mark) {
+      grid-area: mark;
+    }
+    .brand-name {
+      grid-area: name;
+    }
+    .brand-loc {
+      grid-area: loc;
+    }
+
+    .hdr-right {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding-block-start: 0;
+    }
+
+    .hdr-actions {
+      order: 1;
+      padding-block-start: 0.75rem;
+    }
+
+    .menu-btn {
+      display: inline-flex;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .cta {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nav {
+      order: 2;
+      display: none;
+    }
+
+    /*
+      Driven by a data attribute rather than the hidden attribute: hidden would
+      survive a resize past the breakpoint and leave desktop with no navigation
+      at all, which is a far worse bug than a menu that reopens.
+    */
+    .hdr[data-menu-open='true'] .nav {
+      display: block;
+      padding-block-start: 0.5rem;
+    }
+
+    .nav-list {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .nav-list li + li {
+      border-block-start: 1px solid currentColor;
+    }
+
+    .nav-link {
+      width: 100%;
+      min-height: 48px;
+      border-bottom: 0;
+    }
+
+    /* Bars become an X while the menu is open. */
+    .hdr[data-menu-open='true'] .bar-top {
+      transform: translateY(4px) rotate(45deg);
+      transform-origin: center;
+    }
+    .hdr[data-menu-open='true'] .bar-bot {
+      transform: translateY(-4px) rotate(-45deg);
+      transform-origin: center;
+    }
+    .hdr[data-menu-open='true'] .bar-mid {
+      opacity: 0;
+    }
+  }
+</style>

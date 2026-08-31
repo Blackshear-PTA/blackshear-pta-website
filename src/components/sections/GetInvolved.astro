@@ -8,16 +8,31 @@ interface Props {
 const { getInvolved } = Astro.props;
 ---
 
-<section class="get-involved" data-surface="alt" aria-labelledby="get-involved-heading">
+{/*
+  Deliberately built as the same object as QuickActions: bordered tile, whole
+  tile is the link, accent fill on hover. Two adjacent sections that are both
+  "here are some things you can click" should not look like they came from
+  different sites, which is how this read before.
+
+  The tile no longer paints its own alt background. Whether this section sits
+  in a tinted band is a STRUCTURE decision - `editorial` bands it, the others
+  leave it on the page surface - and a component reaching up to colour its own
+  container took that choice away from them.
+*/}
+
+<section class="get-involved" aria-labelledby="get-involved-heading">
   <h2 id="get-involved-heading">{getInvolved.heading}</h2>
   {getInvolved.intro && <p class="intro">{getInvolved.intro}</p>}
   <ul>
     {
       getInvolved.tiers.map((tier) => (
         <li>
-          <p class="commitment">{tier.commitment}</p>
-          <p class="description">{tier.description}</p>
-          <a href={tier.cta.href}>{tier.cta.label}</a>
+          <a href={tier.cta.href}>
+            {/* Time cost first, not job title - that is the point of the block. */}
+            <span class="commitment">{tier.commitment}</span>
+            <span class="description">{tier.description}</span>
+            <span class="cta">{tier.cta.label}</span>
+          </a>
         </li>
       ))
     }
@@ -25,12 +40,8 @@ const { getInvolved } = Astro.props;
 </section>
 
 <style>
-  /* data-surface="alt" lets a theme paint this band differently — and lets the
-     theme file enforce a safe ink on it (see civic-letterpress.css). */
   .get-involved {
-    padding: var(--pta-section-y) var(--pta-gutter);
-    margin-inline: calc(var(--pta-gutter) * -1);
-    background: var(--pta-surface-alt);
+    padding-block: var(--pta-section-y);
   }
 
   h2 {
@@ -57,37 +68,55 @@ const { getInvolved } = Astro.props;
 
   @media (min-width: 52rem) {
     ul {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  li {
+  a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     padding: var(--pta-gap);
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
+    color: var(--pta-ink);
+    text-decoration: none;
   }
 
-  /* Leading with time cost, not job title — that is the point of the block. */
+  a:hover,
+  a:focus-visible {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+  }
+
   .commitment {
-    margin: 0;
+    display: block;
     font-family: var(--pta-font-display);
     font-size: var(--text-lede);
     font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
+    line-height: var(--leading-snug);
   }
 
   .description {
-    margin: 0.5rem 0 var(--pta-gap);
+    display: block;
+    margin-block: 0.5rem var(--pta-gap);
+    /* Pushes the CTA to the bottom so tiles in a row line up. */
+    flex: 1;
   }
 
-  a {
-    display: inline-block;
-    padding: 0.6rem 1rem;
-    border: var(--pta-border-width) solid var(--pta-rule);
-    border-radius: var(--pta-radius);
-    background: var(--pta-accent);
-    color: var(--pta-ink-on-accent);
+  .cta {
+    display: block;
     font-family: var(--pta-font-display);
-    text-decoration: none;
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .cta::after {
+    content: ' \2192';
   }
 </style>

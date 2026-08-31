@@ -1,0 +1,54 @@
+/* ============================================================================
+   D - East Austin Print Shop                            PROJECT-BRIEF §5.3
+   Anchor: screenprint and wood type. Alfa Slab One over Karla, newsprint
+           ground, flat overprinted colour, no shadows. Leans on the 135 years.
+   Structure: editorial
+   ========================================================================= */
+[data-theme="print-shop"] {
+  --pta-font-display: var(--font-alfa), Georgia, serif;
+  --pta-font-body: var(--font-karla), system-ui, sans-serif;
+  --pta-display-weight: 400; /* single-weight display face */
+  --pta-display-tracking: 0.005em;
+  --pta-display-transform: uppercase;
+
+  --pta-surface: #efe6d8;       /* newsprint */
+  --pta-surface-alt: #e2d5c0;
+  --pta-ink: #18150f;           /* 14.6:1 on newsprint */
+  --pta-ink-muted: #4c4436;     /* 7.6:1 */
+  --pta-ink-on-accent: #efe6d8;
+  --pta-accent: #0048a8;        /* the mural blue off the E 11th St photo */
+  --pta-accent-quiet: #b4431f;  /* brick */
+  --pta-link: #0a4291;
+  --pta-rule: #18150f;
+  --pta-focus: #b4431f;
+
+  --pta-header-bg: #0048a8;
+  --pta-header-ink: #efe6d8;    /* 7.4:1 */
+  --pta-header-ink-muted: #c3d2ea;
+  --pta-header-rule: #18150f;
+  --pta-header-rule-width: 5px;
+  --pta-header-y: 1.2rem;
+  --pta-nav-weight: 700;
+  --pta-nav-transform: uppercase;
+  /* Nav wraps below the wordmark here, leaving a gap worth filling. */
+  --pta-header-art: block;
+
+  --pta-cta-bg: #983418;
+  --pta-cta-ink: #efe6d8;       /* 5.6:1 */
+  --pta-cta-border: #18150f;
+
+  --pta-hero-size: clamp(1.9rem, 1.2rem + 3.2vw, 3.1rem);
+  --pta-hero-leading: 1.08;
+  --pta-hero-measure: 18ch;
+
+  --pta-radius: 0;
+  --pta-border-width: 2px;
+  --pta-rule-width: 3px;
+  --pta-shadow: none;
+
+  --pta-section-y: 3.5rem;
+  --pta-gap: 1.5rem;
+  --pta-measure: 62ch;
+  --pta-container: 66rem;
+  --pta-gutter: 1.5rem;
+}

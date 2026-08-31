@@ -1,14 +1,14 @@
 # Brand assets
 
 Provided by Jon 2026-08-28. These are **Blackshear Fine Arts Academy** (school)
-marks, not PTA-specific marks — see "Open question" below.
+marks, not PTA-specific marks; see "Open question" below.
 
 | File | What it is | Verdict |
 |---|---|---|
 | `crest-1color.jpg` | Circular crest: varsity block **B**, two flanking yellow jackets, "BLACKSHEAR FINE ARTS ACADEMY", "Est. 1891". Pure black on white, 2000×2000. | **The strongest asset.** Single-color, high contrast, scales to a favicon, screenprint-ready. Anchors Civic Letterpress and East Austin Print Shop. Worth tracing to SVG. |
-| `buzz-mascot.jpg` | "Buzz" standing, hands on hips, sneakers. Clean line art, black on white, 2000×2000. | Great. Traces to SVG cleanly. The mascot without the lockup — usable as a standalone accent. |
+| `buzz-mascot.jpg` | "Buzz" standing, hands on hips, sneakers. Clean line art, black on white, 2000×2000. | Great. Traces to SVG cleanly. The mascot without the lockup - usable as a standalone accent. |
 | `logo-square-blue.jpg` | Blue/white split square, color Buzz with a megaphone, wordmark, "Growing Stronger Together". 1080×1080. | Social-media lockup. Source of the blue. Raster only, awkward aspect for web. |
-| `logo-original-vector.pdf` | Full original crest — color Buzz with an artist's palette on an open book, color wheel, motto ring, blue banner. **Vector, 810×810.** | The only vector file we have. Contains a raster mascot XObject, so it's partially vector. Fonts: **Hussar Bold** and **Sriracha** (both open-source; Sriracha is on Google Fonts, so the existing script tagline is reproducible exactly). |
+| `logo-original-vector.pdf` | Full original crest - color Buzz with an artist's palette on an open book, color wheel, motto ring, blue banner. **Vector, 810×810.** | The only vector file we have. Contains a raster mascot XObject, so it's partially vector. Fonts: **Hussar Bold** and **Sriracha** (both open-source; Sriracha is on Google Fonts, so the existing script tagline is reproducible exactly). |
 
 ## Palette
 
@@ -45,12 +45,12 @@ black or blue ground.
 - Motto: **"Together we EDUCATE, ENRICH, and EXERCISE to EXCEL"**
 - Tagline: **"Growing Stronger Together"**
 - Jersey reads **"YELLOW JACKETS"**; the mascot is named **Buzz**
-- **Est. 1891** — confirms the 135th anniversary the current site celebrates
+- **Est. 1891**: confirms the 135th anniversary the current site celebrates
 
 ## Open question
 
 Every one of these is a *school* mark. The PTA is a legally separate organization,
-and a PTA site fronted entirely by school branding can blur that line — it matters
+and a PTA site fronted entirely by school branding can blur that line - it matters
 for donations, tax receipts, and the fact that the PTA speaks for itself (the
 "Let's Keep Blackshear where it is!" advocacy on the current site is a PTA voice,
 not an AISD one).

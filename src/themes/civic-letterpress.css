@@ -1,57 +1,55 @@
 /* ============================================================================
-   Theme A — Civic Letterpress          PROJECT-BRIEF §5.3
-   Anchor: WPA / municipal print. Condensed display, thick rules, flat two-ink,
-           zero shadows, zero rounded corners.
+   A - Civic Letterpress                                 PROJECT-BRIEF §5.3
+   Anchor: WPA and municipal print. Bevan slab over Archivo, two inks, heavy
+           rules, zero radius, zero shadow. Weight does the work, not colour.
    Structure: stacked-rules
-
-   PLACEHOLDER. This exists to prove the token contract wires up end to end. The
-   real thing needs a self-hosted condensed slab face (§5.1 — the typeface is
-   most of the difference) and a properly derived ink pair. Treat the values
-   below as scaffolding, not as design.
-
-   Contract: define EVERY --pta-* token declared on :root in
-   src/styles/global.css. Anything omitted falls back to the neutral default,
-   which is how a theme ends up looking half-applied.
    ========================================================================= */
-
 [data-theme="civic-letterpress"] {
-  /* type — two inks, one condensed display face, one text face */
-  --pta-font-display: "Hussar Bold", ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
-  --pta-font-body: "Charter", "Bitstream Charter", "Iowan Old Style", Georgia, serif;
-  --pta-display-weight: 800;
-  --pta-display-tracking: 0.02em;
+  --pta-font-display: var(--font-bevan), Georgia, serif;
+  --pta-font-body: var(--font-archivo), system-ui, sans-serif;
+  --pta-display-weight: 400; /* Bevan ships one weight; faux-bolding it smears */
+  --pta-display-tracking: 0.01em;
   --pta-display-transform: uppercase;
 
-  /* color — black + blue as the two inks, lemon strictly as a ground.
-     Lemon is never used as text here: 1.33:1 on white fails AA outright
-     (assets/brand/README.md). Where lemon appears it carries black text at
-     15.85:1. */
   --pta-surface: #ffffff;
-  --pta-surface-alt: #f0e430; /* lemon panel — black text only */
+  --pta-surface-alt: #f0e430;   /* lemon panel - black text only */
   --pta-ink: #000000;
-  --pta-ink-muted: #2e2e2e; /* 14.0:1 on white */
-  --pta-ink-on-accent: #ffffff; /* on blue: 8.43:1 */
+  --pta-ink-muted: #2e2e2e;     /* 14.0:1 on white */
+  --pta-ink-on-accent: #ffffff; /* 8.43:1 on blue */
   --pta-accent: #0048a8;
   --pta-accent-quiet: #f0e430;
-  --pta-link: #0048a8; /* 8.43:1 on white */
+  --pta-link: #0048a8;
   --pta-rule: #000000;
   --pta-focus: #0048a8;
 
-  /* shape — letterpress has no radius and no shadow, only weight */
+  --pta-header-bg: #000000;
+  --pta-header-ink: #ffffff;    /* 21:1 */
+  --pta-header-ink-muted: #cfcfcf;
+  --pta-header-rule: #f0e430;
+  --pta-header-rule-width: 8px; /* the lemon bar under the masthead */
+  --pta-header-y: 1.1rem;
+  --pta-nav-weight: 400;
+  --pta-nav-transform: uppercase;
+  /* Nav wraps below the wordmark here, leaving a gap worth filling. */
+  --pta-header-art: block;
+
+  --pta-cta-bg: #f0e430;
+  --pta-cta-ink: #000000;       /* 15.85:1 */
+  --pta-cta-border: #000000;
+
+  --pta-hero-size: clamp(2rem, 1.3rem + 3.2vw, 3.25rem);
+  --pta-hero-leading: 1.06;
+  --pta-hero-measure: 17ch;
+
   --pta-radius: 0;
   --pta-border-width: 3px;
   --pta-rule-width: 6px;
   --pta-shadow: none;
 
-  /* rhythm — generous vertical air, rules doing the dividing */
-  --pta-section-y: 3.5rem;
+  --pta-section-y: 3.25rem;
   --pta-gap: 1.5rem;
   --pta-measure: 60ch;
   --pta-container: 64rem;
   --pta-gutter: 1.25rem;
 }
-
-/* Ink on the lemon panel must stay black. Guard rail, not decoration. */
-[data-theme="civic-letterpress"] [data-surface="alt"] {
-  color: #000000;
-}
+[data-theme="civic-letterpress"] [data-surface="alt"] { color: #000000; }

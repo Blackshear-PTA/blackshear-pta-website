@@ -1,0 +1,424 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { structures } from '../layouts/structures';
+import { themes, defaultThemeId } from '../themes/registry';
+
+/**
+ * /preview - the six-theme switcher (PROJECT-BRIEF §5.4).
+ *
+ * All six render into the page; five are display:none. That is what makes the
+ * switch instant, and instant is the whole point - a reload between variants
+ * and people bail after two. Browsers also skip webfont downloads for
+ * display:none subtrees, so a visitor pays for the active theme's two faces
+ * rather than all ten.
+ *
+ * The control offers the same choice two ways: pills on desktop, a native
+ * select below 48rem. Six pills on a phone meant a horizontal scroller, which
+ * hides options behind a gesture people miss. A native select opens the OS
+ * picker, shows all six at once, and is the one widget every parent already
+ * knows how to use.
+ *
+ * The whole bar also collapses, because it is chrome sitting on top of the
+ * thing it is asking you to judge, and at some point you want it out of the
+ * way. Collapsed still shows which design you are looking at.
+ *
+ * THIS PAGE IS DISPOSABLE. When a winner is picked, delete it along with the
+ * five losing themes. Nothing else imports it.
+ */
+
+const [homeEntry, siteEntry] = await Promise.all([
+  getEntry('home', 'home'),
+  getEntry('site', 'site'),
+]);
+if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+
+const home = homeEntry.data;
+const site = siteEntry.data;
+---
+
+<BaseLayout
+  title="Choose a design - Blackshear PTA"
+  description="Six design directions for the new Blackshear PTA website. Pick the one you like best."
+>
+  <div class="switcher" data-collapsed="false">
+    <div class="switcher-inner">
+      <div class="switcher-top">
+        <p class="switcher-title">
+          <strong>Six designs.</strong>{' '}
+          <span class="showing">Showing <b data-current-name></b></span>
+        </p>
+        <button
+          class="collapse-btn"
+          type="button"
+          aria-expanded="true"
+          aria-controls="switcher-body"
+          data-collapse-btn
+        >
+          <span data-collapse-label>Hide</span>
+          <svg class="chev" viewBox="0 0 12 12" aria-hidden="true" width="11" height="11">
+            <path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="switcher-body" id="switcher-body">
+        <p class="switcher-label">
+          <span>Copy is taken from the current site and the same across all six options. Tap through and let Jon know your favorite or the one that's closest to "good".</span>
+        </p>
+
+        {/* Below 48rem. Native on purpose: the OS picker shows all six at once. */}
+        <div class="switcher-select">
+          <label class="sr-only" for="theme-select">Choose a design</label>
+          <select id="theme-select" data-theme-select>
+            {themes.map((theme) => <option value={theme.id}>{theme.name}</option>)}
+          </select>
+          <svg class="chev select-chev" viewBox="0 0 12 12" aria-hidden="true" width="12" height="12">
+            <path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+
+        {/* 48rem and up, where six pills fit on one line. */}
+        <div class="switcher-scroll">
+          <div class="switcher-tabs" role="group" aria-label="Choose a design">
+            {
+              themes.map((theme) => (
+                <button
+                  type="button"
+                  class="tab"
+                  data-theme-btn={theme.id}
+                  aria-pressed={theme.id === defaultThemeId ? 'true' : 'false'}
+                >
+                  {theme.name}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <p class="switcher-desc" data-theme-desc aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  {
+    themes.map((theme) => {
+      const Structure = structures[theme.structure];
+      return (
+        <div
+          class="panel"
+          data-theme={theme.id}
+          data-panel={theme.id}
+          hidden={theme.id !== defaultThemeId}
+        >
+          <Structure home={home} site={site} mainId={`main-${theme.id}`} />
+        </div>
+      );
+    })
+  }
+</BaseLayout>
+
+<script>
+  import { themes, defaultThemeId } from '../themes/registry';
+
+  const KEY = 'pta-preview-theme';
+  const COLLAPSE_KEY = 'pta-preview-collapsed';
+  const ids = new Set(themes.map((t) => t.id));
+  const byId = new Map(themes.map((t) => [t.id, t]));
+
+  const panels = document.querySelectorAll<HTMLElement>('[data-panel]');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-btn]');
+  const select = document.querySelector<HTMLSelectElement>('[data-theme-select]');
+  const desc = document.querySelector<HTMLElement>('[data-theme-desc]');
+  const currentName = document.querySelector<HTMLElement>('[data-current-name]');
+  const skip = document.querySelector<HTMLAnchorElement>('.pta-skip-link');
+  const switcher = document.querySelector<HTMLElement>('.switcher');
+  const collapseBtn = document.querySelector<HTMLButtonElement>('[data-collapse-btn]');
+  const collapseLabel = document.querySelector<HTMLElement>('[data-collapse-label]');
+
+  /** localStorage throws in some private-browsing modes; never let that break switching. */
+  const store = (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* ignore */
+    }
+  };
+  const read = (key: string) => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+
+  function apply(id: string, persist = true) {
+    if (!ids.has(id)) return;
+
+    for (const panel of panels) panel.hidden = panel.dataset.panel !== id;
+    for (const button of buttons) {
+      button.setAttribute('aria-pressed', String(button.dataset.themeBtn === id));
+    }
+    // Both controls show the same choice, so keep them in step.
+    if (select && select.value !== id) select.value = id;
+    if (desc) desc.textContent = byId.get(id)?.description ?? '';
+    if (currentName) currentName.textContent = byId.get(id)?.name ?? '';
+    // Keep the skip link pointing at the landmark that is actually visible.
+    if (skip) skip.href = `#main-${id}`;
+
+    if (persist) store(KEY, id);
+
+    // Shareable: /preview?theme=jacket opens straight to that one.
+    const url = new URL(window.location.href);
+    url.searchParams.set('theme', id);
+    history.replaceState(null, '', url);
+  }
+
+  function setCollapsed(collapsed: boolean, persist = true) {
+    if (!switcher || !collapseBtn) return;
+    switcher.dataset.collapsed = String(collapsed);
+    collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+    if (collapseLabel) collapseLabel.textContent = collapsed ? 'Show' : 'Hide';
+    if (persist) store(COLLAPSE_KEY, String(collapsed));
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      apply(button.dataset.themeBtn!);
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    });
+  }
+
+  select?.addEventListener('change', () => {
+    apply(select.value);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  });
+
+  collapseBtn?.addEventListener('click', () => {
+    setCollapsed(switcher?.dataset.collapsed !== 'true');
+  });
+
+  // URL wins over the remembered choice, so a shared link shows what was shared.
+  let initial = defaultThemeId;
+  const stored = read(KEY);
+  if (stored && ids.has(stored)) initial = stored;
+  const fromUrl = new URLSearchParams(window.location.search).get('theme');
+  if (fromUrl && ids.has(fromUrl)) initial = fromUrl;
+
+  apply(initial, false);
+  setCollapsed(read(COLLAPSE_KEY) === 'true', false);
+</script>
+
+<style>
+  /* The switcher is chrome, not content. It deliberately inherits NOTHING from
+     the themes - otherwise it would restyle itself six times and stop reading
+     as a fixed control. Hard-coded values here are correct. */
+  .switcher {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #17181c;
+    color: #ffffff;
+    border-bottom: 1px solid #3a3d45;
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  .switcher-inner {
+    max-width: 74rem;
+    margin-inline: auto;
+    padding: 0.55rem 1rem 0.7rem;
+  }
+
+  .switcher-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .switcher-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: #c8cbd2;
+  }
+  .switcher-title strong {
+    color: #ffffff;
+  }
+  .showing b {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .collapse-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #4a4e58;
+    border-radius: 999px;
+    background: transparent;
+    color: #e6e8ec;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .collapse-btn:hover {
+    border-color: #8b909c;
+  }
+  .collapse-btn:focus-visible,
+  .tab:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #f0e430;
+    outline-offset: 2px;
+  }
+
+  .chev {
+    transition: transform 0.15s ease;
+  }
+  .switcher[data-collapsed='true'] .collapse-btn .chev {
+    transform: rotate(-90deg);
+  }
+
+  .switcher[data-collapsed='true'] .switcher-body {
+    display: none;
+  }
+
+  .switcher-label {
+    margin: 0.5rem 0 0.55rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #c8cbd2;
+  }
+
+  /* One control per breakpoint. Below 48rem the native select opens the OS
+     picker, which shows all six at once; a horizontal pill scroller hid half
+     of them behind a gesture people do not always notice. */
+  .switcher-select {
+    position: relative;
+    display: block;
+  }
+
+  select {
+    appearance: none;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.6rem 2.2rem 0.6rem 0.9rem;
+    border: 1px solid #4a4e58;
+    border-radius: 8px;
+    background: #23252b;
+    color: #ffffff;
+    font: inherit;
+    /* 16px exactly. Below that, iOS Safari zooms the whole page when the
+       select takes focus, which then leaves the viewer scrolled sideways. */
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /*
+    The native popup takes its size and colours from the OPTIONS, not from the
+    select, so styling only the closed control leaves the open list rendering
+    at the browser default - which is tiny next to a 16px control. Has to be
+    set on the options themselves.
+  */
+  select option {
+    background: #23252b;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .select-chev {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #a9adb7;
+  }
+
+  .switcher-scroll {
+    display: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .switcher-tabs {
+    display: flex;
+    gap: 0.4rem;
+    width: max-content;
+  }
+
+  .tab {
+    flex: none;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px; /* thumb target */
+    border: 1px solid #4a4e58;
+    border-radius: 999px;
+    background: transparent;
+    color: #e6e8ec;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .tab:hover {
+    border-color: #8b909c;
+  }
+
+  .tab[aria-pressed='true'] {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #17181c;
+  }
+
+  .switcher-desc {
+    margin: 0.6rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #a9adb7;
+    min-height: 1.2em;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Each panel owns its own ground; without this the body background from
+     :root shows through and every theme looks like it is on white. */
+  .panel {
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-body);
+  }
+
+  @media (min-width: 48rem) {
+    .switcher-inner {
+      padding-block: 0.7rem 0.85rem;
+    }
+    .switcher-select {
+      display: none;
+    }
+    .switcher-scroll {
+      display: block;
+    }
+  }
+</style>

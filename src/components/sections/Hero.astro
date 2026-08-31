@@ -14,8 +14,7 @@ const { hero } = Astro.props;
 </section>
 
 <style>
-  /* Tokens only. No Tailwind color/type utilities, no hard-coded hex —
-     that is what lets a theme swap actually change something. */
+  /* Tokens only. No Tailwind color/type utilities, no hard-coded hex - that is what lets a theme swap actually change something. */
   .hero {
     padding-block: var(--pta-section-y);
     border-block-end: var(--pta-rule-width) solid var(--pta-rule);
@@ -24,11 +23,12 @@ const { hero } = Astro.props;
   h1 {
     margin: 0 0 var(--pta-gap);
     font-family: var(--pta-font-display);
-    font-size: var(--text-banner);
+    font-size: var(--pta-hero-size);
     font-weight: var(--pta-display-weight);
     letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
-    line-height: var(--leading-flat);
+    line-height: var(--pta-hero-leading, var(--leading-snug));
+    max-width: var(--pta-hero-measure, 22ch);
   }
 
   p {
