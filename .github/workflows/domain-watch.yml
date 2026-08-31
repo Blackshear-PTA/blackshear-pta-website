@@ -1,0 +1,94 @@
+# Watches the domain registration and shouts if a renewal has not happened.
+#
+# The domain sits in a board member's personal GoDaddy account that nobody else
+# can pay from, so a renewal that quietly does not happen is the single failure
+# that takes the whole project with it. The only other signal would be the site
+# going dark.
+#
+# Runs four times a day rather than daily: the windows that matter after an
+# expiry are measured in days, and a 24-hour blind spot is a meaningful slice of
+# one. The repo is public, so Actions minutes are free.
+name: domain watch
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Check registration
+        id: check
+        run: |
+          set +e
+          node scripts/check-domain.mjs --days 21 | tee /tmp/domain.txt
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      # One open issue, updated in place. A new issue per run would bury the
+      # thing it is trying to make visible.
+      - name: Raise or update the alert
+        if: steps.check.outputs.status != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = [
+              'The scheduled domain check is failing.',
+              '',
+              '```',
+              fs.readFileSync('/tmp/domain.txt', 'utf8').trim(),
+              '```',
+              '',
+              `Last checked: ${new Date().toISOString()}`,
+              '',
+              'This closes itself once the registry shows a renewal.',
+            ].join('\n');
+            const title = 'Domain registration needs attention';
+            const { data: open } = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: 'domain-watch',
+            });
+            if (open.length) {
+              await github.rest.issues.update({
+                ...context.repo, issue_number: open[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                ...context.repo, title, body, labels: ['domain-watch'],
+              });
+            }
+
+      - name: Close the alert once it is resolved
+        if: steps.check.outputs.status == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: open } = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: 'domain-watch',
+            });
+            for (const issue of open) {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: issue.number,
+                body: 'Registry now looks healthy. Closing.',
+              });
+              await github.rest.issues.update({
+                ...context.repo, issue_number: issue.number, state: 'closed',
+              });
+            }
+
+      # Fail last, so the issue is always filed first.
+      - name: Fail the run if attention is needed
+        if: steps.check.outputs.status != '0'
+        run: exit 1

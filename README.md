@@ -140,3 +140,19 @@ Honestly, barely, on cost. This site builds in well under a minute and nowhere
 near any free-tier ceiling. The real benefit is not publishing a new Worker
 version that is identical to the one before it, which makes the deploy history
 mean something.
+
+## Domain watch
+
+```bash
+npm run check:domain
+```
+
+Checks all three registrations - `blackshearpta.org` plus the `.com` and `.net`
+that redirect to it - against the registries' RDAP APIs, and exits non-zero if
+any is close to expiry, already lapsed, or in a suspended state. `.github/workflows/domain-watch.yml`
+runs it four times a day and opens a single GitHub issue when it fails, updating
+that same issue rather than filing new ones, and closing it once the registry
+looks healthy again.
+
+It is a smoke alarm, not a sprinkler. If the domain does lapse, nothing here
+buys it back - see F23 in `TASKS.md`.

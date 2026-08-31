@@ -14,7 +14,8 @@
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
-    "check:contrast": "node scripts/check-contrast.mjs"
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:domain": "node scripts/check-domain.mjs"
   },
   "dependencies": {
     "astro": "^7.2.9"
