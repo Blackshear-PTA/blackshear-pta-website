@@ -5,8 +5,23 @@
       "name": "blackshear-pta-dev",
       "//": "Invokes the Node 22 binary directly on Astro's CLI entry. The project pins 22.22.3 in .node-version (Astro 7 requires >=22.12), but a launcher does not run fnm's use-on-cd hook, and going through npm does not help, since npm scripts resolve `node` from PATH and would still find the default Node 20. In a normal terminal, `cd` into the repo and `npm run dev` works fine.",
       "runtimeExecutable": "/Users/JFlowers/.local/share/fnm/node-versions/v22.22.3/installation/bin/node",
-      "runtimeArgs": ["node_modules/astro/bin/astro.mjs", "dev"],
+      "runtimeArgs": [
+        "node_modules/astro/bin/astro.mjs",
+        "dev"
+      ],
       "port": 4321
+    },
+    {
+      "name": "blackshear-pta-preview",
+      "//": "Serves the built output from ./dist on a second port, so it can run alongside `npm run dev` on 4321. Run `npm run build` first; this does not rebuild.",
+      "runtimeExecutable": "/Users/JFlowers/.local/share/fnm/node-versions/v22.22.3/installation/bin/node",
+      "runtimeArgs": [
+        "node_modules/astro/bin/astro.mjs",
+        "preview",
+        "--port",
+        "4322"
+      ],
+      "port": 4322
     }
   ]
 }

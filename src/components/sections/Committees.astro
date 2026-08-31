@@ -1,4 +1,9 @@
 ---
+import { Image } from 'astro:assets';
+import FundraisingIcon from '../FundraisingIcon.astro';
+import littleEast from '../../assets/photos/little-east.jpg';
+import garden from '../../assets/photos/garden.jpg';
+import blackshearFront from '../../assets/photos/blackshear-front.jpg';
 import type { HomeData } from '../../types';
 
 interface Props {
@@ -6,21 +11,60 @@ interface Props {
 }
 
 const { committees } = Astro.props;
+
+/**
+ * Slug to image. Static imports rather than paths built from content, because
+ * Astro's build-time pipeline can only resize and re-encode what it can see
+ * imported. `little-east.jpg` is a 4MB phone photo; served raw it would be the
+ * heaviest thing on the page by an order of magnitude.
+ *
+ * Fundraising has no photograph and uses drawn art instead - see
+ * FundraisingIcon.astro.
+ */
+const art = {
+  'little-east': { src: littleEast, alt: 'Student paintings covering a wall at Blackshear' },
+  garden: { src: garden, alt: 'A raised garden bed of black-eyed Susans and lantana' },
+  'staff-appreciation': {
+    src: blackshearFront,
+    alt: 'The Blackshear Elementary building on East 11th Street',
+  },
+} as const;
 ---
 
 <section class="committees" aria-labelledby="committees-heading">
   <h2 id="committees-heading">{committees.heading}</h2>
   {committees.intro && <p class="intro">{committees.intro}</p>}
-  <dl>
+  <ul>
     {
-      committees.items.map((committee) => (
-        <div class="row">
-          <dt>{committee.name}</dt>
-          <dd>{committee.description}</dd>
-        </div>
-      ))
+      committees.items.map((committee) => {
+        const photo = committee.art && committee.art !== 'fundraising' ? art[committee.art] : null;
+        return (
+          <li>
+            {(photo || committee.art === 'fundraising') && (
+              <div class="art" data-kind={committee.art === 'fundraising' ? 'icon' : 'photo'}>
+                {photo ? (
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    width={220}
+                    height={220}
+                    densities={[1, 2]}
+                    loading="lazy"
+                  />
+                ) : (
+                  <FundraisingIcon />
+                )}
+              </div>
+            )}
+            <div class="text">
+              <h3>{committee.name}</h3>
+              <p>{committee.description}</p>
+            </div>
+          </li>
+        );
+      })
     }
-  </dl>
+  </ul>
 </section>
 
 <style>
@@ -42,24 +86,69 @@ const { committees } = Astro.props;
     max-width: var(--pta-measure);
   }
 
-  dl {
+  ul {
+    display: grid;
+    gap: var(--pta-gap);
     margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .row {
+  @media (min-width: 46rem) {
+    ul {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  li {
+    display: flex;
+    gap: var(--pta-gap);
+    align-items: flex-start;
     padding-block: var(--pta-gap);
     border-block-start: var(--pta-border-width) solid var(--pta-rule);
-    max-width: var(--pta-measure);
   }
 
-  dt {
+  .art {
+    flex: none;
+    width: 5.5rem;
+    height: 5.5rem;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
+  }
+
+  /* Photos crop to the square; the drawn icon is padded so it does not touch
+     the frame the way a photograph is meant to. */
+  .art[data-kind='photo'] :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .art[data-kind='icon'] {
+    display: grid;
+    place-items: center;
+    padding: 0.7rem;
+  }
+
+  .text {
+    min-width: 0;
+  }
+
+  h3 {
+    margin: 0;
     font-family: var(--pta-font-display);
+    font-size: var(--text-body);
     font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
+    line-height: var(--leading-snug);
   }
 
-  dd {
-    margin: 0.25rem 0 0;
+  p {
+    margin: 0.35rem 0 0;
+    font-size: var(--text-fine);
     color: var(--pta-ink-muted);
   }
 </style>

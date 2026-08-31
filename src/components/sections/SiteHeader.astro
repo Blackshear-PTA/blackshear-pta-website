@@ -3,12 +3,17 @@ import BuzzMascot from '../BuzzMascot.astro';
 import type { SiteData } from '../../types';
 
 /**
- * Site header - mark, stacked wordmark, navigation, one primary action.
+ * Site header: mark, wordmark, navigation, one primary action.
  *
- * PROJECT-BRIEF §2 puts findability above visual ambition, so the nav WRAPS on
- * narrow screens rather than collapsing into a hamburger. Six short labels fit
- * in two or three lines on a phone, and every destination stays visible and
- * thumb-sized. A hamburger would hide the whole site behind a guess.
+ * Below 48rem the links collapse behind a Menu button. I argued against a
+ * hamburger earlier on findability grounds and was overruled by the thing that
+ * actually matters more: seven wrapped links plus the lockup ate most of the
+ * first screen on a phone, and content you have to scroll past is worse than
+ * content behind a labelled button.
+ *
+ * Two concessions keep the findability cost down. The button is labelled
+ * "Menu" rather than being three bare lines, and DONATE stays outside the menu,
+ * so the one thing we most want a parent to be able to hit never gets hidden.
  *
  * Colour comes from --pta-header-* so a theme can make this a saturated band,
  * a hairline rule, or a paper-toned strip without touching this file.
@@ -19,9 +24,19 @@ interface Props {
 
 const { site } = Astro.props;
 const { identity, nav, primaryAction } = site;
+
+/**
+ * /preview renders six headers on one page, so a fixed id would collide and
+ * every aria-controls would point at whichever one won. A build-scoped counter
+ * rather than a random id, so the same source produces the same HTML and the
+ * built output stays diffable.
+ */
+const g = globalThis as { __ptaHeaderSeq?: number };
+g.__ptaHeaderSeq = (g.__ptaHeaderSeq ?? 0) + 1;
+const navId = `site-nav-${g.__ptaHeaderSeq}`;
 ---
 
-<header class="hdr">
+<header class="hdr" data-pta-header>
   <div class="hdr-inner">
     <a class="brand" href="/">
       <BuzzMascot size={58} class="brand-mark" />
@@ -29,42 +44,87 @@ const { identity, nav, primaryAction } = site;
       <span class="brand-loc">{identity.location}</span>
     </a>
 
-    <nav class="nav" aria-label="Primary">
-      <ul class="nav-list">
-        {
-          nav.map((item) => (
-            <li>
-              <a
-                class="nav-link"
-                href={item.href}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noopener' : undefined}
-              >
-                {item.label}
-                {item.external && (
-                  <svg class="ext" viewBox="0 0 12 12" aria-hidden="true" width="9" height="9">
-                    <path
-                      d="M4 2h6v6M10 2 3 9"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.75"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                )}
-                <span class="sr-only">{item.external ? ' (opens in a new tab)' : ''}</span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+    <div class="hdr-right">
+      <nav class="nav" id={navId} aria-label="Primary">
+        <ul class="nav-list">
+          {
+            nav.map((item) => (
+              <li>
+                <a
+                  class="nav-link"
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener' : undefined}
+                >
+                  {item.label}
+                  {item.external && (
+                    <svg class="ext" viewBox="0 0 12 12" aria-hidden="true" width="9" height="9">
+                      <path
+                        d="M4 2h6v6M10 2 3 9"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.75"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  )}
+                  <span class="sr-only">{item.external ? ' (opens in a new tab)' : ''}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
 
-      <a class="cta" href={primaryAction.href} target="_blank" rel="noopener">
-        {primaryAction.label}
-      </a>
-    </nav>
+      <div class="hdr-actions">
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls={navId}>
+          <svg class="menu-icon" viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">
+            <path class="bar bar-top" d="M2 4h12" />
+            <path class="bar bar-mid" d="M2 8h12" />
+            <path class="bar bar-bot" d="M2 12h12" />
+          </svg>
+          <span>Menu</span>
+        </button>
+
+        <a class="cta" href={primaryAction.href} target="_blank" rel="noopener">
+          {primaryAction.label}
+        </a>
+      </div>
+    </div>
   </div>
 </header>
+
+<script>
+  // One bundled script wiring every header on the page: /preview has six.
+  for (const header of document.querySelectorAll<HTMLElement>('[data-pta-header]')) {
+    const button = header.querySelector<HTMLButtonElement>('.menu-btn');
+    const nav = header.querySelector<HTMLElement>('.nav');
+    if (!button || !nav) continue;
+
+    const setOpen = (open: boolean) => {
+      header.dataset.menuOpen = String(open);
+      button.setAttribute('aria-expanded', String(open));
+    };
+
+    button.addEventListener('click', () => {
+      setOpen(button.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // Escape closes and returns focus to the button, which is where a keyboard
+    // user expects to land rather than at the top of the document.
+    header.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        button.focus();
+      }
+    });
+
+    // Following a link should not leave the menu open behind the new page.
+    nav.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+  }
+</script>
 
 <style>
   .hdr {
@@ -110,12 +170,11 @@ const { identity, nav, primaryAction } = site;
     color: var(--pta-header-ink-muted);
   }
 
-  .nav {
+  .hdr-right {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 1.25rem;
-    /* Optically aligns the nav row with the wordmark rather than the mark. */
     padding-block-start: 0.35rem;
   }
 
@@ -133,9 +192,7 @@ const { identity, nav, primaryAction } = site;
     align-items: center;
     gap: 0.3em;
     /* Genuine 44px target without a visible box. min-height rather than
-       padding alone: at --text-fine the padding maths lands around 37px, which
-       is under the threshold and is exactly the kind of thing that only shows
-       up on a real phone (§2 - most parents are on phones). */
+       padding alone: at --text-fine the padding maths lands around 37px. */
     min-height: 44px;
     padding-block: 0.5rem;
     color: inherit;
@@ -157,6 +214,12 @@ const { identity, nav, primaryAction } = site;
     opacity: 0.65;
   }
 
+  .hdr-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
   .cta {
     display: inline-flex;
     align-items: center;
@@ -175,6 +238,31 @@ const { identity, nav, primaryAction } = site;
     text-transform: var(--pta-nav-transform);
   }
 
+  /* Desktop shows the links inline, so the button has nothing to do. */
+  .menu-btn {
+    display: none;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.6rem 0.9rem;
+    border: var(--pta-border-width) solid currentColor;
+    border-radius: var(--pta-radius);
+    background: transparent;
+    color: inherit;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-nav-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+  }
+
+  .bar {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
   .sr-only {
     position: absolute;
     width: 1px;
@@ -186,44 +274,102 @@ const { identity, nav, primaryAction } = site;
     white-space: nowrap;
   }
 
-  @media (max-width: 40rem) {
+  @media (max-width: 47.99rem) {
     .hdr-inner {
-      /* Brand above nav on a phone, both full width. */
       flex-direction: column;
       align-items: stretch;
     }
-    .nav {
-      justify-content: space-between;
-    }
 
     /*
-      On a phone the stacked lockup plus two rows of wrapped nav pushed the
-      header to roughly 600px, which is most of the first screen on a 375x812
-      device before any content appears. Setting the mark beside the wordmark
-      rather than above it reclaims most of that. Grid areas do the work, so
-      the markup stays identical between the two arrangements.
+      Mark beside the wordmark rather than above it. Stacked, plus the nav, put
+      the mobile header at roughly 600px, most of the first screen on a 375x812
+      device before any content appeared. Grid areas do it, so the markup is
+      identical to the desktop arrangement.
     */
     .brand {
       grid-template-columns: auto 1fr;
       grid-template-areas:
-        "mark name"
-        "mark loc";
+        'mark name'
+        'mark loc';
       align-items: center;
       column-gap: 0.7rem;
       row-gap: 0;
     }
-    /* :global because the mark is a child component and carries its own
-       style scope, so this file's scoped selector would not reach it. */
+    /* :global because the mark is a child component with its own style scope. */
     .brand :global(.brand-mark) {
       grid-area: mark;
     }
     .brand-name {
       grid-area: name;
-      align-self: end;
     }
     .brand-loc {
       grid-area: loc;
-      align-self: start;
+    }
+
+    .hdr-right {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding-block-start: 0;
+    }
+
+    .hdr-actions {
+      order: 1;
+      padding-block-start: 0.75rem;
+    }
+
+    .menu-btn {
+      display: inline-flex;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .cta {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nav {
+      order: 2;
+      display: none;
+    }
+
+    /*
+      Driven by a data attribute rather than the hidden attribute: hidden would
+      survive a resize past the breakpoint and leave desktop with no navigation
+      at all, which is a far worse bug than a menu that reopens.
+    */
+    .hdr[data-menu-open='true'] .nav {
+      display: block;
+      padding-block-start: 0.5rem;
+    }
+
+    .nav-list {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .nav-list li + li {
+      border-block-start: 1px solid currentColor;
+    }
+
+    .nav-link {
+      width: 100%;
+      min-height: 48px;
+      border-bottom: 0;
+    }
+
+    /* Bars become an X while the menu is open. */
+    .hdr[data-menu-open='true'] .bar-top {
+      transform: translateY(4px) rotate(45deg);
+      transform-origin: center;
+    }
+    .hdr[data-menu-open='true'] .bar-bot {
+      transform: translateY(-4px) rotate(-45deg);
+      transform-origin: center;
+    }
+    .hdr[data-menu-open='true'] .bar-mid {
+      opacity: 0;
     }
   }
 </style>

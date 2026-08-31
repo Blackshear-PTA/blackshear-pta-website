@@ -49,6 +49,7 @@ home:
         href: "https://tinyurl.com/BlackshearATXplained"
       - title: "The Literacy Buzz Bowl returns"
         body: "Our own take on Battle of the Books. Parent volunteers read to 3rd, 4th, and 5th graders, then students compete in a trivia showdown, and celebrate with ice cream and donuts. PTA is sponsoring it again this year."
+        href: "https://blackshearpta.weebly.com/"
       - title: "No Sting Fundraiser #3 was a success"
         body: "The final numbers are in and we hit our goal. Missed it? You can still make a general donation or help us stock school supplies."
         href: "https://tinyurl.com/Donate2Blackshear"
@@ -86,12 +87,16 @@ home:
     intro: "Every committee is looking for help. None of them require experience - just showing up."
     items:
       - name: "Fine Arts / Little EAST"
+        art: little-east
         description: "Finds fun ways for families to engage with the Fine Arts Academy. We join the Austin Studio Tours and turn the school into a gallery, students perform, the drama club does Shakespeare and improv, and we host a silent auction."
       - name: "Fundraising"
+        art: fundraising
         description: "Comes up with new ways to support Blackshear financially. Secures Little EAST silent auction donations and runs the monthly after-school snack sales."
       - name: "Staff Appreciation"
+        art: staff-appreciation
         description: "Shows Blackshear teachers, administrators, and support staff some appreciation - staff lunches, coffee and treats in the breakroom, replacing missing supplies, and self-care like massages or gift cards to local businesses."
       - name: "Garden"
+        art: garden
         description: "Connects families interested in campus beautification and getting outdoors. Join if you like getting dirty, recycling, and gardening."
 
   footer:

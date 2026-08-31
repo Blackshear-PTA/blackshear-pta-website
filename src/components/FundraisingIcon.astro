@@ -1,0 +1,74 @@
+---
+/**
+ * Fundraising committee tile art.
+ *
+ * WHY THIS IS DRAWN RATHER THAN DOWNLOADED
+ *
+ * The other three committees have photographs. Fundraising does not, and the
+ * brief asked for a public-source line-art icon recoloured to black and yellow.
+ * Drawing it is the better answer for a public-facing nonprofit site: an icon
+ * pulled off the web carries a licence question that someone would have to
+ * answer years from now, and "it looked free" is not an answer. This is ours,
+ * it is about 1KB, and there is nothing to attribute or re-verify.
+ *
+ * Same visual register as the mascot on purpose - flat lemon fills, heavy black
+ * outlines, no gradients - so it does not read as a foreign object next to
+ * three photographs. Colours come from the brand tokens.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg
+  class:list={['fund', className]}
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  role="presentation"
+>
+  {/* Coin, mid-drop */}
+  <circle class="fill" cx="32" cy="11" r="7" />
+  <path class="line" d="M32 7.5v7M30 9.2h3.2a1.6 1.6 0 0 1 0 3.2h-2.4a1.6 1.6 0 0 0 0 3.2H34" />
+
+  {/* Jar lid, with the slot the coin is going into */}
+  <rect class="fill" x="13" y="22" width="38" height="8" rx="2" />
+  <rect class="ink" x="27" y="24.6" width="10" height="2.8" rx="1.4" />
+
+  {/* Jar body */}
+  <path class="fill" d="M16 30h32v18a8 8 0 0 1-8 8H24a8 8 0 0 1-8-8V30z" />
+
+  {/* Heart on the front */}
+  <path
+    class="ink"
+    d="M32 50.5c-5.2-3.6-8.4-6.5-8.4-10a4.6 4.6 0 0 1 8.4-2.6 4.6 4.6 0 0 1 8.4 2.6c0 3.5-3.2 6.4-8.4 10z"
+  />
+</svg>
+
+<style>
+  .fund {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .fill {
+    fill: var(--pta-accent-quiet, #f0e430);
+    stroke: var(--pta-ink, #000);
+    stroke-width: 2.4;
+    stroke-linejoin: round;
+  }
+
+  .ink {
+    fill: var(--pta-ink, #000);
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--pta-ink, #000);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>

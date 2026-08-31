@@ -54,6 +54,13 @@ const involvementTier = z.object({
 const committee = z.object({
   name: z.string(),
   description: z.string(),
+  /**
+   * Which tile art to show. A slug rather than a path: the mapping to an
+   * imported image lives in Committees.astro so Astro's build-time image
+   * pipeline can see the import. A path string here would ship the 4MB
+   * original untouched. Omit and the committee renders without art.
+   */
+  art: z.enum(['little-east', 'garden', 'staff-appreciation', 'fundraising']).optional(),
 });
 
 const contact = z.object({
