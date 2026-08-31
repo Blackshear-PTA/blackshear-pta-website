@@ -24,7 +24,7 @@ const { identity, nav, primaryAction } = site;
 <header class="hdr">
   <div class="hdr-inner">
     <a class="brand" href="/">
-      <BuzzMascot size={58} />
+      <BuzzMascot size={58} class="brand-mark" />
       <span class="brand-name">{identity.name}</span>
       <span class="brand-loc">{identity.location}</span>
     </a>
@@ -84,7 +84,7 @@ const { identity, nav, primaryAction } = site;
     gap: 1rem var(--pta-gap);
   }
 
-  /* Stacked lockup: mark, then name, then location. */
+  /* Desktop lockup is stacked: mark, then name, then location. */
   .brand {
     display: grid;
     justify-items: start;
@@ -194,6 +194,36 @@ const { identity, nav, primaryAction } = site;
     }
     .nav {
       justify-content: space-between;
+    }
+
+    /*
+      On a phone the stacked lockup plus two rows of wrapped nav pushed the
+      header to roughly 600px, which is most of the first screen on a 375x812
+      device before any content appears. Setting the mark beside the wordmark
+      rather than above it reclaims most of that. Grid areas do the work, so
+      the markup stays identical between the two arrangements.
+    */
+    .brand {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "mark name"
+        "mark loc";
+      align-items: center;
+      column-gap: 0.7rem;
+      row-gap: 0;
+    }
+    /* :global because the mark is a child component and carries its own
+       style scope, so this file's scoped selector would not reach it. */
+    .brand :global(.brand-mark) {
+      grid-area: mark;
+    }
+    .brand-name {
+      grid-area: name;
+      align-self: end;
+    }
+    .brand-loc {
+      grid-area: loc;
+      align-self: start;
     }
   }
 </style>
