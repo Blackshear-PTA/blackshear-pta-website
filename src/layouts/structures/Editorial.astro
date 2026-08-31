@@ -41,10 +41,15 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
 <SiteHeader site={site} />
 <main id={mainId}>
   {/*
-    The photographic band reaches further down than it does in stacked-rules,
-    because this structure puts Start Here in the rail beside the news rather
-    than directly under the hero - so covering Start Here means covering the
-    whole split.
+    The photographic band has to reach the whole split on desktop, because
+    this structure puts Start Here in the rail BESIDE the news rather than
+    under the hero, so there is no way to cover one without the other.
+
+    On a phone they stack, which makes them separable again - and a backdrop
+    running behind three stacked sections is far too much of it. So on mobile
+    the news column paints its own opaque ground over the band, leaving the
+    photo behind the quote and Start Here only. Same two sections as the other
+    design, which is the point.
   */}
   <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
     <div class="shell">
@@ -52,9 +57,16 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
         <Hero hero={home.hero} />
       </div>
 
+      {/*
+        Start Here comes FIRST in the DOM. The old order was news-then-rail
+        with a comment claiming the rail led on mobile; nothing implemented
+        that, so a phone got the reading before the links and a different
+        order from the other design. Desktop puts them back side by side with
+        explicit grid columns, so the visual order there is unchanged.
+      */}
       <div class="split">
-        <div class="wide"><News news={home.news} /></div>
         <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
+        <div class="wide"><News news={home.news} /></div>
       </div>
     </div>
   </div>
@@ -106,11 +118,36 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
   .rail {
     border-block-start: var(--pta-rule-width) solid var(--pta-rule);
   }
+
+  /*
+    Below 60rem the split is one column in DOM order (Start Here, then news)
+    and the news column covers the backdrop with the page surface. Painting
+    over it is what lets the photo stop after Start Here without splitting the
+    band into two elements, which the desktop side-by-side layout needs to
+    stay whole.
+  */
+  @media (max-width: 59.99rem) {
+    .wide {
+      background: var(--pta-surface);
+      /* Bleed to the band's edges so no strip of photo shows around it. */
+      margin-inline: calc(var(--pta-gutter) * -1);
+      padding-inline: var(--pta-gutter);
+    }
+  }
+
   @media (min-width: 60rem) {
     .split {
       grid-template-columns: minmax(0, 1.85fr) minmax(15rem, 0.85fr);
     }
+    /* Explicit placement: the DOM is rail-first for mobile, so desktop has to
+       put the news back on the left rather than rely on source order. */
+    .wide {
+      grid-column: 1;
+      grid-row: 1;
+    }
     .rail {
+      grid-column: 2;
+      grid-row: 1;
       border-block-start: 0;
       border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
       padding-inline-start: calc(var(--pta-gap) * 1.5);
@@ -131,6 +168,14 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
     background-position: center 40%;
     background-attachment: scroll;
     padding-block-end: var(--pta-section-y);
+  }
+
+  @media (max-width: 59.99rem) {
+    /* The news column supplies the ground down here, so band padding would
+       show as a strip of photo below it. */
+    .topband {
+      padding-block-end: 0;
+    }
   }
 
   .topband::before {
