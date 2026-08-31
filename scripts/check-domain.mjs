@@ -22,6 +22,10 @@
  * Reads RDAP rather than WHOIS: it is the registry's own JSON API, so there is
  * no free-text parsing to break, and it needs no packages on the runner.
  *
+ * Run on demand. There is no scheduled job on purpose: an automated nag about a
+ * renewal somebody is already chasing is noise, and an alert nobody can action
+ * is how alerts get ignored.
+ *
  *   node scripts/check-domain.mjs                 all domains (exit 1 = attention)
  *   node scripts/check-domain.mjs --days 30       widen the warning window
  *   WATCH_DOMAINS=a.org,b.com node scripts/check-domain.mjs
