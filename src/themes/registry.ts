@@ -37,15 +37,30 @@ export interface Theme {
   description: string;
   /** Which layout arrangement this theme renders through. */
   structure: StructureId;
+  /**
+   * Render the homepage video, if the content has one. A theme-level flag
+   * rather than a content-level one: the video exists in home.yaml either way,
+   * and this decides whether this particular design shows it. Only structures
+   * that accept a `video` prop honour it.
+   */
+  video?: boolean;
 }
 
 export const themes: readonly Theme[] = [
   {
-    id: 'civic-letterpress',
-    name: 'Civic Letterpress',
+    id: 'civic-letterpress-a',
+    name: 'Civic Letterpress A',
     description:
       'WPA and municipal print. Slab display, heavy rules, two inks, no radius or shadow anywhere.',
     structure: 'stacked-rules',
+  },
+  {
+    id: 'civic-letterpress-b',
+    name: 'Civic Letterpress B',
+    description:
+      'Civic Letterpress with a blue masthead and the school video above the quote. Everything else is identical to A.',
+    structure: 'stacked-rules',
+    video: true,
   },
   {
     id: 'print-shop',
@@ -56,7 +71,7 @@ export const themes: readonly Theme[] = [
   },
 ];
 
-export const defaultThemeId = 'civic-letterpress';
+export const defaultThemeId = 'civic-letterpress-a';
 
 /** Throws rather than returning undefined - a bad theme id is a build-time bug. */
 export function getTheme(id: string): Theme {

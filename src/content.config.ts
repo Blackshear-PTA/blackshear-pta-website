@@ -113,6 +113,19 @@ const home = defineCollection({
       title: z.string(),
       description: z.string(),
     }),
+    /**
+     * Optional homepage video. Present in the content regardless of whether a
+     * theme chooses to render it - what to say is content, whether to show it
+     * is presentation.
+     */
+    video: z
+      .object({
+        /** The bare id, not a URL. The embed origin is decided in the component. */
+        youtubeId: z.string(),
+        /** Becomes the iframe's accessible name, which is required. */
+        title: z.string(),
+      })
+      .optional(),
     hero,
     quickActions: z.object({
       heading: z.string(),

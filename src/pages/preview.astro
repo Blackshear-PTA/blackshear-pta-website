@@ -7,18 +7,20 @@ import { themes, defaultThemeId } from '../themes/registry';
 /**
  * /preview - the design switcher (PROJECT-BRIEF §5.4).
  *
- * Both render into the page; one is display:none. That is what makes the
+ * All render into the page; all but one are display:none. That is what makes the
  * switch instant, and instant is the whole point - a reload between variants
  * and people bail. Browsers also skip webfont downloads for display:none
  * subtrees, so a visitor pays for the active theme's two faces, not all four.
  *
  * NARROWED 2026-08-31 from six to Civic Letterpress and East Austin Print
- * Shop. The switcher machinery is unchanged and still handles any number.
+ * Shop, then Civic split into A and B on first feedback so the masthead colour
+ * and the video could be judged against an otherwise identical page. The
+ * switcher machinery is unchanged and still handles any number.
  *
- * One control at every width: two pills. The mobile <select> that used to sit
+ * One control at every width: a pill per design. The mobile <select> that used to sit
  * below 48rem is gone. It earned its place when there were six options, where
  * pills needed a horizontal scroller that hid half of them behind a gesture -
- * two pills simply fit. It also had a defect CSS cannot reach: macOS renders
+ * this many simply fit. It also had a defect CSS cannot reach: macOS renders
  * the native popup with system metrics and ignores font-size on <option>, so
  * the open list was tiny on a narrowed desktop browser. (A real iPhone shows
  * the full-size wheel picker and was never affected.) Fewer moving parts and
@@ -45,13 +47,13 @@ const site = siteEntry.data;
 
 <BaseLayout
   title="Choose a design - Blackshear PTA"
-  description="Two design directions for the new Blackshear PTA website. Pick the one you like best."
+  description="Three design directions for the new Blackshear PTA website. Pick the one you like best."
 >
   <div class="switcher" data-collapsed="false">
     <div class="switcher-inner">
       <div class="switcher-top">
         <p class="switcher-title">
-          <strong>Two designs.</strong>{' '}
+          <strong>Three designs.</strong>{' '}
           <span class="showing">Showing <b data-current-name></b></span>
         </p>
         <button
@@ -71,7 +73,7 @@ const site = siteEntry.data;
 
       <div class="switcher-body" id="switcher-body">
         <p class="switcher-label">
-          <span>Copy is taken from the current site and the same across both options. Tap through and let Jon know which you prefer.</span>
+          <span>Copy is taken from the current site and is the same across all three. A and B differ only in the masthead colour and the video. Tap through and let Jon know which you prefer.</span>
         </p>
 
         <div class="switcher-scroll">
@@ -106,7 +108,7 @@ const site = siteEntry.data;
           data-panel={theme.id}
           hidden={theme.id !== defaultThemeId}
         >
-          <Structure home={home} site={site} mainId={`main-${theme.id}`} />
+          <Structure home={home} site={site} mainId={`main-${theme.id}`} video={theme.video} />
         </div>
       );
     })
@@ -120,6 +122,13 @@ const site = siteEntry.data;
   const COLLAPSE_KEY = 'pta-preview-collapsed';
   const ids = new Set(themes.map((t) => t.id));
   const byId = new Map(themes.map((t) => [t.id, t]));
+
+  /**
+   * Civic Letterpress was split into A and B, so links shared before that
+   * carry an id that no longer exists. Without this they fall through to the
+   * default, which happens to be A - correct today, but only by accident.
+   */
+  const ALIASES: Record<string, string> = { 'civic-letterpress': 'civic-letterpress-a' };
 
   const panels = document.querySelectorAll<HTMLElement>('[data-panel]');
   const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-btn]');
@@ -187,10 +196,12 @@ const site = siteEntry.data;
   });
 
   // URL wins over the remembered choice, so a shared link shows what was shared.
+  const resolve = (id: string | null) => (id ? (ALIASES[id] ?? id) : null);
+
   let initial = defaultThemeId;
-  const stored = read(KEY);
+  const stored = resolve(read(KEY));
   if (stored && ids.has(stored)) initial = stored;
-  const fromUrl = new URLSearchParams(window.location.search).get('theme');
+  const fromUrl = resolve(new URLSearchParams(window.location.search).get('theme'));
   if (fromUrl && ids.has(fromUrl)) initial = fromUrl;
 
   apply(initial, false);
@@ -281,9 +292,7 @@ const site = siteEntry.data;
     color: #c8cbd2;
   }
 
-  /* Kept as a scroller purely as a safety net: at very small widths or with a
-     large system font the two pills can still exceed the line, and scrolling
-     beats them wrapping into the page content. */
+  /* Scrolls only if wrapping still cannot fit them. */
   .switcher-scroll {
     overflow-x: auto;
     scrollbar-width: thin;
@@ -291,10 +300,16 @@ const site = siteEntry.data;
     padding-inline: 1rem;
   }
 
+  /*
+    Wrap rather than scroll. Three pills exceed a 375px line, and a horizontally
+    scrolling row hides whichever option falls off the end behind a gesture
+    people do not always notice - the same failure the six-option select existed
+    to avoid. An extra row costs about 50px and keeps every option visible.
+  */
   .switcher-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.4rem;
-    width: max-content;
   }
 
   .tab {

@@ -10,7 +10,7 @@
 
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
-| U1 | **Pick between Civic Letterpress and East Austin Print Shop** | JON | Narrowed from six on first look. Everything in Phase 2 is blocked until one wins. Live at **https://blackshearpta.org** |
+| U1 | **Pick between Civic Letterpress A, Civic Letterpress B and East Austin Print Shop** | JON | Narrowed from six, then Civic split into A and B on first feedback. Everything in Phase 2 is blocked until one wins. Live at **https://blackshearpta.org** |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 
 Ask for a favourite **and** a runner-up: six options split a small group six ways, and the second choice is usually where consensus actually shows up.

@@ -1,0 +1,75 @@
+---
+import type { HomeData } from '../../types';
+
+/**
+ * The school video, embedded.
+ *
+ * youtube-nocookie.com rather than youtube.com. It defers YouTube's tracking
+ * cookies until someone actually presses play, which for a school site aimed
+ * at parents is both the decent default and one less thing to explain if a
+ * cookie-consent question ever comes up.
+ *
+ * Lazy-loaded: it sits high on the page but is not what anyone came for, and
+ * an eager YouTube iframe is a large amount of third-party JavaScript ahead of
+ * the content.
+ *
+ * The `title` is not decoration - it is the iframe's accessible name, and
+ * without it a screen reader announces nothing but "frame".
+ */
+interface Props {
+  video: NonNullable<HomeData['video']>;
+}
+
+const { video } = Astro.props;
+const src = `https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0`;
+---
+
+<section class="video" aria-label={video.title}>
+  <div class="frame">
+    <iframe
+      src={src}
+      title={video.title}
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
+</section>
+
+<style>
+  .video {
+    padding-block: var(--pta-section-y) 0;
+  }
+
+  /*
+    aspect-ratio rather than the old padding-bottom hack: the iframe fills a box
+    the browser sizes itself, so there is no magic 56.25% to get wrong and
+    nothing shifts while the embed loads.
+
+    Capped and left-aligned rather than full width. The band it sits in is a
+    photograph, and a video stretched across the whole container would cover
+    the backdrop the theme is built around.
+  */
+  .frame {
+    position: relative;
+    width: 100%;
+    max-width: 42rem;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
+    /* Opaque, so the scrimmed photo never shows through a letterboxed frame. */
+    background: var(--pta-ink);
+  }
+
+  .frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+</style>
