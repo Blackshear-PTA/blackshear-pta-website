@@ -1,0 +1,225 @@
+# Blackshear PTA - standalone pages.
+#
+# Each top-level key below becomes a page. `little-east:` publishes
+# /little-east. Adding a page means adding a block here; no code change.
+# Shape is enforced by src/content.config.ts, so a typo fails the build rather
+# than shipping a blank section.
+#
+# STARTING POINTS, NOT FINISHED COPY. Everything here is lifted from the
+# current Weebly site to match its present state (TASKS.md A20). Rewriting is a
+# later pass. Two of the four had no Weebly page at all and are noted inline.
+#
+# Broken links found while copying are corrected here and recorded in TASKS.md
+# as F21-F24. Shipping a link that is already known to be dead is worse than
+# not shipping it.
+
+little-east:
+  meta:
+    title: "Fine Arts and Little EAST - Blackshear PTA"
+    description: "The Fine Arts committee runs Little EAST, Blackshear's annual art show and silent auction, plus performances, drama club and the Austin Studio Tours."
+  title: "Fine Arts / Little EAST"
+  lede: "Blackshear is a Fine Arts Academy. This committee is how families get to be part of that."
+  backdrop: little-east
+  body:
+    - "We find fun ways for families to engage with the Fine Arts Academy. We join the Austin Studio Tours and turn the school into a gallery, students perform, the drama club does Shakespeare and improv, and we host Little EAST, our annual silent auction."
+    - "Little EAST is the PTA's largest event of the year and its largest single source of funding."
+  cta:
+    label: "Join the PTA"
+    href: "https://tinyurl.com/BlackshearStore"
+  sections:
+    - heading: "2025 - the 12th Little EAST"
+      body: []
+      links:
+        - label: "2025 silent auction"
+          href: "https://tinyurl.com/12thLittleEAST"
+          note: "Opens BiddingOwl"
+        - label: "Photos by DesignLab44 (Marcus Charles)"
+          href: "https://tinyurl.com/BlackshearLEPics"
+          note: "Downloads a zip file from Dropbox"
+      names: []
+    - heading: "2024 - the 11th Little EAST"
+      body: []
+      links:
+        - label: "2024 Little EAST video"
+          href: "https://tinyurl.com/11thLittleEAST"
+          note: "Opens YouTube"
+        - label: "Photos by CMK Digitals"
+          href: "https://photos.app.goo.gl/p2VUzM2dXKd1RECC9"
+          note: "Opens Google Photos"
+      names: []
+    - heading: "2023 - the 10th Little EAST"
+      body: []
+      links:
+        - label: "2023 silent auction"
+          href: "https://tinyurl.com/10thLittleEAST"
+          note: "Opens BiddingOwl"
+      names: []
+    - heading: "2022"
+      body: []
+      links:
+        - label: "2022 Little EAST video"
+          href: "https://www.tiktok.com/@blackshearfinearts/video/7165672308009422123"
+          note: "Opens TikTok"
+      names: []
+    - heading: "2021"
+      body: []
+      links:
+        - label: "2021 Little EAST video"
+          href: "https://youtu.be/81dHWT3LIzU"
+          note: "Opens YouTube"
+      names: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "Ryann Matthews chairs this committee. Email the PTA and we will put you in touch."
+
+sponsors:
+  meta:
+    title: "Sponsors - Blackshear PTA"
+    description: "Family and business sponsorships supporting Blackshear Elementary students, families, teachers and staff in East Austin."
+  title: "Sponsors"
+  lede: "Support Blackshear students, families, teachers and staff by becoming a sponsor."
+  backdrop: bake-sale
+  body:
+    - "We have family and business sponsorships."
+    - "Our business sponsorship benefits provide valuable marketing exposure and advertising opportunities to over 200 families in our East Austin community. Sponsors play an integral role in funding Blackshear PTA activities, and our students, families, teachers and staff benefit tremendously."
+    - "Thank you for supporting our school and the fine arts."
+  cta:
+    label: "Become a sponsor"
+    href: "https://www.zeffy.com/en-US/ticketing/2026-2027-pta-memberships-and-sponsorships"
+  sections:
+    # Weebly files these under "Thank you 2025-2026 Sponsors!" - unlabelled here
+    # they would read as current, which they are not.
+    - heading: "Thank you to our 2025-2026 sponsors"
+      body:
+        - "The 2026-2027 list is still filling up. These are the sponsors who backed us last year."
+      links: []
+      names: []
+    - heading: "Champion Buzz"
+      body: []
+      links: []
+      names:
+        - "Design Lab 44"
+        - "Enabler"
+        - "Figure 8 Coffee Purveyors"
+        - "Industry (Eastside)"
+        - "Kruger's Jewelers"
+        - "Micklethwait Craft Meats"
+        - "Neuron Garage"
+        - "ThoughtBarn"
+        - "TSO Chinese"
+    - heading: "Supporter Buzz"
+      body: []
+      links: []
+      names:
+        - "East Austin Jiu Jitsu"
+        - "Schlotzsky's"
+        - "Snooze Eatery"
+    - heading: "Community Buzz"
+      body: []
+      links: []
+      names:
+        - "Butler"
+        - "Cowboy Pools"
+        - "LA-N-D"
+        - "MASH Movers"
+    # These families paid for recognition, so listing them is the point of the
+    # tier. Note for the board: after cutover this page is indexed, and these
+    # are children's first names with family surnames. Worth a decision.
+    - heading: "Family Buzz"
+      body: []
+      links: []
+      names:
+        - "Hank Anderson's Family"
+        - "Freya Berson's Family"
+        - "Ingrid and Greta Bowden's Family"
+        - "Gabby and Segolene Dablain's Family"
+        - "John Charlton-Faia's Family"
+        - "June Flowers's Family"
+        - "Grayton Hall's Family"
+        - "Judah Kareithi's Family"
+        - "Kaia and Dakari Krause Yang's Family"
+        - "Sonora Lemmo's Family"
+        - "Evelyn and Eleanor Miller's Family"
+        - "Ellie Regan's Family"
+        - "Russell Rowden's Family"
+        - "Eliana Spetalnick's Family"
+        - "Lane Stonebraker's Family"
+    - heading: "PTA Partners"
+      body: []
+      links: []
+      names:
+        - "Camacho Activity Center"
+        - "David Phillips Foundation"
+        - "Drip"
+        - "Miller"
+        - "North Loop Signs"
+        - "Oh Boy Print Shop"
+  contact:
+    name: "Lennie King"
+    role: "PTA Fundraising Chair"
+    email: "blackshearpta@gmail.com"
+    note: "The current site lists a direct address for Lennie that is obfuscated and could not be read. Using the PTA address until we have it."
+
+staff-appreciation:
+  meta:
+    title: "Staff Appreciation - Blackshear PTA"
+    description: "The Staff Appreciation committee shows Blackshear teachers, administrators and support staff that the work is seen."
+  title: "Staff Appreciation"
+  # NO WEEBLY PAGE EXISTS for this committee. Copy below is expanded from the
+  # homepage committee blurb and the volunteer page's PDF. Needs a real pass
+  # from whoever chairs it - the chair seat was vacant as of 2026-2027.
+  lede: "Teachers and staff carry this school. This is how we say so out loud."
+  backdrop: campus-flagpole
+  body:
+    - "We show Blackshear teachers, administrators and support staff some appreciation: staff lunches, coffee and treats in the breakroom, replacing supplies that have gone missing, and self-care like massages or gift cards to local businesses."
+    - "It is one of the easiest committees to help with. Most of what we do takes an hour, and none of it needs experience."
+  cta:
+    label: "Volunteer with us"
+    href: "https://tinyurl.com/VolunteeratBlackshear"
+  sections:
+    - heading: "How to help"
+      body:
+        - "Every volunteer on campus needs an annual Austin ISD background check before helping in person. It is free and takes a few minutes."
+      links:
+        - label: "AISD Voly background check"
+          href: "https://austinisd.voly.org/volunteer/home.html"
+          note: "Required once a year for all campus volunteers"
+        - label: "Staff appreciation overview"
+          href: "https://drive.google.com/file/d/1B3Jrx3KjhITmpNIzltQGhJnPQLP1NF7W/view?usp=sharing"
+          note: "PDF on Google Drive"
+      names: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "This committee is looking for a chair. Email us if you are interested."
+
+campus-beautification:
+  meta:
+    title: "Campus Beautification - Blackshear PTA"
+    description: "The Campus Beautification committee runs the Blackshear garden and campus work days in East Austin."
+  title: "Campus Beautification"
+  # NO WEEBLY PAGE EXISTS for this committee, and it was called "Garden" there.
+  # Copy below is expanded from the homepage blurb plus the volunteer page's
+  # garden work days PDF. Needs a real pass from the committee.
+  lede: "The garden, the grounds, and every work day that keeps them going."
+  backdrop: garden
+  body:
+    - "We connect families who are interested in campus beautification and getting outdoors. Join if you like getting dirty, recycling and gardening."
+    - "Work days are the easiest way in. Show up, and there is always something to do."
+  cta:
+    label: "Volunteer with us"
+    href: "https://tinyurl.com/VolunteeratBlackshear"
+  sections:
+    - heading: "How to help"
+      body:
+        - "Every volunteer on campus needs an annual Austin ISD background check before helping in person. It is free and takes a few minutes."
+      links:
+        - label: "AISD Voly background check"
+          href: "https://austinisd.voly.org/volunteer/home.html"
+          note: "Required once a year for all campus volunteers"
+        - label: "Garden work days"
+          href: "https://drive.google.com/file/d/1QaYYKEFyMKMBlbAnfgmvMfEuV4LXGb64/view?usp=share_link"
+          note: "PDF on Google Drive"
+      names: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "Email the PTA and we will point you at the next work day."

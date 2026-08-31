@@ -28,7 +28,13 @@ const headingId = uid('committees-heading');
  */
 const art = {
   'little-east': { src: littleEast, alt: 'Student paintings covering a wall at Blackshear' },
-  garden: { src: garden, alt: 'A raised garden bed of black-eyed Susans and lantana' },
+  // Slug follows the committee, not the filename: the photo is still a garden,
+  // but a committee named Campus Beautification carrying `art: garden` reads as
+  // a mistake to the next person editing home.yaml.
+  'campus-beautification': {
+    src: garden,
+    alt: 'A raised garden bed of black-eyed Susans and lantana',
+  },
   'staff-appreciation': {
     src: campusFlagpole,
     alt: 'The flagpole and main building on the Blackshear campus',
@@ -44,24 +50,31 @@ const art = {
     {
       committees.items.map((committee) => {
         const photo = committee.art ? art[committee.art] : null;
+        // Whole tile is the link when there is a page to go to, matching
+        // QuickActions and GetInvolved. A committee with no page yet stays
+        // plain text rather than becoming a link to nowhere.
+        const Tile = committee.href ? 'a' : 'div';
         return (
           <li>
-            {photo && (
-              <div class="art">
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  width={220}
-                  height={220}
-                  densities={[1, 2]}
-                  loading="lazy"
-                />
+            <Tile class="tile" href={committee.href}>
+              {photo && (
+                <div class="art">
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    width={220}
+                    height={220}
+                    densities={[1, 2]}
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div class="text">
+                <h3>{committee.name}</h3>
+                <p>{committee.description}</p>
+                {committee.href && <span class="more">Read more</span>}
               </div>
-            )}
-            <div class="text">
-              <h3>{committee.name}</h3>
-              <p>{committee.description}</p>
-            </div>
+            </Tile>
           </li>
         );
       })
@@ -103,11 +116,40 @@ const art = {
   }
 
   li {
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  .tile {
     display: flex;
     gap: var(--pta-gap);
     align-items: flex-start;
     padding-block: var(--pta-gap);
-    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+    color: var(--pta-ink);
+    text-decoration: none;
+  }
+
+  a.tile:hover,
+  a.tile:focus-visible {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+    /* Bleeds the fill to the edge of the tile rather than stopping at the text
+       column, so the hover reads as "this whole row is the target". */
+    padding-inline: var(--pta-gap);
+    margin-inline: calc(-1 * var(--pta-gap));
+  }
+
+  .more {
+    display: block;
+    margin-block-start: 0.4rem;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .more::after {
+    content: ' \2192';
   }
 
   .art {

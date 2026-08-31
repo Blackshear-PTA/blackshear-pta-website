@@ -95,15 +95,20 @@ home:
     items:
       - name: "Fine Arts / Little EAST"
         art: little-east
+        href: "/little-east"
         description: "Finds fun ways for families to engage with the Fine Arts Academy. We join the Austin Studio Tours and turn the school into a gallery, students perform, the drama club does Shakespeare and improv, and we host a silent auction."
       - name: "Fundraising"
         art: fundraising
+        href: "/sponsors"
         description: "Comes up with new ways to support Blackshear financially. Secures Little EAST silent auction donations and runs the monthly after-school snack sales."
       - name: "Staff Appreciation"
         art: staff-appreciation
+        href: "/staff-appreciation"
         description: "Shows Blackshear teachers, administrators, and support staff some appreciation - staff lunches, coffee and treats in the breakroom, replacing missing supplies, and self-care like massages or gift cards to local businesses."
-      - name: "Garden"
-        art: garden
+      # Renamed from "Garden" 2026-08-31 at the board's request.
+      - name: "Campus Beautification"
+        art: campus-beautification
+        href: "/campus-beautification"
         description: "Connects families interested in campus beautification and getting outdoors. Join if you like getting dirty, recycling, and gardening."
 
   footer:

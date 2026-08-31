@@ -1,0 +1,207 @@
+---
+import { getCollection } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+
+/**
+ * Every standalone page in src/content/pages.yaml, at its own top-level URL.
+ * Adding `volunteer:` to that file publishes /volunteer with no code change,
+ * which is the whole point (PROJECT-BRIEF §2: a site a non-technical volunteer
+ * can still edit after board turnover).
+ *
+ * Astro gives explicit routes priority over dynamic ones, so a page that
+ * outgrows the schema can graduate to src/pages/<name>.astro and keep its URL.
+ */
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.map((entry) => ({ params: { page: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const page = entry.data;
+---
+
+<PageLayout page={page}>
+  {page.body.map((paragraph) => <p class="prose">{paragraph}</p>)}
+
+  {
+    page.cta && (
+      <p class="cta-row">
+        <a class="cta" href={page.cta.href} target="_blank" rel="noopener">
+          {page.cta.label}
+          <span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      </p>
+    )
+  }
+
+  {
+    page.sections.map((section) => (
+      <section class="block">
+        <div class="rule" role="presentation" />
+        <h2>{section.heading}</h2>
+        {section.body.map((paragraph) => (
+          <p class="prose">{paragraph}</p>
+        ))}
+
+        {section.links.length > 0 && (
+          <ul class="links">
+            {section.links.map((item) => (
+              <li>
+                <a href={item.href} target="_blank" rel="noopener">
+                  {item.label}
+                  <span class="sr-only"> (opens in a new tab)</span>
+                </a>
+                {item.note && <span class="note">{item.note}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Plain names, no destinations: sponsor tiers and thank-you lists. */}
+        {section.names.length > 0 && (
+          <ul class="names">
+            {section.names.map((name) => (
+              <li>{name}</li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))
+  }
+
+  {
+    page.contact && (
+      <section class="block contact">
+        <div class="rule" role="presentation" />
+        <h2>Questions?</h2>
+        <p class="prose">
+          {page.contact.name && page.contact.role && (
+            <>
+              {page.contact.name}, {page.contact.role}.{' '}
+            </>
+          )}
+          <a href={`mailto:${page.contact.email}`}>{page.contact.email}</a>
+        </p>
+        {page.contact.note && <p class="prose note-line">{page.contact.note}</p>}
+      </section>
+    )
+  }
+</PageLayout>
+
+<style>
+  .prose {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  .prose:first-child {
+    margin-block-start: var(--pta-section-y);
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block-end: var(--pta-gap);
+  }
+
+  .block {
+    padding-block-start: var(--pta-section-y);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .cta-row {
+    margin: 0 0 var(--pta-section-y);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .links li {
+    padding-block: 0.6rem;
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  .links li:first-child {
+    border-block-start: 0;
+  }
+
+  .links a {
+    /* Genuine 44px target without a visible box; padding alone lands short. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-body);
+    color: var(--pta-ink);
+  }
+
+  .note {
+    display: block;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  /* Sponsor tiers read as a list of equals, so they wrap rather than stack:
+     fifteen family names in a single column is a lot of scrolling for a page
+     whose job is to say thank you. */
+  .names {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 0.4rem var(--pta-gap);
+    max-width: var(--pta-container);
+  }
+
+  .names li {
+    font-size: var(--text-body);
+  }
+
+  .note-line {
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .contact {
+    padding-block-end: var(--pta-section-y);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
