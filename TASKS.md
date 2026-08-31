@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-08-30 (session 6)
+**Last updated:** 2026-08-31 (session 7)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -10,10 +10,10 @@
 
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
-| U1 | **RENEW `blackshearpta.org` AT GODADDY** | **Gabe** | **Expires 2026-09-03 - 5 days.** The Cloudflare transfer was rejected ([F15](#f15)), so the fallback that would have added a year is gone. Renewal is now the only thing preventing loss of the domain. |
-| U2 | ~~Invite `jon-flowers` to the GitHub org~~ | JON | ✅ Done - scaffold pushed |
+| U1 | **Collect the board's votes on the six designs** | JON | Everything in Phase 2 is blocked until a theme wins. Live at **https://blackshearpta.org** |
+| U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 
-U1 is the whole ballgame. Everything else in this document is worthless if the domain lapses.
+Ask for a favourite **and** a runner-up: six options split a small group six ways, and the second choice is usually where consensus actually shows up.
 
 *Going forward, code changes land via branch → PR rather than direct pushes to `main`.*
 
