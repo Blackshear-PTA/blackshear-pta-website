@@ -1,6 +1,17 @@
 ---
 import { Font } from 'astro:assets';
 import { fontFamilies } from '../font-families.mjs';
+
+/**
+ * Astro generates a literal union of the cssVariable names from the `fonts`
+ * config. font-families.mjs is plain JS (astro.config.mjs cannot import
+ * TypeScript), so its values widen to `string` and will not assign. Deriving
+ * the type from the component keeps the cast honest: add a family to the
+ * config without adding it to font-families.mjs, or vice versa, and this
+ * still type-checks, but `npm run build` fails loudly on the unknown
+ * variable rather than silently shipping an undefined --font-*.
+ */
+type FontVariable = Parameters<typeof Font>[0]['cssVariable'];
 import '../styles/global.css';
 import '../themes/themes.css';
 
@@ -38,7 +49,7 @@ const { title, description, themeId } = Astro.props;
       so leaving preload off means a visitor fetches the two faces they can
       actually see instead of all ten.
     */}
-    {fontFamilies.map((f) => <Font cssVariable={f.cssVariable} />)}
+    {fontFamilies.map((f) => <Font cssVariable={f.cssVariable as FontVariable} />)}
     {/*
       Pre-launch only. Weebly is still the canonical site, so this domain must
       not be indexed until cutover (TASKS.md A6). Belt and braces with the
