@@ -87,6 +87,18 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
   .lede {
     max-width: 52rem;
   }
+
+  /*
+    Drop the hero's bottom rule here. News carries its own top rule, and the
+    two land at the same y with different widths - the lede is capped at 52rem
+    while the news column follows the grid - so they overlap for the first
+    650px and read as one heavier line that then steps down to a thinner one.
+    News's rule is the one to keep: it lines up with the column it belongs to.
+    stacked-rules keeps the hero border, where it is the whole broadsheet idea.
+  */
+  .lede :global(.hero) {
+    border-block-end: 0;
+  }
   .split {
     display: grid;
     gap: 0 calc(var(--pta-gap) * 2.5);

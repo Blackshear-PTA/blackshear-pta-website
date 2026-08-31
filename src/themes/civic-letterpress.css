@@ -30,11 +30,6 @@
   --pta-header-y: 1.1rem;
   --pta-nav-weight: 400;
   --pta-nav-transform: uppercase;
-  /* No masthead photo. The nav wraps below the wordmark so there IS a gap, but
-     the board did not like the crop sitting in it, and an empty corner reads as
-     deliberate restraint in a letterpress theme in a way it would not elsewhere.
-     East Austin Print Shop keeps its photo, which now also differentiates the
-     two remaining options. */
 
   --pta-cta-bg: #f0e430;
   --pta-cta-ink: #000000;       /* 15.85:1 */
