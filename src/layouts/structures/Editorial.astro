@@ -1,4 +1,6 @@
 ---
+import { getImage } from 'astro:assets';
+import backdrop from '../../assets/photos/campus-front-walk.jpg';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
@@ -19,6 +21,9 @@ interface Props {
   mainId?: string;
 }
 const { home, site, mainId = 'main' } = Astro.props;
+
+// Same reasoning as stacked-rules: heavily scrimmed, so encode it cheaply.
+const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, format: 'webp' });
 ---
 
 {/*
@@ -35,21 +40,29 @@ const { home, site, mainId = 'main' } = Astro.props;
 
 <SiteHeader site={site} />
 <main id={mainId}>
-  <div class="shell">
-    <div class="lede">
-      <Hero hero={home.hero} />
-    </div>
+  {/*
+    The photographic band reaches further down than it does in stacked-rules,
+    because this structure puts Start Here in the rail beside the news rather
+    than directly under the hero - so covering Start Here means covering the
+    whole split.
+  */}
+  <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
+    <div class="shell">
+      <div class="lede">
+        <Hero hero={home.hero} />
+      </div>
 
-    <div class="split">
-      <div class="wide"><News news={home.news} /></div>
-      <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
+      <div class="split">
+        <div class="wide"><News news={home.news} /></div>
+        <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
+      </div>
     </div>
   </div>
 
   {/*
     The tinted band is a SIBLING of the containers, not a child. The usual
     `margin-inline: calc(50% - 50vw)` full-bleed trick is off by the scrollbar
-    width - 50vw counts it, 50% does not, which pushes the page into
+    width - 50vw counts it, 50% does not - which pushes the page into
     horizontal scroll on any desktop with a classic scrollbar. Letting the band
     be full width naturally avoids the arithmetic entirely.
   */}
@@ -91,9 +104,29 @@ const { home, site, mainId = 'main' } = Astro.props;
       padding-inline-start: calc(var(--pta-gap) * 1.5);
     }
   }
-  /* Full-bleed tinted band without a wrapper element fighting the container. */
   .band {
     background: var(--pta-surface-alt);
     border-block: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  /* See the note in StackedRules: sibling of the shells, scrim as a
+     pseudo-element so the alpha stays a single tunable number. */
+  .topband {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--topband-img);
+    background-size: cover;
+    background-position: center 40%;
+    background-attachment: scroll;
+    padding-block-end: var(--pta-section-y);
+  }
+
+  .topband::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--pta-topband-scrim);
+    opacity: var(--pta-topband-alpha);
   }
 </style>

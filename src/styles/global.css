@@ -168,6 +168,14 @@
   --pta-mark-ring: var(--color-brand-black);
   --pta-mark-ring-width: 3;
 
+  /* The photographic band behind the top of the page. The scrim alpha is not a
+     taste setting: both source photos contain true black, so it is the point
+     at which body text over the darkest pixel still clears WCAG AA. Lower it
+     and the page fails on whichever crop happens to land a shadow under a
+     paragraph. `npm run check:contrast` enforces it. */
+  --pta-topband-scrim: var(--color-brand-white);
+  --pta-topband-alpha: 0.80;
+
   /* hero - its own token rather than --text-banner so a theme can dial the
      opening statement down without touching the type scale. */
   --pta-hero-size: var(--text-display);
