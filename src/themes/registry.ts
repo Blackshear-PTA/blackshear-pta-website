@@ -58,7 +58,7 @@ export const themes: readonly Theme[] = [
     id: 'civic-letterpress-b',
     name: 'Civic Letterpress B',
     description:
-      'Civic Letterpress with a blue masthead and the school video above the quote. Everything else is identical to A.',
+      'Civic Letterpress with a blue masthead, and the school video sitting between the quote and the intro line. Everything else is identical to A.',
     structure: 'stacked-rules',
     video: true,
   },

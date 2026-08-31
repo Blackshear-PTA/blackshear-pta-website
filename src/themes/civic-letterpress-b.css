@@ -4,7 +4,8 @@
            can be compared without any other variable moving:
              1. the masthead is brand blue rather than black, borrowing East
                 Austin Print Shop's header colour
-             2. it carries the YouTube embed above the hero (registry `video`)
+             2. it carries the YouTube embed inside the hero, between the
+                headline and the intro line (registry `video`)
            Fonts, body colours, buttons, rules and spacing are all A's.
    Structure: stacked-rules
 

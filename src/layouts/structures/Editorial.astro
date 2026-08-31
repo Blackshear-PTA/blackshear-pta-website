@@ -56,7 +56,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
   <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
     <div class="shell">
       <div class="lede">
-        <Hero hero={home.hero} />
+        <Hero hero={home.hero} headlineId={`hero-${mainId}`} />
       </div>
 
       {/*

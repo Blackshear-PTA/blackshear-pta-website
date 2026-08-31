@@ -38,8 +38,10 @@ const src = `https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0`;
 </section>
 
 <style>
+  /* No own vertical spacing. It sits inside the hero, between the headline and
+     the subhead, and the hero owns the rhythm there. */
   .video {
-    padding-block: var(--pta-section-y) 0;
+    padding-block: 0;
   }
 
   /*

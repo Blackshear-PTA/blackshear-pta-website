@@ -4,6 +4,7 @@ import littleEast from '../../assets/photos/little-east.jpg';
 import bakeSale from '../../assets/photos/bake-sale.jpg';
 import garden from '../../assets/photos/garden.jpg';
 import campusFlagpole from '../../assets/photos/campus-flagpole.jpg';
+import { uid } from '../../uid';
 import type { HomeData } from '../../types';
 
 interface Props {
@@ -11,6 +12,10 @@ interface Props {
 }
 
 const { committees } = Astro.props;
+
+// Unique per render: /preview puts every design on one page, so a hardcoded
+// id would ship once per design and aria-labelledby would be ambiguous.
+const headingId = uid('committees-heading');
 
 /**
  * Slug to image. Static imports rather than paths built from content, because
@@ -32,8 +37,8 @@ const art = {
 } as const;
 ---
 
-<section class="committees" aria-labelledby="committees-heading">
-  <h2 id="committees-heading">{committees.heading}</h2>
+<section class="committees" aria-labelledby={headingId}>
+  <h2 id={headingId}>{committees.heading}</h2>
   {committees.intro && <p class="intro">{committees.intro}</p>}
   <ul>
     {
