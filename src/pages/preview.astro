@@ -315,9 +315,24 @@ const site = siteEntry.data;
     background: #23252b;
     color: #ffffff;
     font: inherit;
-    font-size: 0.9375rem;
+    /* 16px exactly. Below that, iOS Safari zooms the whole page when the
+       select takes focus, which then leaves the viewer scrolled sideways. */
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  /*
+    The native popup takes its size and colours from the OPTIONS, not from the
+    select, so styling only the closed control leaves the open list rendering
+    at the browser default - which is tiny next to a 16px control. Has to be
+    set on the options themselves.
+  */
+  select option {
+    background: #23252b;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .select-chev {
