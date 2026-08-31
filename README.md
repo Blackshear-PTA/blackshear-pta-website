@@ -95,3 +95,48 @@ Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
 `fnm` `use-on-cd` hook handles that on `cd`. The controller cannot rely on it,
 because tmux runs commands without an interactive shell, so every launch goes
 through `fnm exec`.
+
+## Deploys
+
+Every push to `main` triggers a Cloudflare Workers build, which deploys to
+`blackshearpta.org`. Pushes to any other branch build a preview at
+`<branch>-blackshear-pta.blackshearpta.workers.dev`.
+
+### Skipping builds that cannot change the site
+
+Some paths in this repo are documentation or source material and are never read
+by `astro build`, so a commit touching only those rebuilds and redeploys byte
+-identical output. Two ways to avoid that:
+
+**1. Build watch paths (set once, applies automatically).** In the Cloudflare
+dashboard under the Worker's build settings there are include/exclude path
+patterns. Excluding the list below means a docs-only push is skipped entirely.
+
+**2. `[skip ci]` in the commit message (per commit).** Cloudflare honours the
+usual skip tokens. Useful for a one-off when the watch paths do not cover it.
+
+### Paths that cannot affect the built site
+
+Verified by tracing every image and module import: nothing under `src/` reaches
+outside it, so the root `assets/` folder is reference material only.
+
+```
+docs/**            architecture and decisions
+assets/**          brand originals and the Weebly salvage - NOT src/assets
+.claude/**         local dev-server launch config
+TASKS.md
+README.md
+dev-control.sh
+dev.config
+```
+
+**`src/assets/**` is a build input and must NOT be excluded** - the committee
+photos and the backdrop are imported from there and processed at build time.
+The two folders are one character apart, which is the mistake to avoid.
+
+### Is it worth it?
+
+Honestly, barely, on cost. This site builds in well under a minute and nowhere
+near any free-tier ceiling. The real benefit is not publishing a new Worker
+version that is identical to the one before it, which makes the deploy history
+mean something.

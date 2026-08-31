@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-08-31 (session 8)
+**Last updated:** 2026-08-31 (session 9)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
