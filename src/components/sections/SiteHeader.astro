@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import BuzzMascot from '../BuzzMascot.astro';
+import headerPhoto from '../../assets/photos/header-blackshear.jpg';
 import type { SiteData } from '../../types';
 
 /**
@@ -43,6 +45,22 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
       <span class="brand-name">{identity.name}</span>
       <span class="brand-loc">{identity.location}</span>
     </a>
+
+    {/*
+      Decorative masthead strip. Purely decorative, so alt="" and aria-hidden:
+      it repeats nothing a screen reader needs, and announcing "photo of the
+      school" before the navigation would be noise.
+
+      Only appears where there is genuinely room. In themes whose nav wraps
+      below the wordmark (Civic Letterpress, East Austin Print Shop, Jacket)
+      that leaves a ~700x119 hole at the top right; in the other three the nav
+      runs inline and there is no gap to fill, so forcing the photo in would
+      push the nav down and invent the very problem it is filling. Controlled
+      by --pta-header-art, which defaults to none.
+    */}
+    <div class="hdr-art">
+      <Image src={headerPhoto} alt="" width={1200} height={520} densities={[1, 2]} loading="eager" />
+    </div>
 
     <div class="hdr-right">
       <nav class="nav" id={navId} aria-label="Primary">
@@ -170,6 +188,36 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     color: var(--pta-header-ink-muted);
   }
 
+  .hdr-art {
+    display: var(--pta-header-art, none);
+    position: relative;
+    flex: 1 1 16rem;
+    max-width: 30rem;
+    align-self: stretch;
+    margin-inline-start: auto;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-header-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  /*
+    Absolutely positioned so the photo has no intrinsic height to contribute.
+    Left in flow it sets the flex line height instead of taking it from the
+    wordmark block, and the header grows by however tall the source crop
+    happens to be - changing the crop ratio would silently resize the header.
+  */
+  .hdr-art :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Biased upward. A dead-centre crop of this frame lands on the tree line
+       and power cables; pulling up catches the flagpole, the banner and some
+       sky, which is both brighter and more recognisably the school. */
+    object-position: center 34%;
+  }
+
   .hdr-right {
     display: flex;
     flex-wrap: wrap;
@@ -278,6 +326,12 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     .hdr-inner {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    /* The phone header is already as short as we can get it; a decorative
+       photo is the first thing that should go. */
+    .hdr-art {
+      display: none;
     }
 
     /*

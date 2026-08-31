@@ -30,6 +30,8 @@
   --pta-header-y: 1.1rem;
   --pta-nav-weight: 400;
   --pta-nav-transform: uppercase;
+  /* Nav wraps below the wordmark here, leaving a gap worth filling. */
+  --pta-header-art: block;
 
   --pta-cta-bg: #f0e430;
   --pta-cta-ink: #000000;       /* 15.85:1 */

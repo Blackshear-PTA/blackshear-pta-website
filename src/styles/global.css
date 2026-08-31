@@ -151,6 +151,9 @@
   --pta-header-y: 1rem;
   --pta-nav-weight: 600;
   --pta-nav-transform: uppercase;
+  /* Decorative masthead photo. `block` only in themes whose nav wraps below
+     the wordmark and therefore have an empty top-right corner to fill. */
+  --pta-header-art: none;
 
   /* primary action (the one button that is not a nav link) */
   --pta-cta-bg: var(--color-brand-lemon);
