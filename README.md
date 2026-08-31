@@ -149,10 +149,11 @@ npm run check:domain
 
 Checks all three registrations - `blackshearpta.org` plus the `.com` and `.net`
 that redirect to it - against the registries' RDAP APIs, and exits non-zero if
-any is close to expiry, already lapsed, or in a suspended state. `.github/workflows/domain-watch.yml`
-runs it four times a day and opens a single GitHub issue when it fails, updating
-that same issue rather than filing new ones, and closing it once the registry
-looks healthy again.
+any is close to expiry, already lapsed, or in a suspended state.
 
-It is a smoke alarm, not a sprinkler. If the domain does lapse, nothing here
-buys it back - see F23 in `TASKS.md`.
+Run it by hand when you want to know. There is deliberately no scheduled job:
+an automated nag about a renewal somebody is already chasing is noise, and a
+recurring alert nobody can action is how alerts get ignored.
+
+It is a smoke alarm, not a sprinkler. If a domain does lapse, nothing here buys
+it back - see F23 in `TASKS.md`.
