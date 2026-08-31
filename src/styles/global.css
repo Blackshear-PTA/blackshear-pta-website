@@ -172,11 +172,6 @@
      opening statement down without touching the type scale. */
   --pta-hero-size: var(--text-display);
 
-  /* The inverted hero band used by the `blocks` structure. Separate from
-     --pta-accent because a theme whose accent already IS its header colour
-     would otherwise merge the two into one undifferentiated slab. */
-  --pta-hero-band-bg: var(--pta-accent);
-  --pta-hero-band-ink: var(--pta-ink-on-accent);
 
   /* shape */
   --pta-radius: var(--radius-none);

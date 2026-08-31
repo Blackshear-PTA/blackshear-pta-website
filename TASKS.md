@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-08-31 (session 7)
+**Last updated:** 2026-08-31 (session 8)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -10,7 +10,7 @@
 
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
-| U1 | **Collect the board's votes on the six designs** | JON | Everything in Phase 2 is blocked until a theme wins. Live at **https://blackshearpta.org** |
+| U1 | **Pick between Civic Letterpress and East Austin Print Shop** | JON | Narrowed from six on first look. Everything in Phase 2 is blocked until one wins. Live at **https://blackshearpta.org** |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 
 Ask for a favourite **and** a runner-up: six options split a small group six ways, and the second choice is usually where consensus actually shows up.

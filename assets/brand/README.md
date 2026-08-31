@@ -5,10 +5,10 @@ marks, not PTA-specific marks; see "Open question" below.
 
 | File | What it is | Verdict |
 |---|---|---|
-| `crest-1color.jpg` | Circular crest: varsity block **B**, two flanking yellow jackets, "BLACKSHEAR FINE ARTS ACADEMY", "Est. 1891". Pure black on white, 2000×2000. | **The strongest asset.** Single-color, high contrast, scales to a favicon, screenprint-ready. Anchors Civic Letterpress and East Austin Print Shop. Worth tracing to SVG. |
+| `crest-1color.jpg` | Circular crest: varsity block **B**, two flanking yellow jackets, "BLACKSHEAR FINE ARTS ACADEMY", "Est. 1891". Pure black on white, 2000×2000. | **The strongest asset.** Single-color, high contrast, scales to a favicon, screenprint-ready. Anchors Civic Letterpress and East Austin Print Shop, the two surviving designs. Worth tracing to SVG. |
 | `buzz-mascot.jpg` | "Buzz" standing, hands on hips, sneakers. Clean line art, black on white, 2000×2000. | Great. Traces to SVG cleanly. The mascot without the lockup - usable as a standalone accent. |
 | `logo-square-blue.jpg` | Blue/white split square, color Buzz with a megaphone, wordmark, "Growing Stronger Together". 1080×1080. | Social-media lockup. Source of the blue. Raster only, awkward aspect for web. |
-| `logo-original-vector.pdf` | Full original crest - color Buzz with an artist's palette on an open book, color wheel, motto ring, blue banner. **Vector, 810×810.** | The only vector file we have. Contains a raster mascot XObject, so it's partially vector. Fonts: **Hussar Bold** and **Sriracha** (both open-source; Sriracha is on Google Fonts, so the existing script tagline is reproducible exactly). |
+| `logo-original-vector.pdf` | Full original crest - color Buzz with an artist's palette on an open book, color wheel, motto ring, blue banner. **Vector, 810×810.** | The only vector file we have. Contains a raster mascot XObject, so it's partially vector. Fonts: **Hussar Bold** and **Sriracha** (both open-source). Sriracha was used by the Jacket theme, which was cut on 2026-08-31; the observation is kept because it is the only record of what the original logo is set in. |
 
 ## Palette
 

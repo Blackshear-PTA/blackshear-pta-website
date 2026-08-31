@@ -4,7 +4,11 @@
  * A theme is a token set AND a structure. Pairing them here is deliberate: it
  * makes a token-only recolor impossible to ship by accident, which is the
  * failure mode §5.1 warns about - six palettes on one layout still reads as
- * one generic template. Six themes across four structures.
+ * one generic template.
+ *
+ * NARROWED 2026-08-31: the board cut the original six to these two after a
+ * first look. The four that lost are gone from git history's tip but remain in
+ * the history if a direction needs revisiting.
  *
  * ADDING A THEME - three steps, in this order:
  *   1. src/themes/<id>.css - define every --pta-* token under [data-theme="<id>"]
@@ -15,13 +19,13 @@
  * Then run `npm run check:contrast`. AA is a hard gate, not a preference.
  *
  * WHEN A WINNER IS PICKED: set defaultThemeId below to the winner, then delete
- * the five losing CSS files, their imports in themes.css, their entries here,
+ * the losing CSS file, their imports in themes.css, their entries here,
  * any structure left with no themes, src/pages/preview.astro, and
  * public/_redirects (which sends / to /preview for the duration of the vote).
  */
 
 /** Structural arrangements - the ARRANGEMENT, not the skin. */
-export const structureIds = ['stacked-rules', 'editorial', 'blocks', 'utility'] as const;
+export const structureIds = ['stacked-rules', 'editorial'] as const;
 export type StructureId = (typeof structureIds)[number];
 
 export interface Theme {
@@ -44,39 +48,11 @@ export const themes: readonly Theme[] = [
     structure: 'stacked-rules',
   },
   {
-    id: 'warm-editorial',
-    name: 'Warm Editorial',
-    description:
-      'A well-made local-nonprofit annual report. Warm paper, serif throughout, asymmetric grid.',
-    structure: 'editorial',
-  },
-  {
-    id: 'schoolyard-bold',
-    name: 'Schoolyard Bold',
-    description:
-      'A modern summer-camp brand. Saturated blocks, thick keylines, hard shadows. Energetic.',
-    structure: 'blocks',
-  },
-  {
     id: 'print-shop',
     name: 'East Austin Print Shop',
     description:
       'Screenprint and wood type on newsprint. Flat overprinted colour.',
     structure: 'editorial',
-  },
-  {
-    id: 'quiet-utility',
-    name: 'Quiet Utility',
-    description:
-      'The anti-decoration option. Links first, above the hero. Built to find one thing fast on a phone.',
-    structure: 'utility',
-  },
-  {
-    id: 'jacket',
-    name: 'Jacket',
-    description:
-      'The branding and color design as the main focus. Black and gold banding, the only dark theme in the set.',
-    structure: 'blocks',
   },
 ];
 

@@ -143,7 +143,7 @@ print_status() {
   if [[ -n "$live" ]]; then
     printf '%s│%s  %-11s %s%s%s\n' "$CYAN" "$RESET" "dev tabs" "$GREEN" "${live# }" "$RESET"
   else
-    printf '%s│%s  %-11s %s—%s\n' "$CYAN" "$RESET" "dev tabs" "$DIM" "$RESET"
+    printf '%s│%s  %-11s %snone%s\n' "$CYAN" "$RESET" "dev tabs" "$DIM" "$RESET"
   fi
   printf '%s└%s\n' "$CYAN" "$RESET"
 }

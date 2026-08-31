@@ -12,7 +12,7 @@ interface Props {
   home: HomeData;
   site: SiteData;
   /**
-   * id for the <main> landmark. /preview renders six structures on one page,
+   * id for the <main> landmark. /preview renders both structures on one page,
    * and duplicate ids are invalid HTML and confuse assistive tech, so each
    * panel passes its own. Defaults to "main" for real pages.
    */
@@ -22,7 +22,7 @@ const { home, site, mainId = 'main' } = Astro.props;
 ---
 
 {/*
-  STRUCTURE: editorial  →  Warm Editorial, East Austin Print Shop
+  STRUCTURE: editorial  →  East Austin Print Shop
 
   An asymmetric magazine grid. The hero runs wide, then the page splits: news
   takes the broad column, quick actions sit in a narrow rail beside it. The

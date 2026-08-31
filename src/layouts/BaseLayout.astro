@@ -20,7 +20,7 @@ interface Props {
   description: string;
   /**
    * Sets [data-theme] on <html>; every theme token block hangs off it.
-   * Omitted on /preview, where six themes coexist and each panel carries its
+   * Omitted on /preview, where both themes coexist and each panel carries its
    * own [data-theme] instead - the selector works on any element.
    */
   themeId?: string;
@@ -41,13 +41,13 @@ const { title, description, themeId } = Astro.props;
     {/*
       One <Font> per family - this is what actually emits the @font-face rules
       and defines each --font-* variable. Without it the variables are
-      undefined, every --pta-font-display var() chain goes invalid, and all six
+      undefined, every --pta-font-display var() chain goes invalid, and both
       themes quietly render in the browser default.
 
-      Deliberately NOT preloaded. /preview holds six themes at once and only
+      Deliberately NOT preloaded. /preview holds both themes at once and only
       one is visible; browsers skip font downloads for display:none subtrees,
       so leaving preload off means a visitor fetches the two faces they can
-      actually see instead of all ten.
+      actually see instead of all four.
     */}
     {fontFamilies.map((f) => <Font cssVariable={f.cssVariable as FontVariable} />)}
     {/*

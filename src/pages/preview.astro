@@ -5,26 +5,29 @@ import { structures } from '../layouts/structures';
 import { themes, defaultThemeId } from '../themes/registry';
 
 /**
- * /preview - the six-theme switcher (PROJECT-BRIEF §5.4).
+ * /preview - the design switcher (PROJECT-BRIEF §5.4).
  *
- * All six render into the page; five are display:none. That is what makes the
+ * Both render into the page; one is display:none. That is what makes the
  * switch instant, and instant is the whole point - a reload between variants
- * and people bail after two. Browsers also skip webfont downloads for
- * display:none subtrees, so a visitor pays for the active theme's two faces
- * rather than all ten.
+ * and people bail. Browsers also skip webfont downloads for display:none
+ * subtrees, so a visitor pays for the active theme's two faces, not all four.
+ *
+ * NARROWED 2026-08-31 from six to Civic Letterpress and East Austin Print
+ * Shop. The switcher machinery is unchanged and still handles any number.
  *
  * The control offers the same choice two ways: pills on desktop, a native
- * select below 48rem. Six pills on a phone meant a horizontal scroller, which
+ * select below 48rem. Pills on a phone meant a horizontal scroller, which
  * hides options behind a gesture people miss. A native select opens the OS
- * picker, shows all six at once, and is the one widget every parent already
- * knows how to use.
+ * picker, shows every option at once, and is the one widget every parent
+ * already knows how to use. Two pills fit on a phone, but the select stays:
+ * it is the better control and the count could change again.
  *
  * The whole bar also collapses, because it is chrome sitting on top of the
  * thing it is asking you to judge, and at some point you want it out of the
  * way. Collapsed still shows which design you are looking at.
  *
  * THIS PAGE IS DISPOSABLE. When a winner is picked, delete it along with the
- * five losing themes. Nothing else imports it.
+ * losing theme. Nothing else imports it.
  */
 
 const [homeEntry, siteEntry] = await Promise.all([
@@ -40,13 +43,13 @@ const site = siteEntry.data;
 
 <BaseLayout
   title="Choose a design - Blackshear PTA"
-  description="Six design directions for the new Blackshear PTA website. Pick the one you like best."
+  description="Two design directions for the new Blackshear PTA website. Pick the one you like best."
 >
   <div class="switcher" data-collapsed="false">
     <div class="switcher-inner">
       <div class="switcher-top">
         <p class="switcher-title">
-          <strong>Six designs.</strong>{' '}
+          <strong>Two designs.</strong>{' '}
           <span class="showing">Showing <b data-current-name></b></span>
         </p>
         <button
@@ -66,10 +69,10 @@ const site = siteEntry.data;
 
       <div class="switcher-body" id="switcher-body">
         <p class="switcher-label">
-          <span>Copy is taken from the current site and the same across all six options. Tap through and let Jon know your favorite or the one that's closest to "good".</span>
+          <span>Copy is taken from the current site and the same across both options. Tap through and let Jon know your favorite or the one that's closest to "good".</span>
         </p>
 
-        {/* Below 48rem. Native on purpose: the OS picker shows all six at once. */}
+        {/* Below 48rem. Native on purpose: the OS picker shows both at once. */}
         <div class="switcher-select">
           <label class="sr-only" for="theme-select">Choose a design</label>
           <select id="theme-select" data-theme-select>
@@ -81,7 +84,7 @@ const site = siteEntry.data;
           </svg>
         </div>
 
-        {/* 48rem and up, where six pills fit on one line. */}
+        {/* 48rem and up. */}
         <div class="switcher-scroll">
           <div class="switcher-tabs" role="group" aria-label="Choose a design">
             {
@@ -214,7 +217,7 @@ const site = siteEntry.data;
 
 <style>
   /* The switcher is chrome, not content. It deliberately inherits NOTHING from
-     the themes - otherwise it would restyle itself six times and stop reading
+     the themes - otherwise it would restyle itself per theme and stop reading
      as a fixed control. Hard-coded values here are correct. */
   .switcher {
     position: sticky;
@@ -298,8 +301,8 @@ const site = siteEntry.data;
   }
 
   /* One control per breakpoint. Below 48rem the native select opens the OS
-     picker, which shows all six at once; a horizontal pill scroller hid half
-     of them behind a gesture people do not always notice. */
+     picker, which shows every option at once; a horizontal pill scroller hid
+     some of them behind a gesture people do not always notice. */
   .switcher-select {
     position: relative;
     display: block;

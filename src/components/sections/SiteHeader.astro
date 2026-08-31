@@ -28,7 +28,7 @@ const { site } = Astro.props;
 const { identity, nav, primaryAction } = site;
 
 /**
- * /preview renders six headers on one page, so a fixed id would collide and
+ * /preview renders both headers on one page, so a fixed id would collide and
  * every aria-controls would point at whichever one won. A build-scoped counter
  * rather than a random id, so the same source produces the same HTML and the
  * built output stays diffable.
@@ -122,7 +122,7 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
 </header>
 
 <script>
-  // One bundled script wiring every header on the page: /preview has six.
+  // One bundled script wiring every header on the page: /preview has two.
   for (const header of document.querySelectorAll<HTMLElement>('[data-pta-header]')) {
     const button = header.querySelector<HTMLButtonElement>('.menu-btn');
     const nav = header.querySelector<HTMLElement>('.nav');

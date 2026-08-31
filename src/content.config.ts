@@ -7,7 +7,7 @@ import { file } from 'astro/loaders';
  *
  * PROJECT-BRIEF §5.4: "Content lives in exactly one place." All homepage copy
  * lives in src/content/home.yaml. Themes are consumers - none of them owns a
- * word of copy, so there is no drift between the six variants.
+ * word of copy, so there is no drift between the variants.
  *
  * The YAML file is a mapping whose top-level keys become entry IDs, so the
  * single homepage entry is read with `getEntry('home', 'home')`.
