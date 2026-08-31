@@ -102,8 +102,9 @@ through `fnm exec`.
 npm run check:domain
 ```
 
-Reads the registry's RDAP API and exits non-zero if the domain is close to
-expiry, already lapsed, or in a suspended state. `.github/workflows/domain-watch.yml`
+Checks all three registrations - `blackshearpta.org` plus the `.com` and `.net`
+that redirect to it - against the registries' RDAP APIs, and exits non-zero if
+any is close to expiry, already lapsed, or in a suspended state. `.github/workflows/domain-watch.yml`
 runs it four times a day and opens a single GitHub issue when it fails, updating
 that same issue rather than filing new ones, and closing it once the registry
 looks healthy again.
