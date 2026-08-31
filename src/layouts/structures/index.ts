@@ -1,7 +1,5 @@
 import StackedRules from './StackedRules.astro';
 import Editorial from './Editorial.astro';
-import Blocks from './Blocks.astro';
-import Utility from './Utility.astro';
 import type { StructureId } from '../../themes/registry';
 
 /**
@@ -12,6 +10,4 @@ import type { StructureId } from '../../themes/registry';
 export const structures = {
   'stacked-rules': StackedRules,
   editorial: Editorial,
-  blocks: Blocks,
-  utility: Utility,
 } satisfies Record<StructureId, unknown>;

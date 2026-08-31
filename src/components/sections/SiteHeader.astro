@@ -1,7 +1,5 @@
 ---
-import { Image } from 'astro:assets';
 import BuzzMascot from '../BuzzMascot.astro';
-import mastheadPhoto from '../../assets/photos/campus-frontage.jpg';
 import type { SiteData } from '../../types';
 
 /**
@@ -28,7 +26,7 @@ const { site } = Astro.props;
 const { identity, nav, primaryAction } = site;
 
 /**
- * /preview renders six headers on one page, so a fixed id would collide and
+ * /preview renders both headers on one page, so a fixed id would collide and
  * every aria-controls would point at whichever one won. A build-scoped counter
  * rather than a random id, so the same source produces the same HTML and the
  * built output stays diffable.
@@ -45,31 +43,6 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
       <span class="brand-name">{identity.name}</span>
       <span class="brand-loc">{identity.location}</span>
     </a>
-
-    {/*
-      Decorative masthead strip. Purely decorative, so alt="" and aria-hidden:
-      it repeats nothing a screen reader needs, and announcing "photo of the
-      school" before the navigation would be noise.
-
-      Sized so neither density upscales: the source is 1067px wide, and 520 at
-      2x lands at 1040. Asking for more would hand the browser a soft image
-      that merely looks high-resolution in the markup.
-
-      The requested ratio matches the SOURCE, not the strip. Cropping to the
-      strip's ratio here and then letting object-fit crop again throws away the
-      vertical range CSS needs, and the interesting part of this frame is not
-      in the middle. One crop, chosen below.
-
-      Only appears where there is genuinely room. In themes whose nav wraps
-      below the wordmark (Civic Letterpress, East Austin Print Shop, Jacket)
-      that leaves a ~700x119 hole at the top right; in the other three the nav
-      runs inline and there is no gap to fill, so forcing the photo in would
-      push the nav down and invent the very problem it is filling. Controlled
-      by --pta-header-art, which defaults to none.
-    */}
-    <div class="hdr-art">
-      <Image src={mastheadPhoto} alt="" width={520} height={390} densities={[1, 2]} loading="eager" />
-    </div>
 
     <div class="hdr-right">
       <nav class="nav" id={navId} aria-label="Primary">
@@ -122,7 +95,7 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
 </header>
 
 <script>
-  // One bundled script wiring every header on the page: /preview has six.
+  // One bundled script wiring every header on the page: /preview has two.
   for (const header of document.querySelectorAll<HTMLElement>('[data-pta-header]')) {
     const button = header.querySelector<HTMLButtonElement>('.menu-btn');
     const nav = header.querySelector<HTMLElement>('.nav');
@@ -195,44 +168,6 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     color: var(--pta-header-ink-muted);
-  }
-
-  .hdr-art {
-    display: var(--pta-header-art, none);
-    position: relative;
-    flex: 1 1 16rem;
-    max-width: 30rem;
-    align-self: stretch;
-    margin-inline-start: auto;
-    overflow: hidden;
-    border: var(--pta-border-width) solid var(--pta-header-rule);
-    border-radius: var(--pta-radius);
-  }
-
-  /*
-    Absolutely positioned so the photo has no intrinsic height to contribute.
-    Left in flow it sets the flex line height instead of taking it from the
-    wordmark block, and the header grows by however tall the source crop
-    happens to be - changing the crop ratio would silently resize the header.
-  */
-  .hdr-art :global(img) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /*
-      Not a guess. `cover` scales the 1067x800 source to fill the 480px box,
-      giving a 480x360 image against a 119px-tall window and 241px of vertical
-      overflow, of which this percentage scrolls off the top. At 20% the
-      visible band is source y 107-372: opening just above the roofline,
-      keeping the BLACKSHEAR SCHOOL lettering cut into the brick at y 150-200,
-      and running down through both rows of windows.
-
-      Anything past ~26% pushes the lettering off the top, which is the whole
-      reason to use this frame.
-    */
-    object-position: center 20%;
   }
 
   .hdr-right {
@@ -345,11 +280,6 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
       align-items: stretch;
     }
 
-    /* The phone header is already as short as we can get it; a decorative
-       photo is the first thing that should go. */
-    .hdr-art {
-      display: none;
-    }
 
     /*
       Mark beside the wordmark rather than above it. Stacked, plus the nav, put

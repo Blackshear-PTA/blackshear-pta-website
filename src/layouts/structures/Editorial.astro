@@ -1,4 +1,6 @@
 ---
+import { getImage } from 'astro:assets';
+import backdrop from '../../assets/photos/campus-front-walk.jpg';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
@@ -12,17 +14,20 @@ interface Props {
   home: HomeData;
   site: SiteData;
   /**
-   * id for the <main> landmark. /preview renders six structures on one page,
+   * id for the <main> landmark. /preview renders both structures on one page,
    * and duplicate ids are invalid HTML and confuse assistive tech, so each
    * panel passes its own. Defaults to "main" for real pages.
    */
   mainId?: string;
 }
 const { home, site, mainId = 'main' } = Astro.props;
+
+// Same reasoning as stacked-rules: heavily scrimmed, so encode it cheaply.
+const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, format: 'webp' });
 ---
 
 {/*
-  STRUCTURE: editorial  →  Warm Editorial, East Austin Print Shop
+  STRUCTURE: editorial  →  East Austin Print Shop
 
   An asymmetric magazine grid. The hero runs wide, then the page splits: news
   takes the broad column, quick actions sit in a narrow rail beside it. The
@@ -35,21 +40,41 @@ const { home, site, mainId = 'main' } = Astro.props;
 
 <SiteHeader site={site} />
 <main id={mainId}>
-  <div class="shell">
-    <div class="lede">
-      <Hero hero={home.hero} />
-    </div>
+  {/*
+    The photographic band has to reach the whole split on desktop, because
+    this structure puts Start Here in the rail BESIDE the news rather than
+    under the hero, so there is no way to cover one without the other.
 
-    <div class="split">
-      <div class="wide"><News news={home.news} /></div>
-      <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
+    On a phone they stack, which makes them separable again - and a backdrop
+    running behind three stacked sections is far too much of it. So on mobile
+    the news column paints its own opaque ground over the band, leaving the
+    photo behind the quote and Start Here only. Same two sections as the other
+    design, which is the point.
+  */}
+  <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
+    <div class="shell">
+      <div class="lede">
+        <Hero hero={home.hero} />
+      </div>
+
+      {/*
+        Start Here comes FIRST in the DOM. The old order was news-then-rail
+        with a comment claiming the rail led on mobile; nothing implemented
+        that, so a phone got the reading before the links and a different
+        order from the other design. Desktop puts them back side by side with
+        explicit grid columns, so the visual order there is unchanged.
+      */}
+      <div class="split">
+        <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
+        <div class="wide"><News news={home.news} /></div>
+      </div>
     </div>
   </div>
 
   {/*
     The tinted band is a SIBLING of the containers, not a child. The usual
     `margin-inline: calc(50% - 50vw)` full-bleed trick is off by the scrollbar
-    width - 50vw counts it, 50% does not, which pushes the page into
+    width - 50vw counts it, 50% does not - which pushes the page into
     horizontal scroll on any desktop with a classic scrollbar. Letting the band
     be full width naturally avoids the arithmetic entirely.
   */}
@@ -74,6 +99,18 @@ const { home, site, mainId = 'main' } = Astro.props;
   .lede {
     max-width: 52rem;
   }
+
+  /*
+    Drop the hero's bottom rule here. News carries its own top rule, and the
+    two land at the same y with different widths - the lede is capped at 52rem
+    while the news column follows the grid - so they overlap for the first
+    650px and read as one heavier line that then steps down to a thinner one.
+    News's rule is the one to keep: it lines up with the column it belongs to.
+    stacked-rules keeps the hero border, where it is the whole broadsheet idea.
+  */
+  .lede :global(.hero) {
+    border-block-end: 0;
+  }
   .split {
     display: grid;
     gap: 0 calc(var(--pta-gap) * 2.5);
@@ -81,19 +118,72 @@ const { home, site, mainId = 'main' } = Astro.props;
   .rail {
     border-block-start: var(--pta-rule-width) solid var(--pta-rule);
   }
+
+  /*
+    Below 60rem the split is one column in DOM order (Start Here, then news)
+    and the news column covers the backdrop with the page surface. Painting
+    over it is what lets the photo stop after Start Here without splitting the
+    band into two elements, which the desktop side-by-side layout needs to
+    stay whole.
+  */
+  @media (max-width: 59.99rem) {
+    .wide {
+      background: var(--pta-surface);
+      /* Bleed to the band's edges so no strip of photo shows around it. */
+      margin-inline: calc(var(--pta-gutter) * -1);
+      padding-inline: var(--pta-gutter);
+    }
+  }
+
   @media (min-width: 60rem) {
     .split {
       grid-template-columns: minmax(0, 1.85fr) minmax(15rem, 0.85fr);
     }
+    /* Explicit placement: the DOM is rail-first for mobile, so desktop has to
+       put the news back on the left rather than rely on source order. */
+    .wide {
+      grid-column: 1;
+      grid-row: 1;
+    }
     .rail {
+      grid-column: 2;
+      grid-row: 1;
       border-block-start: 0;
       border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
       padding-inline-start: calc(var(--pta-gap) * 1.5);
     }
   }
-  /* Full-bleed tinted band without a wrapper element fighting the container. */
   .band {
     background: var(--pta-surface-alt);
     border-block: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  /* See the note in StackedRules: sibling of the shells, scrim as a
+     pseudo-element so the alpha stays a single tunable number. */
+  .topband {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--topband-img);
+    background-size: cover;
+    background-position: center 40%;
+    background-attachment: scroll;
+    padding-block-end: var(--pta-section-y);
+  }
+
+  @media (max-width: 59.99rem) {
+    /* The news column supplies the ground down here, so band padding would
+       show as a strip of photo below it. */
+    .topband {
+      padding-block-end: 0;
+    }
+  }
+
+  .topband::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--pta-topband-scrim);
+    opacity: var(--pta-topband-alpha);
   }
 </style>

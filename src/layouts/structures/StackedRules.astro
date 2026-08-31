@@ -1,4 +1,6 @@
 ---
+import { getImage } from 'astro:assets';
+import backdrop from '../../assets/photos/campus-front-walk.jpg';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
@@ -12,13 +14,23 @@ interface Props {
   home: HomeData;
   site: SiteData;
   /**
-   * id for the <main> landmark. /preview renders six structures on one page,
+   * id for the <main> landmark. /preview renders both structures on one page,
    * and duplicate ids are invalid HTML and confuse assistive tech, so each
    * panel passes its own. Defaults to "main" for real pages.
    */
   mainId?: string;
 }
 const { home, site, mainId = 'main' } = Astro.props;
+
+// Same photo and the same request as the editorial structure, deliberately:
+// identical arguments mean Astro emits one asset both themes share rather than
+// two near-identical ones.
+//
+// Quality is low on purpose. The photo sits under an ~80% scrim, so detail is
+// invisible by construction and a full-quality encode would be most of the page
+// weight for nothing. The URL goes in as an inline custom property because a
+// scoped <style> block cannot reach a build-time import.
+const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, format: 'webp' });
 ---
 
 {/*
@@ -27,19 +39,29 @@ const { home, site, mainId = 'main' } = Astro.props;
   A broadsheet. One column, everything in reading order, heavy rules doing all
   the dividing. The arrangement is deliberately plain because the theme's whole
   argument is that weight and rule thickness carry a page without decoration.
+
+  The top band is the one exception: hero and Start Here sit over a full-bleed
+  photograph of the school.
 */}
 
 <SiteHeader site={site} />
-<div class="shell">
-  <main id={mainId}>
-    <Hero hero={home.hero} />
-    <QuickActions quickActions={home.quickActions} />
+<main id={mainId}>
+  <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
+    <div class="shell">
+      <Hero hero={home.hero} />
+      <QuickActions quickActions={home.quickActions} />
+    </div>
+  </div>
+
+  <div class="shell">
     <div class="rule" role="presentation"></div>
     <News news={home.news} />
     <div class="rule" role="presentation"></div>
     <GetInvolved getInvolved={home.getInvolved} />
     <Committees committees={home.committees} />
-  </main>
+  </div>
+</main>
+<div class="shell">
   <Footer footer={home.footer} social={site.social} />
 </div>
 
@@ -52,5 +74,35 @@ const { home, site, mainId = 'main' } = Astro.props;
   .rule {
     height: var(--pta-rule-width);
     background: var(--pta-rule);
+  }
+
+  /*
+    Full-bleed photographic band. It is a sibling of the shells rather than a
+    wrapper inside one, so the photo reaches both screen edges without the
+    `calc(50% - 50vw)` trick, which is off by the scrollbar width and put this
+    page into horizontal scroll the last time it was used here.
+
+    The scrim is a pseudo-element rather than a translucent background on the
+    band itself, so the alpha stays one tunable number and the content above it
+    is fully opaque.
+  */
+  .topband {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--topband-img);
+    background-size: cover;
+    background-position: center 30%;
+    /* Not `fixed`: iOS Safari renders that at the wrong scale and stutters. */
+    background-attachment: scroll;
+    padding-block-end: var(--pta-gap);
+  }
+
+  .topband::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--pta-topband-scrim);
+    opacity: var(--pta-topband-alpha);
   }
 </style>

@@ -1,9 +1,5 @@
 /* Every theme's token block, imported once by BaseLayout.
-   Add an @import here when you add a theme; see src/themes/registry.ts.
+   Add an @import here when you add a theme - see src/themes/registry.ts.
    Miss this step and the theme silently falls back to the :root defaults. */
 @import "./civic-letterpress.css";
-@import "./warm-editorial.css";
-@import "./schoolyard-bold.css";
 @import "./print-shop.css";
-@import "./quiet-utility.css";
-@import "./jacket.css";

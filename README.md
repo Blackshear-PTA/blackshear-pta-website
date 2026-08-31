@@ -60,3 +60,38 @@ blue ground. `assets/brand/README.md` has the full contrast table.
 
 Everything else - why Workers and not Pages, why sessions go in D1, why there is
 no component library - is in [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md).
+
+## Local development
+
+This repo has a `dev` controller matching the IMPRES fleet convention, so it
+opens as a new tab in the same shared Ghostty/tmux window as the other apps.
+
+```bash
+dev              # interactive controller (status + menu)
+dev start        # astro dev on :4321, hot reload
+dev worker       # wrangler dev on :8787
+dev stop         # stops every mode and closes its tabs
+dev check        # build + astro check + contrast gate, in the foreground
+```
+
+`dev` finds the controller by walking up from your current directory, so it
+works from anywhere inside the repo. `dev blackshear-web` from outside does not
+work: that shortcut only scans `$IMPRES_DEV_ROOT`, and this repo lives outside it.
+
+### Which server to use
+
+| Mode | Port | Use it for |
+|---|---|---|
+| `dev` | 4321 | Almost everything. Hot reload. |
+| `preview` | 4322 | The built static output, no HMR. |
+| `worker` | 8787 | The real Cloudflare Workers runtime. |
+
+**`worker` is not optional when you touch `public/_headers` or
+`public/_redirects`.** Those are Workers static-asset features; `astro dev` and
+`astro preview` ignore both entirely, so a broken redirect or a missing
+`noindex` looks perfectly fine locally and only shows up once deployed.
+
+Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
+`fnm` `use-on-cd` hook handles that on `cd`. The controller cannot rely on it,
+because tmux runs commands without an interactive shell, so every launch goes
+through `fnm exec`.

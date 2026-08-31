@@ -151,9 +151,6 @@
   --pta-header-y: 1rem;
   --pta-nav-weight: 600;
   --pta-nav-transform: uppercase;
-  /* Decorative masthead photo. `block` only in themes whose nav wraps below
-     the wordmark and therefore have an empty top-right corner to fill. */
-  --pta-header-art: none;
 
   /* primary action (the one button that is not a nav link) */
   --pta-cta-bg: var(--color-brand-lemon);
@@ -168,15 +165,18 @@
   --pta-mark-ring: var(--color-brand-black);
   --pta-mark-ring-width: 3;
 
+  /* The photographic band behind the top of the page. The scrim alpha is not a
+     taste setting: both source photos contain true black, so it is the point
+     at which body text over the darkest pixel still clears WCAG AA. Lower it
+     and the page fails on whichever crop happens to land a shadow under a
+     paragraph. `npm run check:contrast` enforces it. */
+  --pta-topband-scrim: var(--color-brand-white);
+  --pta-topband-alpha: 0.80;
+
   /* hero - its own token rather than --text-banner so a theme can dial the
      opening statement down without touching the type scale. */
   --pta-hero-size: var(--text-display);
 
-  /* The inverted hero band used by the `blocks` structure. Separate from
-     --pta-accent because a theme whose accent already IS its header colour
-     would otherwise merge the two into one undifferentiated slab. */
-  --pta-hero-band-bg: var(--pta-accent);
-  --pta-hero-band-ink: var(--pta-ink-on-accent);
 
   /* shape */
   --pta-radius: var(--radius-none);

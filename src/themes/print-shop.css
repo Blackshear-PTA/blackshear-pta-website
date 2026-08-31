@@ -30,12 +30,17 @@
   --pta-header-y: 1.2rem;
   --pta-nav-weight: 700;
   --pta-nav-transform: uppercase;
-  /* Nav wraps below the wordmark here, leaving a gap worth filling. */
-  --pta-header-art: block;
 
   --pta-cta-bg: #983418;
   --pta-cta-ink: #efe6d8;       /* 5.6:1 */
   --pta-cta-border: #18150f;
+
+  /* Newsprint rather than white so the band does not read as a grey patch on
+     a cream page. Slightly heavier than Civic's because the newsprint scrim
+     starts darker than white, so it needs more of itself to reach the same
+     effective luminance. */
+  --pta-topband-scrim: #efe6d8;
+  --pta-topband-alpha: 0.83;
 
   --pta-hero-size: clamp(1.9rem, 1.2rem + 3.2vw, 3.1rem);
   --pta-hero-leading: 1.08;

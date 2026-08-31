@@ -15,8 +15,8 @@ import { fontFamilies } from './src/font-families.mjs';
  * Typefaces - PROJECT-BRIEF §5.1.
  *
  * "The escape is anchoring each theme to a real design tradition with committed
- * typographic choices." The typeface IS most of the difference between six
- * themes and six recolors, so each theme gets its own pairing.
+ * typographic choices." The typeface IS most of the difference between one
+ * theme and another, so each gets its own pairing.
  *
  * Astro downloads, subsets, self-hosts, and preloads these at build time. No
  * Google Fonts request at runtime - no third-party connection, nothing for a
@@ -25,9 +25,9 @@ import { fontFamilies } from './src/font-families.mjs';
  * Weights are deliberately narrow. Every extra weight is another file over a
  * phone connection in a school pickup line.
  *
- * /preview renders all six themes but hides five with `display: none`, and
+ * /preview renders both themes but hides one with `display: none`, and
  * browsers do not fetch fonts for display:none subtrees, so a visitor pays
- * for the active theme's two faces, not all ten.
+ * for the active theme's two faces, not all four.
  *
  * The family list itself lives in src/font-families.mjs because BaseLayout
  * needs the same list to render an <Font> per family.

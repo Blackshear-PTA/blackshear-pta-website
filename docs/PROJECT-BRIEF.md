@@ -34,7 +34,7 @@ Two tracks run in parallel and are **decoupled on purpose**:
 ## 3. Locked decisions
 
 ### 3.1 Astro
-Static by default, markdown/YAML content collections, per-route opt-in to SSR. Makes the six-theme demo nearly free architecturally.
+Static by default, markdown/YAML content collections, per-route opt-in to SSR. Made the multi-theme demo nearly free architecturally.
 
 ### 3.2 Cloudflare Workers with static assets, not Pages
 Workers reached parity with Pages for static assets, SSR, and custom domains. Durable Objects, Workflows, and Secrets Store remain Workers-only, and planned Phase 3 features depend on Durable Objects. Starting on Pages would mean a later migration with a domain switchover and downtime.
@@ -112,20 +112,26 @@ Mascot is the **yellow jacket**: *not* a honeybee. No hive, honeycomb, or honey 
 
 Working palette from the Field Day flyer: jacket gold, black, a strong mid-blue, grass green. The blue is a real differentiator - most yellow-jacket schools go black-and-gold only.
 
-No logo files exist anywhere. We make a wordmark and a restrained mascot mark in Phase 1; it anchors all six themes and gets reused on flyers, shirts, and Instagram for years.
+No logo files exist anywhere. We make a wordmark and a restrained mascot mark in Phase 1; it anchors every theme and gets reused on flyers, shirts, and Instagram for years.
 
-### 5.3 The six directions
+### 5.3 The directions
+
+**Narrowed 2026-08-31.** The board saw all six and cut to two on a first pass:
+**Civic Letterpress** and **East Austin Print Shop**. The other four are deleted
+from the tip but remain in git history if a direction is worth revisiting. The
+table below keeps all six, because the reasoning for the rejected four is what
+makes the two survivors legible as choices rather than defaults.
 
 | | Direction | Anchor |
 |---|---|---|
-| A | **Civic Letterpress** | WPA/municipal print. Condensed slab display, thick rules, flat two-ink, zero shadows or rounded corners. |
-| B | **Warm Editorial** | Local-nonprofit annual report. Serif display + humanist sans, asymmetric grid, big photos, pull quotes. |
-| C | **Schoolyard Bold** | Modern summer-camp brand. Wide geometric sans, saturated flat blocks, badge shapes, thick borders. Energetic, not childish. |
-| D | **East Austin Print Shop** | Screenprint. Muted earth + one hot accent, paper texture, hand-drawn rules. Leans on the 135-year history. |
-| E | **Quiet Utility** | The anti-decoration option. Neutral grotesk, hairline borders, tight palette, ruthlessly optimized for "find the thing on a phone." |
-| F | **Jacket** | Hard black-and-gold banding, angular geometry, mascot-forward with restraint. |
+| A | **Civic Letterpress** ✅ | WPA/municipal print. Condensed slab display, thick rules, flat two-ink, zero shadows or rounded corners. |
+| B | ~~**Warm Editorial**~~ | Local-nonprofit annual report. Serif display + humanist sans, asymmetric grid, big photos, pull quotes. |
+| C | ~~**Schoolyard Bold**~~ | Modern summer-camp brand. Wide geometric sans, saturated flat blocks, badge shapes, thick borders. Energetic, not childish. |
+| D | **East Austin Print Shop** ✅ | Screenprint. Muted earth + one hot accent, paper texture, hand-drawn rules. Leans on the 135-year history. |
+| E | ~~**Quiet Utility**~~ | The anti-decoration option. Neutral grotesk, hairline borders, tight palette, ruthlessly optimized for "find the thing on a phone." |
+| F | ~~**Jacket**~~ | Hard black-and-gold banding, angular geometry, mascot-forward with restraint. |
 
-Non-negotiable across all six: WCAG AA contrast, real focus states, keyboard navigation, mobile-first. **A theme that can't clear AA gets cut regardless of how good it looks**: this is a public-serving org attached to a school district.
+Non-negotiable across every theme: WCAG AA contrast, real focus states, keyboard navigation, mobile-first. **A theme that can't clear AA gets cut regardless of how good it looks**: this is a public-serving org attached to a school district.
 
 ### 5.4 Theme mechanics
 
@@ -136,16 +142,16 @@ src/content/home.yaml          ← all copy, once
 src/themes/registry.ts         ← theme = { name, tokens, fonts, structure }
 src/themes/*.css               ← token block per theme: fonts, color, radius,
                                  border-width, shadow, spacing scale, density
-src/layouts/structures/        ← 3-4 genuinely different structural arrangements
+src/layouts/structures/        ← one per genuinely different arrangement
 src/components/sections/       ← Hero, QuickActions, News, GetInvolved,
                                  Committees, Footer - content in, tokens out
 ```
 
 Each theme declares both a token set *and* a structure, so a token-only recolor can't happen by accident.
 
-The switcher renders all six into one `/preview` route and toggles visibility client-side. Six copies of a homepage is a trivial payload, and making the switch **instant** is what gets someone to click through all six instead of bailing after two.
+The switcher renders every theme into one `/preview` route and toggles visibility client-side. A couple of copies of a homepage is a trivial payload, and making the switch **instant** is what gets someone to actually compare them rather than bailing after the first.
 
-Why this shape: no copy drift across variants, a seventh theme is cheap, and when a winner is picked you delete five folders and you're done.
+Why this shape: no copy drift across variants, another theme is cheap, and when a winner is picked you delete the loser's files and you're done. The cut from six to two was four file deletions plus their registry entries.
 
 ---
 
