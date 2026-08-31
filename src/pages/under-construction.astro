@@ -1,0 +1,266 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuzzMascot from '../components/BuzzMascot.astro';
+import { getEntry } from 'astro:content';
+import { siteThemeId, getTheme } from '../themes/registry';
+
+/**
+ * The pre-launch gate's front door. Served by src/worker.ts to anyone without
+ * the access cookie; see that file for the mechanics and for why the password
+ * is a Cloudflare secret rather than anything in this repo.
+ *
+ * A real Astro page rather than HTML built inside the Worker, so it gets the
+ * actual theme tokens and the actual typefaces. A gate rendered in Times New
+ * Roman reads as a broken site, which is the opposite of the reassurance this
+ * page exists to give.
+ *
+ * TEMPORARY. Delete with the Worker at cutover (TASKS.md A29).
+ */
+
+const siteEntry = await getEntry('site', 'site');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+const { identity } = siteEntry.data;
+
+const theme = getTheme(siteThemeId);
+
+// The site that is still canonical. Hardcoded rather than pulled from content:
+// it is a property of this page's temporary existence, not of the PTA.
+const CURRENT_SITE = 'https://blackshearpta.weebly.com/';
+---
+
+<BaseLayout
+  title="Under construction - Blackshear PTA"
+  description="The Blackshear Elementary PTA website is being rebuilt. Our current site is at blackshearpta.weebly.com."
+  themeId={theme.id}
+>
+  <main id="main" class="gate">
+    <div class="shell">
+      <a class="brand" href={CURRENT_SITE}>
+        <BuzzMascot size={72} class="brand-mark" />
+        <span class="brand-name">{identity.name}</span>
+        <span class="brand-loc">{identity.location}</span>
+      </a>
+
+      <div class="rule" role="presentation"></div>
+
+      <h1>This site is under construction</h1>
+      <p class="lede">
+        We are building a new home for the Blackshear Elementary PTA. Until it is
+        ready, everything you need is on our current site.
+      </p>
+
+      <a class="cta" href={CURRENT_SITE}>Visit our current site</a>
+      <p class="cta-note">blackshearpta.weebly.com</p>
+
+      <div class="rule" role="presentation"></div>
+
+      <form class="unlock" method="POST" action="/__unlock">
+        <h2>Reviewing the new site?</h2>
+        <p class="unlock-note">
+          Board members and reviewers: enter the password you were given.
+        </p>
+
+        {/* Filled in by the script below from ?next, so unlocking returns you
+            to the page you originally asked for. */}
+        <input type="hidden" name="next" value="/" data-next />
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <p class="error" data-error hidden role="alert"></p>
+
+        <button type="submit">View the preview</button>
+      </form>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  /**
+   * The page is static, so the Worker cannot template `next` or an error into
+   * it. Both arrive as query parameters instead and are applied here.
+   */
+  const params = new URLSearchParams(window.location.search);
+
+  const next = params.get('next');
+  const nextField = document.querySelector<HTMLInputElement>('[data-next]');
+  // Same-origin paths only, matching the Worker's own check. Belt and braces:
+  // the Worker validates this again on submit and is the one that matters.
+  if (nextField && next && next.startsWith('/') && !next.startsWith('//')) {
+    nextField.value = next;
+  }
+
+  const MESSAGES: Record<string, string> = {
+    bad: 'That password did not work. Check it and try again.',
+    unset: 'Access is not set up yet. Please contact the PTA.',
+  };
+  const error = params.get('e');
+  const message = error ? MESSAGES[error] : undefined;
+  const errorEl = document.querySelector<HTMLElement>('[data-error]');
+  if (errorEl && message) {
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+    document.querySelector<HTMLInputElement>('#password')?.focus();
+  }
+</script>
+
+<style>
+  .gate {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-block: var(--pta-section-y);
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 34rem;
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block: var(--pta-gap);
+  }
+
+  .brand {
+    display: grid;
+    justify-items: start;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .brand-name {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    font-size: var(--text-title);
+    line-height: var(--leading-flat);
+  }
+
+  .brand-loc {
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  h1 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-hero-sm, var(--text-title));
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    line-height: var(--leading-snug);
+  }
+
+  .lede {
+    margin: 0 0 var(--pta-gap);
+    font-size: var(--text-lede);
+    max-width: var(--pta-measure);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  .cta-note {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  h2 {
+    margin: 0 0 0.4rem;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-body);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .unlock-note {
+    margin: 0 0 var(--pta-gap);
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+    max-width: var(--pta-measure);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.35rem;
+    margin-block-end: var(--pta-gap);
+  }
+
+  label {
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  input[type='password'] {
+    min-height: 44px;
+    padding: 0.6rem 0.75rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+    /* 16px minimum, or iOS Safari zooms the viewport on focus and the page
+       never zooms back out. */
+    font-size: 1rem;
+  }
+
+  .error {
+    margin: 0 0 var(--pta-gap);
+    padding: 0.6rem 0.75rem;
+    border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
+    background: var(--pta-surface-alt);
+    font-size: var(--text-fine);
+  }
+
+  button {
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    cursor: pointer;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+</style>

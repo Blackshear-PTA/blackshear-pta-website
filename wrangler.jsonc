@@ -5,20 +5,27 @@
   // Store are Workers-only, and Phase 3 depends on Durable Objects. Starting on
   // Pages would mean a later migration with a domain switchover and downtime.
   //
-  // There is intentionally no "main" field. The whole site is prerendered, so
-  // this Worker serves static assets only and never invokes JS, which also
-  // means it does not consume Workers request quota for asset hits.
+  // TEMPORARY: "main" and "run_worker_first" exist only for the pre-launch gate
+  // (src/worker.ts). Remove all three marked lines at cutover and this goes back
+  // to serving static assets with no JS invoked at all, which is both cheaper
+  // and simpler. See TASKS.md A29.
   //
-  // When SSR arrives (/api/*, /admin), add @astrojs/cloudflare, point "main" at
-  // the adapter's generated entry, and set assets.binding so the Worker can
-  // fall through to static files.
+  // When SSR arrives for real (/api/*, /admin), swap the hand-written Worker for
+  // @astrojs/cloudflare and point "main" at the adapter's generated entry.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
   "compatibility_date": "2026-08-28",
+  "main": "./src/worker.ts", // TEMPORARY - pre-launch gate
   "assets": {
     "directory": "./dist",
     // Serve Astro's built 404 page for unmatched paths.
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Lets the Worker reach static files once a request is allowed through.
+    "binding": "ASSETS",
+    // TEMPORARY - pre-launch gate. Without this, Cloudflare serves a matching
+    // file BEFORE invoking the Worker, so the gate would never run for
+    // /index.html and would be purely decorative.
+    "run_worker_first": true
   },
   "observability": {
     "enabled": true

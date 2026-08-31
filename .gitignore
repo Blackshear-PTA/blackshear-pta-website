@@ -2,6 +2,9 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+# Generated from wrangler.jsonc by `wrangler types`; 15k lines of vendored
+# runtime types that would dominate every diff. `npm run check` regenerates it.
+worker-configuration.d.ts
 .dev.vars
 .env
 .env.*
