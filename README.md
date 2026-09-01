@@ -1,196 +1,165 @@
 # Blackshear PTA website
 
-Website for the Blackshear Elementary Fine Arts Academy PTA (Austin ISD).
-Astro, static-rendered, served from Cloudflare Workers static assets.
+This is the website for the **Blackshear Elementary Fine Arts Academy PTA** in
+East Austin. It is built and maintained by parent volunteers.
 
-**Status: scaffold.** The build works end to end, but there is no real content
-and only one placeholder theme. Every string in `src/content/home.yaml` is a
-`TODO`.
+If you are a developer and want the technical documentation, it is all in
+[`docs/`](docs/) and the map is [`docs/README.md`](docs/README.md). The rest of
+this page is written for everyone else.
 
-## Running it
+---
 
-Requires **Node 22.12+** - pinned in `.node-version`, so `fnm`/`nvm` will pick
-it up automatically when you `cd` in.
+## Where the website is right now
 
-```sh
-npm install
-npm run dev      # dev server at http://localhost:4321
-npm run build    # static build into ./dist
-npm run check    # TypeScript + Astro diagnostics (strict)
-npm run preview  # serve ./dist locally
-```
+| | |
+|---|---|
+| **The site parents use today** | <https://blackshearpta.weebly.com> |
+| **The new site** | <https://blackshearpta.org> |
+| **Can the public see the new one?** | **No.** It is behind a password until we launch |
 
-Astro 7 runs `dev` as a background daemon: `npm run astro -- dev stop` to stop
-it, `dev status` / `dev logs` to inspect it.
+The new site is finished enough to look at but is not open yet. Anyone who finds
+`blackshearpta.org` gets a short "we're still building, here's our current site"
+page instead. Board members and reviewers have a password that gets them in.
 
-Deploying (needs a Cloudflare login, not yet set up):
+Ask Jon Flowers (Communications) for the password.
 
-```sh
-npm run cf:dev     # serve ./dist through the Workers runtime
-npm run cf:deploy  # build + wrangler deploy
-```
+---
 
-## Layout
+## How the site works, in plain terms
 
-```
-docs/PROJECT-BRIEF.md      architecture and locked decisions - read this first
-TASKS.md                   current status and the task board
-assets/brand/              logos + the sampled palette and its contrast table
-assets/from-weebly/        salvaged from the old site
+Most websites you have used are built on something like Weebly, Wix or
+Squarespace: you log into a control panel, drag things around, and the company
+charges a monthly fee for keeping it running. Our old site works that way.
 
-src/content/home.yaml      ALL homepage copy, in one place
-src/content.config.ts      the schema that copy is validated against
-src/styles/global.css      brand tokens + the --pta-* theme contract
-src/themes/                one CSS token block per theme, plus registry.ts
-src/layouts/structures/    structural arrangements a theme can render through
-src/components/sections/   Hero, QuickActions, News, GetInvolved, Committees, Footer
-wrangler.jsonc             Cloudflare Workers config (static assets, no Worker script)
-```
+This one is different, and the difference is the whole point.
 
-## Two rules worth knowing before you edit anything
+**The words on the site live in a few plain text files.** Not in a database, not
+behind a login. Just files, the way a Word document is a file. You can read them
+without any special software.
 
-**Tailwind's defaults are deliberately deleted.** `bg-blue-500`, `rounded-xl`,
-`shadow-lg` and friends do not exist in this project and will silently do
-nothing. Use the brand tokens in `src/styles/global.css`, or add a token there.
-See `PROJECT-BRIEF.md` §3.3 for why.
+**Changing a file republishes the site by itself.** When someone saves a change,
+a service called Cloudflare notices within a few seconds, rebuilds the site, and
+puts the new version online. It takes about a minute and nobody has to do
+anything else.
 
-**Yellow is never text on white.** Lemon on white is 1.33:1 and fails WCAG AA
-outright. It is a background and accent color; yellow text needs a black or
-blue ground. `assets/brand/README.md` has the full contrast table.
+**There is nothing running that can break.** The site is what is called a
+*static* site, which means every page is prepared in advance and then just sat
+there being served. There is no server doing work when you visit, no database
+that can fall over, no software that needs updating for security.
 
-Everything else - why Workers and not Pages, why sessions go in D1, why there is
-no component library - is in [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md).
+That gives us three things the PTA specifically needs:
 
-## Local development
+1. **It costs nothing.** Every service we use has a free tier, and this site is
+   nowhere near any of the limits.
+2. **It cannot really break.** There is no moving part to go wrong at 9pm the
+   night before an event.
+3. **It survives handover.** Every decision and its reasoning is written down in
+   this repository. When the board turns over, the next person inherits the
+   explanation, not just the files.
 
-This repo has a `dev` controller matching the IMPRES fleet convention, so it
-opens as a new tab in the same shared Ghostty/tmux window as the other apps.
+---
 
-```bash
-dev              # interactive controller (status + menu)
-dev start        # astro dev on :4321, hot reload
-dev worker       # wrangler dev on :8787
-dev stop         # stops every mode and closes its tabs
-dev check        # build + astro check + contrast gate, in the foreground
-```
+## Where the words live
 
-`dev` finds the controller by walking up from your current directory, so it
-works from anywhere inside the repo. `dev blackshear-web` from outside does not
-work: that shortcut only scans `$IMPRES_DEV_ROOT`, and this repo lives outside it.
+Almost everything you would want to change is in one of four files.
 
-### Which server to use
+| File | What it controls |
+|---|---|
+| `src/content/home.yaml` | Everything on the homepage: the quote, the buttons, the news items, the committee descriptions |
+| `src/content/site.yaml` | The bits on *every* page: the menu at the top, the Donate button, the social links |
+| `src/content/pages.yaml` | The other pages: Volunteer, Calendar, Sponsors, Little EAST, Staff Appreciation, Campus Beautification, Contact, Gallery |
+| `src/data/events.json` | The calendar. **Do not edit this one by hand**, see below |
 
-| Mode | Port | Use it for |
-|---|---|---|
-| `dev` | 4321 | Almost everything. Hot reload. |
-| `preview` | 4322 | The built static output, no HMR. |
-| `worker` | 8787 | The real Cloudflare Workers runtime. |
+These are YAML files. YAML is a format designed to be read and written by
+people: it is mostly `label: "the text"`, one per line, with indentation showing
+what belongs to what. If you can fill in a form you can edit one.
 
-**`worker` is not optional when you touch `public/_headers`, or add a
-`public/_redirects`.** Those are Workers static-asset features; `astro dev` and
-`astro preview` ignore both entirely, so a broken redirect or a missing
-`noindex` looks perfectly fine locally and only shows up once deployed. There is
-no `_redirects` file today - the `/ -> /preview/` one existed only for the design
-vote and went away when Civic Letterpress A was chosen.
+**Adding a whole new page** means adding a block to `pages.yaml`. No programming
+involved, and no developer needed.
 
-Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
-`fnm` `use-on-cd` hook handles that on `cd`. The controller cannot rely on it,
-because tmux runs commands without an interactive shell, so every launch goes
-through `fnm exec`.
+---
 
-## The pre-launch gate
+## The calendar is a special case
 
-The site sits behind one shared password until launch. Someone who has not been
-given it gets `/under-construction/`: "we are still building, here is our current
-site," with a password field underneath. Once unlocked, a cookie keeps them in
-for 30 days.
+The calendar is **still kept in Google Calendar**, exactly as it always has been,
+on the PTA's `blackshearpta@gmail.com` account. Board members add events there
+from the phone app, the same as before.
 
-This is a **speed bump, not a security boundary.** It exists so a parent who
-finds the domain early does not mistake a half-built site for the real one.
-A password a dozen people share is not a secret. Treat everything behind it as
-public. Real access control for `/admin` comes later, via Cloudflare Access with
-Google SSO.
+The website reads that calendar automatically once a day and redraws its own
+calendar page to match. So:
 
-**The password is not in this repo, and must not be.** The repo is public, so a
-committed password is no password. It lives in a Cloudflare secret:
+- **To add or change an event, use Google Calendar.** Never edit the website.
+- A change made this morning shows on the website by tomorrow.
+- Parents can subscribe to the calendar from the website and get events straight
+  into their own phone.
 
-```
-npx wrangler secret put SITE_PASSWORD
-```
+We chose this because the calendar should live where the people updating it
+already are. Asking volunteers to learn a second system to add a bake sale is
+how a calendar goes stale.
 
-or dashboard → Workers & Pages → `blackshear-pta` → Settings → Variables and
-Secrets → Add → Secret. Secrets live on the Worker, so branch previews inherit
-the same one.
+---
 
-**Without the secret the gate fails closed** and nobody gets in, including us.
-That is on purpose: a site that is ungated while everyone believes it is gated is
-worse than no gate at all.
+## Photos
 
-Locally, `npm run dev` and `npm run preview` are **ungated** - they never run the
-Worker. To exercise the gate, copy `.dev.vars.example` to `.dev.vars`, put the
-real password in it, and use the `worker` server on `:8787`.
+Photos live in `src/assets/photos/`. Every one is described in the README in
+that folder: what it shows, where it is used, and whether there is anything to
+know about it.
 
-Removing it at cutover is two deletions: `src/worker.ts`, and the three lines
-marked `TEMPORARY` in `wrangler.jsonc`. Nothing else depends on it.
+Two rules we hold to:
 
-## Deploys
+- **Nothing goes up without the family being happy for it to be there.** Most of
+  our current photos deliberately contain no children's faces.
+- **Photos get described in words.** Every photo on the site has a written
+  description attached for people using a screen reader. It is a few seconds of
+  work and it is the difference between the site working for someone and not.
 
-Every push to `main` triggers a Cloudflare Workers build, which deploys to
-`blackshearpta.org`. Pushes to any other branch build a preview at
-`<branch>-blackshear-pta.blackshearpta.workers.dev`.
+We are short of photos. If you have good ones from an event, send them to
+`blackshearpta@gmail.com`.
 
-### Skipping builds that cannot change the site
+---
 
-Some paths in this repo are documentation or source material and are never read
-by `astro build`, so a commit touching only those rebuilds and redeploys byte
--identical output. Two ways to avoid that:
+## How to change something
 
-**1. Build watch paths (set once, applies automatically).** In the Cloudflare
-dashboard under the Worker's build settings there are include/exclude path
-patterns. Excluding the list below means a docs-only push is skipped entirely.
+**Today:** ask Jon. Send the change and it will be live shortly after.
 
-**2. `[skip ci]` in the commit message (per commit).** Cloudflare honours the
-usual skip tokens. Useful for a one-off when the watch paths do not cover it.
+**If you are comfortable trying it yourself:** every file above can be edited
+directly on GitHub in a web browser. Open the file, click the pencil icon, make
+the change, and describe what you changed at the bottom. Nothing you do there
+can break the site permanently: every change is recorded, and any change can be
+undone.
 
-### Paths that cannot affect the built site
+**Eventually:** the plan is a proper editing page at `blackshearpta.org/admin`,
+where a board member signs in with the PTA Google account and edits the site
+through a form. That is the single most important thing left to build, and the
+reason is on the wall behind us: the old Weebly site went a year out of date
+because updating it was harder than not updating it.
 
-Verified by tracing every image and module import: nothing under `src/` reaches
-outside it, so the root `assets/` folder is reference material only.
+---
 
-```
-docs/**            architecture and decisions
-assets/**          brand originals and the Weebly salvage - NOT src/assets
-.claude/**         local dev-server launch config
-TASKS.md
-README.md
-dev-control.sh
-dev.config
-```
+## Who runs this
 
-**`src/assets/**` is a build input and must NOT be excluded** - the committee
-photos and the backdrop are imported from there and processed at build time.
-The two folders are one character apart, which is the mistake to avoid.
+The website is maintained by the PTA's Communications role, currently **Jon
+Flowers**. The GitHub organisation and every account are owned by the PTA's own
+`blackshearpta@gmail.com`, not by any individual, so nothing is lost when a
+volunteer moves on.
 
-### Is it worth it?
+Questions, corrections, or an offer to help: **blackshearpta@gmail.com**
 
-Honestly, barely, on cost. This site builds in well under a minute and nowhere
-near any free-tier ceiling. The real benefit is not publishing a new Worker
-version that is identical to the one before it, which makes the deploy history
-mean something.
+---
 
-## Domain watch
+## For developers
 
-```bash
-npm run check:domain
-```
+Everything technical is in [`docs/`](docs/):
 
-Checks all three registrations - `blackshearpta.org` plus the `.com` and `.net`
-that redirect to it - against the registries' RDAP APIs, and exits non-zero if
-any is close to expiry, already lapsed, or in a suspended state.
+| Document | What is in it |
+|---|---|
+| [`docs/README.md`](docs/README.md) | Index of everything below |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Getting it running, project layout, the rules that will bite you |
+| [`docs/EDITING-CONTENT.md`](docs/EDITING-CONTENT.md) | The content files in detail, and how to add a page |
+| [`docs/DEPLOYS.md`](docs/DEPLOYS.md) | How deploys work, build settings, the domain watch |
+| [`docs/PRE-LAUNCH-GATE.md`](docs/PRE-LAUNCH-GATE.md) | The password gate, and how to remove it at launch |
+| [`docs/CALENDAR.md`](docs/CALENDAR.md) | How the Google Calendar sync actually works |
+| [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md) | Architecture and the reasoning behind every locked decision |
 
-Run it by hand when you want to know. There is deliberately no scheduled job:
-an automated nag about a renewal somebody is already chasing is noise, and a
-recurring alert nobody can action is how alerts get ignored.
-
-It is a smoke alarm, not a sprinkler. If a domain does lapse, nothing here buys
-it back - see F23 in `TASKS.md`.
+[`TASKS.md`](TASKS.md) in this folder is the live task board: what is done, what
+is next, what is blocked and on whom. **Read it before planning anything.**

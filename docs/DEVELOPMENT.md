@@ -1,0 +1,154 @@
+# Development
+
+Astro 7, static output, served from Cloudflare Workers static assets. Tailwind
+v4 with its default theme deliberately deleted. No component library.
+
+Why each of those, and what was rejected: [PROJECT-BRIEF.md](PROJECT-BRIEF.md).
+
+## Running it
+
+Node **22.12+**, pinned in `.node-version`, so `fnm` or `nvm` picks it up when
+you `cd` in.
+
+```sh
+npm install
+npm run dev      # dev server at http://localhost:4321
+npm run build    # static build into ./dist
+npm run check    # TypeScript + Astro diagnostics, strict
+npm run preview  # serve ./dist locally
+```
+
+Astro 7 runs `dev` as a background daemon. `npm run astro -- dev stop` stops it;
+`dev status` and `dev logs` inspect it.
+
+### The gates
+
+Three checks, all exiting non-zero on failure, all runnable by hand:
+
+```sh
+npm run check           # types and Astro diagnostics
+npm run check:contrast  # WCAG AA across every theme
+npm run check:ical      # the iCalendar reader, fixtures plus the live feed
+npm run check:domain    # registration status for all three domains
+```
+
+`check:contrast` is a **hard gate, not a preference**. This is a public-facing
+site attached to a school district; a theme that cannot clear AA gets cut
+regardless of how good it looks. It parses the `:root` block in `global.css`,
+layers each `[data-theme]` block on top so inherited tokens are checked rather
+than silently skipped, and covers text pairings plus scrim-over-photo cases.
+
+`check:ical` runs in CI before the calendar refresh, so a parser regression
+keeps yesterday's good snapshot instead of committing a broken one.
+
+## The `dev` controller
+
+This repo has a `dev` controller matching the IMPRES fleet convention, so it
+opens as a new tab in the same shared Ghostty/tmux window as the other apps.
+
+```bash
+dev              # interactive controller (status + menu)
+dev start        # astro dev on :4321, hot reload
+dev worker       # wrangler dev on :8787
+dev stop         # stops every mode and closes its tabs
+dev check        # build + astro check + contrast gate, in the foreground
+```
+
+`dev` finds the controller by walking up from your current directory, so it
+works from anywhere inside the repo. `dev blackshear-web` from outside does
+*not* work: that shortcut only scans `$IMPRES_DEV_ROOT`, and this repo lives
+outside it.
+
+Node is pinned in `.node-version`. In a terminal your `fnm` `use-on-cd` hook
+handles that on `cd`. The controller cannot rely on it, because tmux runs
+commands without an interactive shell, so every launch goes through `fnm exec`.
+
+### Which server to use
+
+| Mode | Port | Use it for |
+|---|---|---|
+| `dev` | 4321 | Almost everything. Hot reload |
+| `preview` | 4322 | The built static output, no HMR |
+| `worker` | 8787 | The real Cloudflare Workers runtime |
+
+**`worker` is not optional when you touch `public/_headers` or `src/worker.ts`.**
+Those only exist in the Workers runtime. `astro dev` and `astro preview` know
+nothing about either, so on 4321 and 4322 **the site is ungated** and a change
+to those files looks perfectly fine locally and only fails once deployed.
+
+If you are testing the password gate, copy `.dev.vars.example` to `.dev.vars`
+and put the real password in it first, or the gate fails closed and lets nobody
+through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
+
+## Layout
+
+```
+README.md                  plain-English overview, for board members
+TASKS.md                   the live task board - read this before planning
+docs/                      you are here
+
+assets/brand/              logos, sampled palette, contrast table
+assets/from-weebly/        salvaged from the old site. NOT a build input
+
+src/content/home.yaml      all homepage copy
+src/content/site.yaml      nav, identity, social - the chrome on every page
+src/content/pages.yaml     every standalone page; a top-level key IS a URL
+src/content.config.ts      the schema all of the above is validated against
+src/data/events.json       calendar snapshot, generated - never edit by hand
+
+src/styles/global.css      brand primitives plus the --pta-* token contract
+src/themes/                one CSS token block per theme, plus registry.ts
+src/layouts/BaseLayout     <head>, fonts, Open Graph, the theme attribute
+src/layouts/PageLayout     shell for every standalone page
+src/layouts/structures/    structural arrangements a theme renders through
+src/components/sections/   Hero, QuickActions, News, GetInvolved, Committees...
+src/lib/ical.ts            iCalendar reader; no dependencies, no platform APIs
+src/pages/[page].astro     renders anything in pages.yaml
+src/worker.ts              TEMPORARY - the pre-launch password gate
+
+wrangler.jsonc             Cloudflare config. Three lines marked TEMPORARY
+scripts/                   the gates, plus the calendar refresh
+```
+
+## Two rules that will bite you
+
+**Tailwind's defaults are deliberately deleted.** `bg-blue-500`, `rounded-xl`,
+`shadow-lg` and friends do not exist here and will **silently do nothing** -
+they will not error, the utility simply is not generated. Use the tokens in
+`src/styles/global.css`, or add one. PROJECT-BRIEF §3.3 has the reasoning; the
+short version is that a design system you can bypass by accident is not one.
+
+**Yellow is never text on white.** Lemon on white is 1.33:1 and fails WCAG AA
+outright. It is a background and accent colour only; yellow text needs a black
+or blue ground. Full table in [`../assets/brand/README.md`](../assets/brand/README.md).
+
+## Themes
+
+A theme is a **token set and a structure**, paired in `src/themes/registry.ts`.
+Pairing them is deliberate: it makes a token-only recolour impossible to ship by
+accident, which is the failure mode where several "different designs" turn out
+to be one template in several palettes.
+
+Civic Letterpress A is the site's design. Two others are held in reserve and
+still render at `/preview`. Adding, changing or retiring one is documented at
+the top of `registry.ts`, in the file you would be editing.
+
+Two exports are kept deliberately apart:
+
+- `siteThemeId` is what every real page renders in. Changing it re-skins the
+  live site.
+- `defaultThemeId` is only which panel `/preview` opens on.
+
+They name the same theme today. Separating them means pointing the preview at a
+reserve for a second opinion cannot silently re-skin the homepage.
+
+## Generated files
+
+`worker-configuration.d.ts` is generated from `wrangler.jsonc` by
+`wrangler types` and is **gitignored**: 15,000 lines of vendored runtime types
+that would dominate every future diff. `npm run check` regenerates it first, so
+it is self-healing and you should never need to think about it.
+
+`src/data/events.json` is generated by `npm run refresh:events`. It *is*
+committed, on purpose, so calendar changes show up as reviewable diffs. See
+[CALENDAR.md](CALENDAR.md).
