@@ -25,10 +25,8 @@ site:
       external: true
     - label: "Volunteer"
       href: "/volunteer"
-    # Still Weebly: /calendar needs the Google Calendar feed wired up first.
     - label: "Calendar"
-      href: "https://blackshearpta.weebly.com/calendar.html"
-      external: true
+      href: "/calendar"
     - label: "Little EAST"
       href: "/little-east"
     - label: "Sponsors"

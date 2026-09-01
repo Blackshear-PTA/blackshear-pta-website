@@ -144,6 +144,7 @@ const pages = defineCollection({
       'campus-flagpole',
       'bake-sale',
       'campus-front-walk',
+      'campus-frontage',
     ]),
     /** Opening paragraphs, before any section. */
     body: z.array(z.string()).default([]),

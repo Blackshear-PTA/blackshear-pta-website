@@ -1,0 +1,340 @@
+---
+import { getEntry } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+import snapshot from '../data/events.json';
+
+/**
+ * /calendar - the PTA calendar, rendered from a build-time snapshot of the
+ * Google Calendar (TASKS.md D10).
+ *
+ * Google stays the source of truth, because the board already edits it from
+ * the phone app they have and a rotating volunteer board will keep doing that
+ * long after anyone remembers this repo exists. What changes is that we stop
+ * embedding it: the old Weebly page was a raw Google iframe, which is
+ * unreadable on a phone, ignores the site's typography entirely, and loads
+ * third-party script to draw a list of dates.
+ *
+ * The events come from src/data/events.json, refreshed daily by a GitHub
+ * Action. See scripts/refresh-events.mjs for why it is baked rather than
+ * fetched live - short version, parsing a 300KB feed costs ~8ms against a 10ms
+ * Worker CPU ceiling, and a calendar that occasionally 500s is worse than one
+ * that is a day behind.
+ */
+
+const entry = await getEntry('pages', 'calendar');
+if (!entry) throw new Error('Missing `calendar:` entry in src/content/pages.yaml.');
+
+const CALENDAR_ID = snapshot.source;
+const encoded = encodeURIComponent(CALENDAR_ID);
+
+/** Adds it to the reader's own Google Calendar, rather than just viewing ours. */
+const addToGoogle = `https://calendar.google.com/calendar/u/0/r?cid=${encoded}`;
+/** webcal:// makes Apple Calendar and Outlook subscribe instead of downloading once. */
+const subscribe = `webcal://calendar.google.com/calendar/ical/${encoded}/public/basic.ics`;
+const viewInGoogle = `https://calendar.google.com/calendar/embed?src=${encoded}&ctz=America%2FChicago`;
+
+/**
+ * Everything renders in Austin time, explicitly. The build runs on Cloudflare's
+ * machines in an unknown zone, so leaving the formatter to pick would mean the
+ * published times depend on where the build happened - a bug that appears once
+ * and is almost impossible to reproduce afterwards.
+ */
+const TZ = 'America/Chicago';
+const fmt = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('en-US', { timeZone: TZ, ...options });
+
+/**
+ * All-day events need a UTC formatter, and getting this wrong is the single
+ * most damaging bug this page can have.
+ *
+ * The parser stores an all-day event as midnight UTC, because an all-day event
+ * is a square on a calendar rather than an instant, and anchoring it to a zone
+ * makes it jump a day for anyone reading from another one. Render that same
+ * value in Chicago time and it becomes 7pm the *previous* day: Labor Day on
+ * Sept 7 displays as Sept 6, and a parent keeps their child home on the wrong
+ * date. Timed events are genuine instants and must be shown in Austin time.
+ *
+ * So: two sets of formatters, picked per event by `allDay`.
+ */
+const utc = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...options });
+
+const labels = {
+  zoned: {
+    month: fmt({ month: 'long', year: 'numeric' }),
+    weekday: fmt({ weekday: 'short' }),
+    day: fmt({ day: 'numeric' }),
+    short: fmt({ month: 'short', day: 'numeric' }),
+    monthKey: new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit' }),
+    dayKey: new Intl.DateTimeFormat('en-CA', { timeZone: TZ, dateStyle: 'short' }),
+  },
+  allDay: {
+    month: utc({ month: 'long', year: 'numeric' }),
+    weekday: utc({ weekday: 'short' }),
+    day: utc({ day: 'numeric' }),
+    short: utc({ month: 'short', day: 'numeric' }),
+    monthKey: new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', year: 'numeric', month: '2-digit' }),
+    dayKey: new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', dateStyle: 'short' }),
+  },
+} as const;
+
+const labelsFor = (allDay: boolean) => (allDay ? labels.allDay : labels.zoned);
+const timeLabel = fmt({ hour: 'numeric', minute: '2-digit' });
+
+// The snapshot's window starts at the day it was generated, which may be a few
+// days back if the Action has not run. Filter again here so a stale snapshot
+// still cannot show a meeting that already happened.
+const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0);
+
+const upcoming = snapshot.events
+  .map((event) => ({ ...event, startsAt: new Date(event.start), endsAt: new Date(event.end) }))
+  .filter((event) => event.endsAt >= startOfToday)
+  .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+/** Grouped into months, because a flat list of 139 dates is not scannable. */
+const months: { key: string; label: string; events: typeof upcoming }[] = [];
+for (const event of upcoming) {
+  const l = labelsFor(event.allDay);
+  const key = l.monthKey.format(event.startsAt);
+  let bucket = months.find((m) => m.key === key);
+  if (!bucket) {
+    bucket = { key, label: l.month.format(event.startsAt), events: [] };
+    months.push(bucket);
+  }
+  bucket.events.push(event);
+}
+// An all-day event on the 1st and a timed one on the 2nd can create their
+// buckets out of order, since each is keyed by its own formatter.
+months.sort((a, b) => a.key.localeCompare(b.key));
+
+// Midday UTC so the date cannot slide either way when it is formatted.
+const updated = utc({ dateStyle: 'long' }).format(new Date(`${snapshot.generated}T12:00:00Z`));
+
+type Event = (typeof upcoming)[number];
+
+/**
+ * DTEND is exclusive in iCalendar, so a one-day all-day event ends at midnight
+ * on the following day. Subtracting a millisecond gives the last day it
+ * actually covers, which is what a reader means by "until".
+ */
+const lastDay = (event: Event) =>
+  event.allDay ? new Date(event.endsAt.getTime() - 1) : event.endsAt;
+
+const spansDays = (event: Event) => {
+  const l = labelsFor(event.allDay);
+  return l.dayKey.format(lastDay(event)) !== l.dayKey.format(event.startsAt);
+};
+---
+
+<PageLayout page={entry.data}>
+  {entry.data.body.map((paragraph) => <p class="prose">{paragraph}</p>)}
+
+  <p class="cta-row">
+    <a class="cta" href={addToGoogle} target="_blank" rel="noopener">
+      Add to Google Calendar
+      <span class="sr-only"> (opens in a new tab)</span>
+    </a>
+    <a class="cta cta-quiet" href={subscribe}>Subscribe in Apple or Outlook</a>
+  </p>
+
+  {
+    months.map((month) => (
+      <section class="month">
+        <div class="rule" role="presentation" />
+        <h2>{month.label}</h2>
+        <ul>
+          {month.events.map((event) => (
+            <li>
+              <div class="when">
+                <span class="weekday">{labelsFor(event.allDay).weekday.format(event.startsAt)}</span>
+                <span class="day">{labelsFor(event.allDay).day.format(event.startsAt)}</span>
+              </div>
+              <div class="what">
+                <h3>{event.title}</h3>
+                <p class="meta">
+                  {event.allDay ? 'All day' : timeLabel.format(event.startsAt)}
+                  {/* Only show an end when it lands on another day. Every timed
+                      event has an end, and "2:00 PM to 3:00 PM" on all 139 rows
+                      is noise nobody reads. */}
+                  {spansDays(event) && <> until {labelsFor(event.allDay).short.format(lastDay(event))}</>}
+                  {event.location && <> · {event.location}</>}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    upcoming.length === 0 && (
+      <p class="prose empty">
+        Nothing on the calendar just now. Check{' '}
+        <a href={viewInGoogle} target="_blank" rel="noopener">the full calendar</a> for anything
+        further out.
+      </p>
+    )
+  }
+
+  <section class="block">
+    <div class="rule" role="presentation"></div>
+    <p class="prose note-line">
+      Showing {upcoming.length} events, updated {updated}. The calendar is kept in Google and
+      refreshed here daily, so a change made this morning may take until tomorrow to appear.{' '}
+      <a href={viewInGoogle} target="_blank" rel="noopener">
+        View the full calendar in Google
+        <span class="sr-only"> (opens in a new tab)</span>
+      </a>.
+    </p>
+  </section>
+</PageLayout>
+
+<style>
+  .prose {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  .prose:first-child {
+    margin-block-start: var(--pta-section-y);
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0 0 var(--pta-section-y);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  /* Second action, same shape, less shout: one primary button per row. */
+  .cta-quiet {
+    background: transparent;
+    color: var(--pta-ink);
+    border-color: var(--pta-rule);
+    box-shadow: none;
+  }
+
+  .month {
+    padding-block-start: var(--pta-section-y);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block-end: var(--pta-gap);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    gap: var(--pta-gap);
+    align-items: baseline;
+    padding-block: 0.75rem;
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  li:first-child {
+    border-block-start: 0;
+  }
+
+  /* Fixed width so every date column lines up and the titles form a straight
+     edge. A ragged left margin down 139 rows reads as a mistake. */
+  .when {
+    flex: none;
+    width: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--pta-font-display);
+    line-height: var(--leading-flat);
+  }
+
+  .weekday {
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  .day {
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+  }
+
+  .what {
+    min-width: 0;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-body);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    line-height: var(--leading-snug);
+  }
+
+  .meta {
+    margin: 0.2rem 0 0;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .block {
+    padding-block: var(--pta-section-y);
+  }
+
+  .note-line {
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .empty {
+    padding-block-start: var(--pta-section-y);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

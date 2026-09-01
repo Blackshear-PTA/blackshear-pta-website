@@ -5,6 +5,7 @@ import garden from '../assets/photos/garden.jpg';
 import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
 import bakeSale from '../assets/photos/bake-sale.jpg';
 import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
+import campusFrontage from '../assets/photos/campus-frontage.jpg';
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/sections/SiteHeader.astro';
 import Footer from '../components/sections/Footer.astro';
@@ -58,6 +59,7 @@ const backdrops = {
   // Same crop the homepage uses, which is what makes it right for /contact:
   // the front entrance is literally the answer to "where do we find you".
   'campus-front-walk': { src: campusFrontWalk, position: 'center 30%' },
+  'campus-frontage': { src: campusFrontage, position: 'center 40%' },
 } as const;
 
 const backdrop = backdrops[page.backdrop];
