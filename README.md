@@ -86,10 +86,12 @@ work: that shortcut only scans `$IMPRES_DEV_ROOT`, and this repo lives outside i
 | `preview` | 4322 | The built static output, no HMR. |
 | `worker` | 8787 | The real Cloudflare Workers runtime. |
 
-**`worker` is not optional when you touch `public/_headers` or
+**`worker` is not optional when you touch `public/_headers`, or add a
 `public/_redirects`.** Those are Workers static-asset features; `astro dev` and
 `astro preview` ignore both entirely, so a broken redirect or a missing
-`noindex` looks perfectly fine locally and only shows up once deployed.
+`noindex` looks perfectly fine locally and only shows up once deployed. There is
+no `_redirects` file today - the `/ -> /preview/` one existed only for the design
+vote and went away when Civic Letterpress A was chosen.
 
 Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
 `fnm` `use-on-cd` hook handles that on `cd`. The controller cannot rely on it,

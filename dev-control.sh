@@ -20,7 +20,7 @@
 #     worker   wrangler dev     :8787  the real Cloudflare Workers runtime.
 #
 #   The third one matters more than it looks. `_headers` (the site-wide noindex)
-#   and `_redirects` (/ -> /preview/ during the design vote) are Workers
+#   and `_redirects` (none today; the design-vote one is gone) are Workers
 #   static-asset features. `astro dev` and `astro preview` ignore both, so a
 #   change to either LOOKS fine locally and only fails once deployed. If you are
 #   touching those files, verify on :8787.

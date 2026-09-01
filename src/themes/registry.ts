@@ -6,9 +6,20 @@
  * failure mode §5.1 warns about - six palettes on one layout still reads as
  * one generic template.
  *
- * NARROWED 2026-08-31: the board cut the original six to these two after a
- * first look. The four that lost are gone from git history's tip but remain in
- * the history if a direction needs revisiting.
+ * DECIDED 2026-08-31: Civic Letterpress A is the site's design language. The
+ * board cut six to two, Civic then split into A and B for a second look, and A
+ * won. B and East Austin Print Shop are HELD IN RESERVE rather than deleted -
+ * they still build, still pass the contrast gate, and still render at /preview,
+ * so reversing the decision is a one-line change and not a rebuild.
+ *
+ * Two exports, deliberately kept apart:
+ *   siteThemeId    - what every real page renders in. Changing it re-skins the
+ *                    live site.
+ *   defaultThemeId - which panel /preview opens on. Changing it affects nothing
+ *                    a visitor to the site itself sees.
+ * They name the same theme today. Keeping them separate means someone can point
+ * the preview at B for a second opinion without silently re-skinning the
+ * homepage - the kind of divergence that is very easy to ship and hard to spot.
  *
  * ADDING A THEME - three steps, in this order:
  *   1. src/themes/<id>.css - define every --pta-* token under [data-theme="<id>"]
@@ -18,10 +29,10 @@
  *
  * Then run `npm run check:contrast`. AA is a hard gate, not a preference.
  *
- * WHEN A WINNER IS PICKED: set defaultThemeId below to the winner, then delete
- * the losing CSS file, their imports in themes.css, their entries here,
- * any structure left with no themes, src/pages/preview.astro, and
- * public/_redirects (which sends / to /preview for the duration of the vote).
+ * RETIRING THE RESERVES - when they are no longer wanted, delete their CSS
+ * files, their imports in themes.css, their entries below, any structure left
+ * with no themes, and src/pages/preview.astro. Nothing else imports the
+ * preview page.
  */
 
 /** Structural arrangements - the ARRANGEMENT, not the skin. */
@@ -44,6 +55,11 @@ export interface Theme {
    * that accept a `video` prop honour it.
    */
   video?: boolean;
+  /**
+   * Kept for reference only; not the site's design. Shown as such at /preview
+   * so nobody mistakes a reserve for a live option.
+   */
+  reserve?: boolean;
 }
 
 export const themes: readonly Theme[] = [
@@ -61,6 +77,7 @@ export const themes: readonly Theme[] = [
       'Civic Letterpress with a blue masthead, and the school video sitting between the quote and the intro line. Everything else is identical to A.',
     structure: 'stacked-rules',
     video: true,
+    reserve: true,
   },
   {
     id: 'print-shop',
@@ -68,10 +85,15 @@ export const themes: readonly Theme[] = [
     description:
       'Screenprint and wood type on newsprint. Flat overprinted colour.',
     structure: 'editorial',
+    reserve: true,
   },
 ];
 
-export const defaultThemeId = 'civic-letterpress-a';
+/** The design every real page renders in. This is the live site's look. */
+export const siteThemeId = 'civic-letterpress-a';
+
+/** Which panel /preview opens on. Preview-only - see the note at the top. */
+export const defaultThemeId = siteThemeId;
 
 /** Throws rather than returning undefined - a bad theme id is a build-time bug. */
 export function getTheme(id: string): Theme {

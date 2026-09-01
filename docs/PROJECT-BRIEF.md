@@ -116,20 +116,37 @@ No logo files exist anywhere. We make a wordmark and a restrained mascot mark in
 
 ### 5.3 The directions
 
-**Narrowed 2026-08-31.** The board saw all six and cut to two on a first pass:
-**Civic Letterpress** and **East Austin Print Shop**. The other four are deleted
-from the tip but remain in git history if a direction is worth revisiting. The
+**Decided 2026-08-31: Civic Letterpress A.**
+
+The board saw all six and cut to two on a first pass, **Civic Letterpress** and
+**East Austin Print Shop**. Civic then split into A (black masthead) and B (blue
+masthead, plus the school video between the quote and the intro line) so the two
+open questions could be judged against an otherwise identical page. **A won**, and
+is what `/` now serves.
+
+The other four directions are deleted from the tip but remain in git history. The
 table below keeps all six, because the reasoning for the rejected four is what
-makes the two survivors legible as choices rather than defaults.
+makes the survivors legible as choices rather than defaults.
+
+**B and East Austin Print Shop are held in reserve, not deleted.** They cost one
+CSS file each, still build, and still pass the contrast gate, so reversing the
+decision is a one-line change rather than a rebuild. `/preview` stays up as a
+labelled reference. Retirement steps are documented at the top of
+`src/themes/registry.ts`.
 
 | | Direction | Anchor |
 |---|---|---|
-| A | **Civic Letterpress** ✅ | WPA/municipal print. Condensed slab display, thick rules, flat two-ink, zero shadows or rounded corners. |
+| A | **Civic Letterpress** ✅ **chosen (variant A)** | WPA/municipal print. Condensed slab display, thick rules, flat two-ink, zero shadows or rounded corners. |
 | B | ~~**Warm Editorial**~~ | Local-nonprofit annual report. Serif display + humanist sans, asymmetric grid, big photos, pull quotes. |
 | C | ~~**Schoolyard Bold**~~ | Modern summer-camp brand. Wide geometric sans, saturated flat blocks, badge shapes, thick borders. Energetic, not childish. |
-| D | **East Austin Print Shop** ✅ | Screenprint. Muted earth + one hot accent, paper texture, hand-drawn rules. Leans on the 135-year history. |
+| D | **East Austin Print Shop** 🔒 *reserve* | Screenprint. Muted earth + one hot accent, paper texture, hand-drawn rules. Leans on the 135-year history. |
 | E | ~~**Quiet Utility**~~ | The anti-decoration option. Neutral grotesk, hairline borders, tight palette, ruthlessly optimized for "find the thing on a phone." |
 | F | ~~**Jacket**~~ | Hard black-and-gold banding, angular geometry, mascot-forward with restraint. |
+
+*The A-F letters above label the six original directions and are unrelated to the
+A/B split of Civic Letterpress. Direction A is Civic Letterpress; its chosen
+variant is also called A. Confusing, but both names are already in circulation
+with the board.*
 
 Non-negotiable across every theme: WCAG AA contrast, real focus states, keyboard navigation, mobile-first. **A theme that can't clear AA gets cut regardless of how good it looks**: this is a public-serving org attached to a school district.
 
@@ -152,6 +169,8 @@ Each theme declares both a token set *and* a structure, so a token-only recolor 
 The switcher renders every theme into one `/preview` route and toggles visibility client-side. A couple of copies of a homepage is a trivial payload, and making the switch **instant** is what gets someone to actually compare them rather than bailing after the first.
 
 Why this shape: no copy drift across variants, another theme is cheap, and when a winner is picked you delete the loser's files and you're done. The cut from six to two was four file deletions plus their registry entries.
+
+Two exports carry the outcome, deliberately kept apart. `siteThemeId` is what every real page renders in; `defaultThemeId` is only which panel `/preview` opens on. They name the same theme today, but separating them means someone can point the preview at a reserve for a second opinion without silently re-skinning the live homepage.
 
 ---
 

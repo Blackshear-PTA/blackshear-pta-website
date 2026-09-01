@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-08-31 (session 9)
+**Last updated:** 2026-08-31 (session 10)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -10,10 +10,12 @@
 
 | # | Task | Owner | Why it's urgent |
 |---|---|---|---|
-| U1 | **Pick between Civic Letterpress A, Civic Letterpress B and East Austin Print Shop** | JON | Narrowed from six, then Civic split into A and B on first feedback. Everything in Phase 2 is blocked until one wins. Live at **https://blackshearpta.org** |
+| U1 | ~~Pick a design~~ | JON | ✅ **Civic Letterpress A**, decided 2026-08-31. B and Print Shop held in reserve at `/preview`, not deleted |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
+| U3 | **Confirm the Phase 2 page set** | JON | [A20](#phase-2---real-site) is the largest remaining chunk and cannot start without it. Proposal is the five nav destinations still pointing at Weebly |
+| U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly |
 
-Ask for a favourite **and** a runner-up: six options split a small group six ways, and the second choice is usually where consensus actually shows up.
+**Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
 *Going forward, code changes land via branch → PR rather than direct pushes to `main`.*
 
@@ -23,7 +25,7 @@ Ask for a favourite **and** a runner-up: six options split a small group six way
 
 *Runs first; several Track A items depend on it.*
 
-- [!] **C1**: **Renew the domain at GoDaddy**: **Gabe**: **see U1.** Escalated from "confirm auto-renew" to "renew it now" after the transfer was rejected. Jon's *Domains Only* access cannot see or act on billing
+- [x] **C1**: ~~Renew the domain at GoDaddy~~ - **Gabe** - Handled (U2). Escalated from "confirm auto-renew" to "renew it now" after the transfer was rejected, because Jon's *Domains Only* access cannot see or act on billing. **Worth re-confirming at the registry before the 2026-10-11 transfer retry** ([C9](#track-c---domain-dns-email)): `npm run check:domain`
 - [x] **C2**: Determine what's behind the existing Google MX records - `JON` - Gabe started a Workspace/Nonprofits signup ~1 year ago on blackshearpta.org and abandoned it. Domain is already Google-verified. See [F8](#f8)
 - [x] **C3**: Confirm GoDaddy delegate access level - `JON` - **"Domains Only"** on Gabe Hernandez's account. Sufficient for nameservers/DNS. *Not* sufficient for billing (C1) or product subscriptions
 - [x] **C4**: Create Cloudflare account - `JON` - Created 2026-08-28. ⚠️ Confirm it was created as `blackshearpta@gmail.com`, not a personal address
@@ -68,25 +70,37 @@ Ask for a favourite **and** a runner-up: six options split a small group six way
 - [x] **A4**: Wire GitHub → Cloudflare Workers deploy on push - `JON` - Cloudflare **Workers Builds** connected to the repo. Worker `blackshear-pta`, build `npm run build`, deploy `npx wrangler deploy`, branch previews via `npx wrangler versions upload`. Build token `blackshear-pta-builds` is created and held by Cloudflare - nothing to store in GitHub
 - [~] **A5**: Deploy end-to-end - `CLAUDE` + `JON` - First `main` build triggered 2026-08-30. Branch builds confirmed working on [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1), which validates `versions upload` against an assets-only Worker with no `main` field
 - [~] **A6**: Site-wide `noindex` - `CLAUDE` - In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Two mechanisms: `public/_headers` (`X-Robots-Tag`) and a `<meta name="robots">` in `BaseLayout.astro`. **Both must be deleted at cutover, not before**
-- [ ] **A7**: Cloudflare Web Analytics - `CLAUDE` - Free, cookieless, no consent banner required
+- [!] **A7**: Cloudflare Web Analytics - `CLAUDE` + `JON` - **Blocked on U4.** Free, cookieless, no consent banner required. Needs the site token from Cloudflare → Web Analytics → Add a site; the beacon then goes in `BaseLayout.astro`. Worth having *before* cutover so there is a baseline to compare Weebly against
 
-### Phase 1 - Coming-soon + six-theme demo
+### Phase 1 - Theme demo and board vote *(complete)*
 
-- [ ] **A8**: "Coming soon" page at `/`, linking to the Weebly site - `CLAUDE`
+- [x] **A8**: ~~"Coming soon" page at `/`~~ - `CLAUDE` - **Superseded.** `/` now serves the real Civic Letterpress A homepage ([A19](#phase-2---real-site)). The whole zone is still `noindex` ([A6](#phase-0---accounts--scaffold)) and Weebly is still canonical until cutover, so nothing is prematurely public - but a placeholder no longer buys anything
 - [~] **A9**: Extract copy from Weebly into `src/content/home.yaml` - `CLAUDE` - In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Real copy and real links, no placeholders left. Meeting dates taken from the 2026-2027 calendar, not the Weebly homepage, which is a year stale ([F18](#f18))
 - [x] **A10**: Salvage the four usable photos from Weebly - `CLAUDE` - In `assets/from-weebly/`
 - [~] **A11**: Brand marks - `CLAUDE` + `JON` - Header now carries an **SVG yellow jacket drawn as geometry** (`src/components/BuzzMark.astro`), themed via four CSS tokens so it can be full-colour, one-ink, or silhouette per theme. A raster crop could not do that. **Still open: whether the PTA fronts with school marks or its own lockup** ([F11](#f11))
 - [x] **A12**: Theme token architecture - `CLAUDE` - Registry pairs each theme with a structure so a token-only recolor cannot ship by accident. 4 structures, ~40 `--pta-*` tokens, sections read tokens only
-- [x] **A13**: Six themes - `CLAUDE` - Each with its own self-hosted typeface pairing (10 families via `astro:fonts`, zero runtime Google requests)
-- [x] **A14**: Instant switcher at `/preview` - `CLAUDE` - All six rendered, five `display:none`. Switching is instant, choice persists, `?theme=` is shareable. Only the active theme's fonts download (verified: 2 of 38 faces loaded)
-- [~] **A15**: Mobile QA + WCAG AA audit - `CLAUDE` + `JON` - Contrast is now an automated gate: `npm run check:contrast`, **54 checks across 6 themes, 0 failing**. Two real bugs caught and fixed ([F20](#f20)). **Still wants a real-phone pass**: the browser pane stopped rendering mid-session, so late layout checks were DOM-measured rather than seen
-- [ ] **A16**: Provision D1 - `CLAUDE`
-- [ ] **A17**: `/api/feedback` vote capture → D1 - `CLAUDE` - Fast-follow; doubles as the Worker→D1 smoke test
-- [ ] **A18**: Send the preview link to the board and collect votes - `JON`
+- [x] **A13**: ~~Six themes~~ → **three** - `CLAUDE` - Built six, each with its own self-hosted typeface pairing. The board cut to two, then Civic split into A and B. The four that lost are out of the working tree but still in git history
+- [x] **A14**: Instant switcher at `/preview` - `CLAUDE` - Now a **reference page**, not a ballot: it no longer asks for a vote, and the chosen design is tagged as such. All three render, two `display:none`. Choice persists, `?theme=` is shareable, and `?theme=civic-letterpress` still resolves to A so links shared before the split keep working. Only the visible theme's fonts download
+- [~] **A15**: Mobile QA + WCAG AA audit - `CLAUDE` + `JON` - Contrast is an automated gate: `npm run check:contrast`, **36 checks across 3 themes, 0 failing**. Two real bugs caught and fixed ([F20](#f20)). No horizontal scroll at 375px; the only sub-44px targets are links inline in running text, which WCAG 2.5.8 exempts. **Still wants a real-phone pass** - everything so far is emulated or DOM-measured
+- [ ] **A16**: Provision D1 - `CLAUDE` + `JON` - **Deferred, not dropped.** Nothing in Phase 2 needs a database; Phase 3 does. Revisit at [A23](#phase-2---real-site) if the admin editor wants anything beyond git
+- [x] **A17**: ~~`/api/feedback` vote capture → D1~~ - **Superseded.** The vote concluded over email and in person before this was worth building. The Worker→D1 smoke test it doubled as moves to A16
+- [x] **A18**: Send the preview link to the board and collect votes - `JON` - Done. Result: Civic Letterpress A
 
-### Phase 2 - Real site *(not started)*
+### Phase 2 - Real site
 
-Winning theme promoted · full page set · admin UI + Cloudflare Access · R2 for images · announcements feed with RSS · file hosting (handbook, The Beat, forms) · link-out hub for SignUpGenius and the calendar · **cutover: Weebly retired, redirects in place, noindex removed**
+*Started 2026-08-31. Ordered roughly by dependency: the page set has to exist before cutover is meaningful, and the admin editor has to exist before the site can survive handoff.*
+
+- [x] **A19**: Promote Civic Letterpress A to `/` - `CLAUDE` - Homepage renders the chosen design; the `/ → /preview/` vote redirect is deleted. `siteThemeId` (the live site's design) is now a separate export from `defaultThemeId` (which panel `/preview` opens on), so pointing the preview at a reserve cannot silently re-skin the homepage. B and Print Shop still build and still pass the contrast gate
+- [ ] **A20**: **Build the page set** - `CLAUDE` + `JON` - **Blocked on U3.** Five nav destinations still point at Weebly: `/volunteer`, `/calendar`, `/little-east`, `/sponsors`, `/contact`. Each becomes a real page, and `site.yaml` flips that nav entry from an `external: true` Weebly URL to an internal path - one page at a time, so the nav is never broken mid-flight. "Join" is a Zeffy/tinyurl store link and probably stays external. **Needs from Jon: confirmation of the list, and copy for anything that should not simply be lifted from Weebly**
+- [ ] **A21**: Cloudflare build watch paths - `JON` - Dashboard setting (Workers → Builds → Build watch paths). Excludes `TASKS.md`, `docs/**`, `README.md` so a task-board edit does not redeploy the site. Exclude list is documented in the README
+- [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
+- [ ] **A23**: `/admin` editor behind Cloudflare Access + Google IdP - `CLAUDE` + `JON` - Implements [D1](#open-decisions). **The single biggest long-term risk** ([F18](#f18)): the Weebly site went stale because editing it was harder than not editing it. Depends on C7/B4 for the Google IdP, but can be built against a temporary one-time-PIN Access policy first
+- [ ] **A24**: R2 bucket for images uploaded through `/admin` - `CLAUDE` + `JON` - Free tier is 10GB. Needed before A23 is genuinely useful; a board member adding a post will want to attach a photo
+- [ ] **A25**: Announcements feed + RSS - `CLAUDE` - Markdown collection, newest-first, with a real feed. Cheap now, and it means the homepage "What's Happening" block stops being hand-edited copy
+- [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
+- [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
+- [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
+- [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
 
 ### Phase 3 - Member accounts *(not started, only if still wanted)*
 
@@ -106,6 +120,7 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D6 | Cloudflare Access gate on the preview | ✅ **Decided** | Dropped for Phase 1 - friction kills vote participation and there's nothing confidential. Reinstated in Phase 2 for `/admin` |
 | D7 | Registrar transfer timing | ✅ **Decided** | Defer to October. Renewal is 6 days out; a failed transfer near expiry risks losing the domain to save ~$20 |
 | D8 | Replace SignUpGenius / ClassDojo / WhatsApp | ✅ **Decided** | Phase 2 aggregates and links out. Replacement is a later phase, evaluated on its own |
+| D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ---
 
