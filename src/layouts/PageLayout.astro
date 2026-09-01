@@ -1,0 +1,152 @@
+---
+import { getImage } from 'astro:assets';
+import littleEast from '../assets/photos/little-east.jpg';
+import garden from '../assets/photos/garden.jpg';
+import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
+import bakeSale from '../assets/photos/bake-sale.jpg';
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '../components/sections/SiteHeader.astro';
+import Footer from '../components/sections/Footer.astro';
+import { getEntry } from 'astro:content';
+import { siteThemeId, getTheme } from '../themes/registry';
+import { uid } from '../uid';
+import type { PageData } from '../types';
+
+/**
+ * Shell for every standalone page. Same bones as the homepage's stacked-rules
+ * structure - masthead, full-bleed photo band, one column, heavy rules - so an
+ * interior page never reads as a different site.
+ *
+ * Deliberately NOT theme-switchable. The reserve themes exist only to render
+ * the homepage at /preview; giving them interior-page structures too would mean
+ * maintaining a second full page set for designs nobody chose.
+ */
+
+interface Props {
+  page: PageData;
+}
+
+const { page } = Astro.props;
+
+const siteEntry = await getEntry('site', 'site');
+const homeEntry = await getEntry('home', 'home');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
+
+const theme = getTheme(siteThemeId);
+const titleId = uid('page-title');
+
+/**
+ * Slug to image, mirroring Committees.astro. Static imports because Astro's
+ * build-time pipeline can only resize what it can see imported; a path built
+ * from content would ship the multi-megabyte original.
+ *
+ * `position` is per photo rather than one global value. The band is wide and
+ * short, so `cover` on a portrait source shows a horizontal slice, and which
+ * slice is worth showing differs: the garden bed sits low in frame, the
+ * flagpole high. Getting this wrong is how campus-side-entrance.jpg ended up
+ * showing mostly sky (see src/assets/photos/README.md).
+ */
+const backdrops = {
+  'little-east': { src: littleEast, position: 'center 45%' },
+  garden: { src: garden, position: 'center 60%' },
+  'campus-flagpole': { src: campusFlagpole, position: 'center 35%' },
+  'bake-sale': { src: bakeSale, position: 'center 55%' },
+} as const;
+
+const backdrop = backdrops[page.backdrop];
+
+// Quality 45 and 1200px wide, matching the homepage band: the photo sits under
+// an 80% scrim, so detail is invisible by construction and a full-quality
+// encode would be most of the page weight for nothing.
+const backdropImg = await getImage({
+  src: backdrop.src,
+  width: 1200,
+  quality: 45,
+  format: 'webp',
+});
+---
+
+<BaseLayout title={page.meta.title} description={page.meta.description} themeId={theme.id}>
+  <SiteHeader site={siteEntry.data} />
+
+  <main id="main">
+    <div
+      class="topband"
+      style={`--topband-img: url(${backdropImg.src}); --topband-pos: ${backdrop.position}`}
+    >
+      <div class="shell">
+        <div class="band-inner" aria-labelledby={titleId}>
+          <h1 id={titleId}>{page.title}</h1>
+          <p class="lede">{page.lede}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <slot />
+    </div>
+  </main>
+
+  <div class="shell">
+    <Footer footer={homeEntry.data.footer} social={siteEntry.data.social} />
+  </div>
+</BaseLayout>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+
+  /*
+    Full-bleed photographic band, same construction as the homepage: a sibling
+    of the shells rather than a wrapper inside one, so the photo reaches both
+    screen edges without `calc(50% - 50vw)`, which is off by the scrollbar width
+    and put the page into horizontal scroll the last time it was used.
+  */
+  .topband {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--topband-img);
+    background-size: cover;
+    background-position: var(--topband-pos, center);
+    /* Not `fixed`: iOS Safari renders that at the wrong scale and stutters. */
+    background-attachment: scroll;
+  }
+
+  /* Scrim as a pseudo-element, not a translucent background on the band, so the
+     alpha stays one tunable number and the text above it is fully opaque. */
+  .topband::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--pta-topband-scrim);
+    opacity: var(--pta-topband-alpha);
+  }
+
+  .band-inner {
+    padding-block: var(--pta-section-y);
+    /* Keeps the band from collapsing to nothing on a short title, so the photo
+       is legible as a photo rather than a stripe. */
+    min-height: 9rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-size: var(--pta-hero-size);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    line-height: var(--leading-flat);
+  }
+
+  .lede {
+    margin: var(--pta-gap) 0 0;
+    font-size: var(--text-lede);
+    max-width: var(--pta-measure);
+  }
+</style>

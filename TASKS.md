@@ -12,9 +12,11 @@
 |---|---|---|---|
 | U1 | ~~Pick a design~~ | JON | ✅ **Civic Letterpress A**, decided 2026-08-31. B and Print Shop held in reserve at `/preview`, not deleted |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
-| U3 | **Confirm the Phase 2 page set** | JON | [A20](#phase-2---real-site) is the largest remaining chunk and cannot start without it. Proposal is the five nav destinations still pointing at Weebly |
+| U3 | ~~Confirm the Phase 2 page set~~ | JON | ✅ Confirmed 2026-08-31, plus the four committee pages. Four built, four to go - see [A20](#phase-2---real-site) |
 | U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly. **I cannot do this one** - wrangler is not authenticated locally and I have no dashboard access |
 | U5 | **Set the `SITE_PASSWORD` secret** | JON | [A30](#phase-2---real-site). The pre-launch gate **fails closed** without it, so the site is unreachable for everyone until it is set. `npx wrangler secret put SITE_PASSWORD`, or dashboard → Workers & Pages → blackshear-pta → Settings → Variables and Secrets → Add → Secret. **Do this at merge time, not before** |
+| U6 | **Decide how the calendar works** | JON | Blocks `/calendar` in [A20](#phase-2---real-site). This is an architecture decision, not a copy lift: which system is the *source of truth* for events. Recommendation and the three options are in [D10](#open-decisions) |
+| U7 | **Decide what `/gallery` actually is** | JON | Blocks `/gallery` in [A20](#phase-2---real-site). A live Instagram wall is much harder than it looks in 2026 - the API that used to do it was shut down. Options in [D11](#open-decisions) |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -92,7 +94,16 @@
 *Started 2026-08-31. Ordered roughly by dependency: the page set has to exist before cutover is meaningful, and the admin editor has to exist before the site can survive handoff.*
 
 - [x] **A19**: Promote Civic Letterpress A to `/` - `CLAUDE` - Homepage renders the chosen design; the `/ → /preview/` vote redirect is deleted. `siteThemeId` (the live site's design) is now a separate export from `defaultThemeId` (which panel `/preview` opens on), so pointing the preview at a reserve cannot silently re-skin the homepage. B and Print Shop still build and still pass the contrast gate
-- [ ] **A20**: **Build the page set** - `CLAUDE` + `JON` - **Blocked on U3.** Five nav destinations still point at Weebly: `/volunteer`, `/calendar`, `/little-east`, `/sponsors`, `/contact`. Each becomes a real page, and `site.yaml` flips that nav entry from an `external: true` Weebly URL to an internal path - one page at a time, so the nav is never broken mid-flight. "Join" is a Zeffy/tinyurl store link and probably stays external. **Needs from Jon: confirmation of the list, and copy for anything that should not simply be lifted from Weebly**
+- [~] **A20**: **Build the page set** - `CLAUDE` + `JON` - Page list confirmed 2026-08-31. Pages are content, not code: a top-level key in `src/content/pages.yaml` publishes a URL, so adding one needs no code change. Copy is **lifted from Weebly to match current state**, with a rewrite pass deferred.
+  - [x] `/little-east` - year-by-year archive. Four broken or mislabelled links corrected or dropped ([F21](#f21))
+  - [x] `/sponsors` - Fundraising committee lands here. Full tier list; see [F22](#f22) for the Family Buzz question
+  - [x] `/staff-appreciation` - **no Weebly page existed**; built from the homepage blurb and a Drive PDF ([F23](#f23))
+  - [x] `/campus-beautification` - **no Weebly page existed**, and it was called "Garden"; renamed throughout ([F23](#f23))
+  - [ ] `/volunteer` - straightforward lift; AISD Voly + interest form + event PDFs
+  - [ ] `/contact` - board roster, principal, address. **Individual emails are Cloudflare-obfuscated on Weebly and could not be read**; needs them from Jon
+  - [ ] `/calendar` - **blocked on U6**, a real architecture decision rather than a copy lift
+  - [ ] `/gallery` - **blocked on U7**; a live Instagram feed is harder than it looks in 2026
+  - [ ] Flip each `site.yaml` nav entry from its Weebly URL to the internal path, one page at a time, so the nav is never broken mid-flight. "Join" is a Zeffy store link and stays external
 - [ ] **A21**: Cloudflare build watch paths - `JON` - Dashboard setting (Workers → Builds → Build watch paths). Excludes `TASKS.md`, `docs/**`, `README.md` so a task-board edit does not redeploy the site. Exclude list is documented in the README
 - [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
 - [ ] **A23**: `/admin` editor behind Cloudflare Access + Google IdP - `CLAUDE` + `JON` - Implements [D1](#open-decisions). **The single biggest long-term risk** ([F18](#f18)): the Weebly site went stale because editing it was harder than not editing it. Depends on C7/B4 for the Google IdP, but can be built against a temporary one-time-PIN Access policy first
@@ -122,7 +133,38 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D6 | Cloudflare Access gate on the preview | ✅ **Decided** | Dropped for Phase 1 - friction kills vote participation and there's nothing confidential. Reinstated in Phase 2 for `/admin` |
 | D7 | Registrar transfer timing | ✅ **Decided** | Defer to October. Renewal is 6 days out; a failed transfer near expiry risks losing the domain to save ~$20 |
 | D8 | Replace SignUpGenius / ClassDojo / WhatsApp | ✅ **Decided** | Phase 2 aggregates and links out. Replacement is a later phase, evaluated on its own |
+| D10 | **What is the source of truth for events** | ⏳ **Needs Jon** (U6) | Three options below. **Recommendation: keep Google Calendar as the source, and stop embedding it.** |
+| D11 | **What `/gallery` is** | ⏳ **Needs Jon** (U7) | A live Instagram feed is a maintenance treadmill in 2026; see below. **Recommendation: a real photo grid now, Instagram link alongside it.** |
 | D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
+
+### D10 in full - the calendar
+
+The goal is one master list that everything else follows. The real question is *which* system holds it, and the answer should be **wherever the board will actually keep it updated**, because [F18](#f18) is the evidence for what happens otherwise: the Weebly site went stale because editing it was harder than not editing it.
+
+| | Source of truth | What it costs | What it buys |
+|---|---|---|---|
+| **1. Google Calendar stays the source** ⭐ | Google Calendar | Nothing new. One feed URL in config | Board edits from the phone app they already have. Parents subscribe to the same calendar. Zero credentials, nothing to refresh, survives turnover |
+| 2. Site is the source, pushes to Google | `/admin` → Google Calendar API | Service account, OAuth, domain-wide delegation, token refresh, reconciliation when the two drift | Very little that option 1 does not already give |
+| 3. Site is the source, publishes its own feed | `/admin` → generated `.ics` | Depends on [A23](#phase-2---real-site) existing first. Volunteers lose the Google Calendar app for editing | Cleanest architecture. No third-party account in the loop at all |
+
+**Recommended: option 1, and separately stop embedding the calendar in an iframe.** Those are two different things and the iframe is the actual current problem - it is unreadable on a phone, off-brand, and slow. Instead the site reads the calendar's public iCal feed and renders its own styled list, with an "add to your calendar" button pointing at the same feed. Same one master list; it just stops looking like someone else's widget.
+
+Option 2 is the worst of the three: the most machinery, the most failure modes, and it makes the site a *second* place events live, which is precisely the drift risk you are trying to avoid.
+
+**The Workspace migration does not block this.** A Google Calendar's ownership can be transferred, or the Workspace account can simply be added as an owner later. Either way the site holds one feed URL in one config value, and that value changes once.
+
+Implementation note: the Worker added for the pre-launch gate ([A30](#phase-2---real-site)) is already the natural place to fetch and cache the feed, so the calendar stays current without waiting for a rebuild.
+
+### D11 in full - the gallery
+
+A wall of photos pulled live from Instagram is genuinely harder than it looks now:
+
+- **Instagram Basic Display API** - the one that used to do exactly this - **was shut down in December 2024**.
+- **Instagram Graph API** still works, but needs a Business or Creator account linked to a Facebook Page, a Meta developer app, and a long-lived token **that must be refreshed every 60 days**. A token that expires every two months, on an account that changes hands at board turnover, is a broken gallery waiting to happen - and it breaks silently.
+- **Official embeds** only embed *individual posts*, not a profile feed.
+- **Third-party widgets** (LightWidget, SnapWidget, EmbedSocial) work today on free tiers, but add a third-party script and tracker to every page load, and are a dependency that will eventually start charging or shut down.
+
+**Recommended:** build `/gallery` as a real responsive photo grid fed from the repo now, and from R2 once [A24](#phase-2---real-site) lands, with a prominent "Follow us on Instagram" card next to it. It works forever, costs nothing, has no token to refresh, and does not leak visitors to Meta. Revisit a live feed once `/admin` exists - and if it is still wanted then, the Graph API route needs a Meta app that only Jon can create, so it is gated on him regardless.
 
 ---
 
@@ -167,6 +209,15 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 
 <a name="f20"></a>
 **F20 - Two layout bugs the automated checks caught that screenshots did not.** (1) The `editorial` structure's full-bleed band used the common `margin-inline: calc(50% - 50vw)` trick, which is off by the scrollbar width - `50vw` counts it, `50%` does not - putting the page into horizontal scroll on any desktop with a classic scrollbar. Fixed by making the band a DOM sibling of the container so it is naturally full width, with no arithmetic. (2) Header nav links measured ~37px tall against the 44px touch minimum, because padding alone at `--text-fine` does not reach it. Both were invisible at a glance and only showed up under measurement - worth remembering that the visual pass is not the QA pass.
+
+<a name="f21"></a>
+**F21 - Four of the Little EAST links on the current site are broken or mislabelled.** Found by actually following every one of them while lifting the copy, rather than assuming. (1) The 2023 auction link is written `tinyurl.com10thLittleEAST` - **no slash** - so it has never worked; the corrected URL resolves fine and is what the new page uses. (2) `tinyurl.com/11thLittleEAST`, labelled "2024 Silent Auction", actually goes to **a YouTube video**; relabelled. (3) `tinyurl.com/BlackshearLEPics`, labelled "photos", **downloads a Dropbox zip** rather than opening a gallery; the new page says so. (4) `biddingowl.com/blackshearlittleeast` (2022 auction) now redirects to BiddingOwl's own homepage - the auction is gone - so it is **dropped rather than carried over**. Shipping a link already known to be dead is worse than not shipping it. Reinforces [F19](#f19): opaque redirects nobody can audit without clicking.
+
+<a name="f22"></a>
+**F22 - The Family Buzz sponsor tier lists children's first names with family surnames.** Fifteen entries in the form "June Flowers's Family". They are already public on Weebly and the families paid for the recognition, so the new `/sponsors` page reproduces them as-is - quietly dropping a donor tier would be the bigger error. **But this is a board decision worth making deliberately**, because at cutover ([A29](#phase-2---real-site)) the `noindex` comes off and this page becomes searchable, which the Weebly page may never have been. Options if it is a concern: surnames only, "The Flowers Family", or an opt-in at sponsorship time.
+
+<a name="f23"></a>
+**F23 - Two of the four committees have no page on the current site at all.** Staff Appreciation and Garden/Campus Beautification exist only as a homepage blurb and a Google Drive PDF linked from the volunteer page. Their new pages are built from those two sources and are **genuinely starting points, not lifted copy** - flagged inline in `src/content/pages.yaml`. Staff Appreciation also has **no chair** for 2026-2027, so there is currently nobody to write it.
 
 **F3 - The root domain serves a GoDaddy parking page.** `server: DPS/2.0.0`, title is just the bare domain. Nothing is using it, so pointing it at a coming-soon page breaks nothing.
 

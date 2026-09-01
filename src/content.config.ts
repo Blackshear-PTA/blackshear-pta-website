@@ -54,13 +54,17 @@ const involvementTier = z.object({
 const committee = z.object({
   name: z.string(),
   description: z.string(),
+  /** Where the tile goes. Omit and the committee renders as plain text. */
+  href: z.string().optional(),
   /**
    * Which tile art to show. A slug rather than a path: the mapping to an
    * imported image lives in Committees.astro so Astro's build-time image
    * pipeline can see the import. A path string here would ship the 4MB
    * original untouched. Omit and the committee renders without art.
    */
-  art: z.enum(['little-east', 'garden', 'staff-appreciation', 'fundraising']).optional(),
+  art: z
+    .enum(['little-east', 'campus-beautification', 'staff-appreciation', 'fundraising'])
+    .optional(),
 });
 
 const contact = z.object({
@@ -90,6 +94,66 @@ const socialLink = z.object({
   /** Accessible name. The links are icon-only, so this is the only label. */
   label: z.string(),
   href: z.string(),
+});
+
+/**
+ * Standalone pages - src/content/pages.yaml, rendered by src/pages/[page].astro.
+ *
+ * The top-level key becomes both the entry id and the URL, so adding
+ * `volunteer:` to that file publishes /volunteer with no code change. That is
+ * the point: PROJECT-BRIEF §2 wants a site a non-technical volunteer can still
+ * edit after board turnover, and "add a block of YAML" is a much shorter
+ * instruction than "add an .astro file".
+ *
+ * An explicit route always beats this one, so a page that outgrows the schema
+ * can graduate to src/pages/<name>.astro without changing its URL.
+ */
+const pageLink = link.extend({
+  /** Small qualifier under the link - "PDF", "downloads a zip", "opens YouTube". */
+  note: z.string().optional(),
+});
+
+const pageSection = z.object({
+  heading: z.string(),
+  body: z.array(z.string()).default([]),
+  links: z.array(pageLink).default([]),
+  /** Plain names with no destination: sponsor tiers, thank-you lists. */
+  names: z.array(z.string()).default([]),
+});
+
+const pages = defineCollection({
+  loader: file('src/content/pages.yaml'),
+  schema: z.object({
+    meta: z.object({
+      title: z.string(),
+      description: z.string(),
+    }),
+    /** Page title, over the photo band. */
+    title: z.string(),
+    /** One line under the title. Also over the photo. Keep it short. */
+    lede: z.string(),
+    /**
+     * Which photo sits behind the title, full bleed under a scrim. A slug, not
+     * a path: the mapping to an imported image lives in PageLayout.astro so
+     * Astro's build-time pipeline can see the import and resize it. A path
+     * string here would ship the multi-megabyte original untouched.
+     */
+    backdrop: z.enum(['little-east', 'garden', 'campus-flagpole', 'bake-sale']),
+    /** Opening paragraphs, before any section. */
+    body: z.array(z.string()).default([]),
+    /** The one action this page most wants. Rendered as a button. */
+    cta: link.optional(),
+    sections: z.array(pageSection).default([]),
+    /** Who to ask. `name`/`role` optional so a page can list just an address. */
+    contact: z
+      .object({
+        name: z.string().optional(),
+        role: z.string().optional(),
+        email: z.email(),
+        note: z.string().optional(),
+      })
+      .optional(),
+  }),
 });
 
 const site = defineCollection({
@@ -152,4 +216,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { home, site };
+export const collections = { home, pages, site };
