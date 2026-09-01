@@ -60,6 +60,18 @@ export interface Theme {
    * so nobody mistakes a reserve for a live option.
    */
   reserve?: boolean;
+  /**
+   * The --font-* variables this theme's tokens resolve to, display first.
+   *
+   * Used by BaseLayout to preload only the faces a page will actually paint
+   * with. Every face ships @font-face rules regardless; this decides which get
+   * a <link rel="preload">, and preloading a face the page never uses is just
+   * wasted bytes on a phone.
+   *
+   * Must match the var(--font-*) references in this theme's CSS file.
+   * `npm run check:fonts` fails the build if it drifts.
+   */
+  fonts: readonly string[];
 }
 
 export const themes: readonly Theme[] = [
@@ -69,6 +81,7 @@ export const themes: readonly Theme[] = [
     description:
       'WPA and municipal print. Slab display, heavy rules, two inks, no radius or shadow anywhere.',
     structure: 'stacked-rules',
+    fonts: ['--font-bevan', '--font-archivo'],
   },
   {
     id: 'civic-letterpress-b',
@@ -78,6 +91,7 @@ export const themes: readonly Theme[] = [
     structure: 'stacked-rules',
     video: true,
     reserve: true,
+    fonts: ['--font-bevan', '--font-archivo'],
   },
   {
     id: 'print-shop',
@@ -86,6 +100,7 @@ export const themes: readonly Theme[] = [
       'Screenprint and wood type on newsprint. Flat overprinted colour.',
     structure: 'editorial',
     reserve: true,
+    fonts: ['--font-alfa', '--font-karla'],
   },
 ];
 

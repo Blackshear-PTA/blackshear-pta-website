@@ -2,6 +2,7 @@
 import { Font, getImage } from 'astro:assets';
 import socialSource from '../assets/photos/campus-front-walk.jpg';
 import { fontFamilies } from '../font-families.mjs';
+import { getTheme } from '../themes/registry';
 
 /**
  * Astro generates a literal union of the cssVariable names from the `fonts`
@@ -28,6 +29,22 @@ interface Props {
 }
 
 const { title, description, themeId } = Astro.props;
+
+/**
+ * Which typefaces to preload.
+ *
+ * A real page renders exactly one theme, so its two faces are certain to paint
+ * and should start downloading immediately. /preview renders all three at once
+ * with two hidden, passes no themeId, and preloads nothing - there, preloading
+ * would fetch six faces to display two.
+ *
+ * This matters because every face is font-display: swap. Without a preload the
+ * browser paints the fallback first and swaps when the webfont lands, and that
+ * swap moves the page - which is a layout shift on the biggest text on the
+ * page. Cloudflare Web Analytics was reporting exactly that: LCP and INP fully
+ * green, CLS with a band in the red.
+ */
+const preloadFonts = new Set(themeId ? getTheme(themeId).fonts : []);
 
 /**
  * Link-preview image.
@@ -95,12 +112,17 @@ const socialAlt = 'The front walkway and entrance of Blackshear Elementary Schoo
       undefined, every --pta-font-display var() chain goes invalid, and both
       themes quietly render in the browser default.
 
-      Deliberately NOT preloaded. /preview holds both themes at once and only
-      one is visible; browsers skip font downloads for display:none subtrees,
-      so leaving preload off means a visitor fetches the two faces they can
-      actually see instead of all four.
+      Preloaded on real pages, NOT on /preview - see `preloadFonts` above. The
+      original blanket "never preload" was right when /preview was the landing
+      page and held every theme at once. Once / became a single-theme page that
+      reasoning stopped applying, and the missing preload was costing a
+      font-swap layout shift on the largest text on the page.
     */}
-    {fontFamilies.map((f) => <Font cssVariable={f.cssVariable as FontVariable} />)}
+    {
+      fontFamilies.map((f) => (
+        <Font cssVariable={f.cssVariable as FontVariable} preload={preloadFonts.has(f.cssVariable)} />
+      ))
+    }
     {/*
       Pre-launch only. Weebly is still the canonical site, so this domain must
       not be indexed until cutover (TASKS.md A6). Belt and braces with the

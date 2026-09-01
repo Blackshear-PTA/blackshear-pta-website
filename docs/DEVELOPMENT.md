@@ -23,11 +23,12 @@ Astro 7 runs `dev` as a background daemon. `npm run astro -- dev stop` stops it;
 
 ### The gates
 
-Three checks, all exiting non-zero on failure, all runnable by hand:
+All exit non-zero on failure, all runnable by hand:
 
 ```sh
 npm run check           # types and Astro diagnostics
 npm run check:contrast  # WCAG AA across every theme
+npm run check:fonts     # typeface wiring agrees across three files
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
 npm run check:domain    # registration status for all three domains
 ```
@@ -37,6 +38,16 @@ site attached to a school district; a theme that cannot clear AA gets cut
 regardless of how good it looks. It parses the `:root` block in `global.css`,
 layers each `[data-theme]` block on top so inherited tokens are checked rather
 than silently skipped, and covers text pairings plus scrim-over-photo cases.
+
+`check:fonts` exists because three files have to agree about typefaces and the
+page still renders when they do not, which is what makes that class of bug
+expensive. It has already bitten twice here: once when a family was in the Astro
+config with no `<Font>` rendered, so `--font-*` was undefined, the whole `var()`
+chain went invalid, and every theme quietly rendered in the browser default
+while looking perfectly plausible; again when `theme.fonts` was added and could
+drift from the CSS. Preloading a face the page never paints is wasted bytes on a
+phone; missing one brings back the layout shift the preload exists to remove.
+Neither shows up in a screenshot.
 
 `check:ical` runs in CI before the calendar refresh, so a parser regression
 keeps yesterday's good snapshot instead of committing a broken one.
