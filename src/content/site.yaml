@@ -24,20 +24,17 @@ site:
       href: "https://tinyurl.com/BlackshearStore"
       external: true
     - label: "Volunteer"
-      href: "https://blackshearpta.weebly.com/volunteer.html"
-      external: true
+      href: "/volunteer"
+    # Still Weebly: /calendar needs the Google Calendar feed wired up first.
     - label: "Calendar"
       href: "https://blackshearpta.weebly.com/calendar.html"
       external: true
     - label: "Little EAST"
-      href: "https://blackshearpta.weebly.com/little-east.html"
-      external: true
+      href: "/little-east"
     - label: "Sponsors"
-      href: "https://blackshearpta.weebly.com/sponsors.html"
-      external: true
+      href: "/sponsors"
     - label: "Contact"
-      href: "https://blackshearpta.weebly.com/contact.html"
-      external: true
+      href: "/contact"
 
   # Follow / contact links, rendered as icons in the footer. Pulled off the
   # current Weebly site: Instagram and Facebook were live links, the email was

@@ -1,0 +1,219 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+import littleEast from '../assets/photos/little-east.jpg';
+import littleEastAlt from '../assets/photos/little-east-alt.jpg';
+import garden from '../assets/photos/garden.jpg';
+import gardenAlt from '../assets/photos/garden-alt.jpg';
+import bakeSale from '../assets/photos/bake-sale.jpg';
+import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
+import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
+import campusFrontage from '../assets/photos/campus-frontage.jpg';
+import campusSideEntrance from '../assets/photos/campus-side-entrance.jpg';
+
+/**
+ * /gallery - an explicit route rather than a pages.yaml entry, because the grid
+ * needs static image imports and the schema cannot express those. This is the
+ * graduation path src/pages/[page].astro was built to allow: Astro gives
+ * explicit routes priority, so the URL is unchanged and the page's text still
+ * lives in pages.yaml and edits like every other page.
+ *
+ * NOT an Instagram feed, deliberately (TASKS.md D11). Instagram's Basic Display
+ * API - the one that did exactly this - was shut down in December 2024. What
+ * replaced it needs a Meta app, a Business account linked to a Facebook Page,
+ * and a token refreshed every 60 days. A token that expires every two months,
+ * on an account that changes hands at board turnover, is a gallery that breaks
+ * silently. So: a real grid that works forever, and a link to Instagram beside
+ * it for anyone who wants the live feed.
+ *
+ * This is thin - nine photos, most of them the campus. It is a frame waiting
+ * for the photo library (A28), not a finished gallery.
+ */
+
+const entry = await getEntry('pages', 'gallery');
+if (!entry) throw new Error('Missing `gallery:` entry in src/content/pages.yaml.');
+
+const INSTAGRAM = 'https://www.instagram.com/blackshearpta/';
+
+/**
+ * Alt text is written per photo rather than generated, because "gallery image
+ * 4" tells a screen reader nothing. Every one of these is a real description of
+ * what is in frame.
+ */
+/**
+ * How many photos load eagerly. The first row is above the fold on most
+ * screens, and lazy-loading it buys nothing but a visible pop-in.
+ */
+const EAGER_ROWS = 3;
+
+const photos = [
+  { src: littleEast, alt: 'Student paintings covering a wall at Blackshear' },
+  { src: littleEastAlt, alt: 'A second wall of student artwork hung for Little EAST' },
+  { src: garden, alt: 'A raised garden bed of black-eyed Susans and lantana' },
+  { src: gardenAlt, alt: 'Another view of the school garden beds in summer' },
+  { src: bakeSale, alt: 'Trays of baked goods laid out on a PTA bake sale table' },
+  { src: campusFlagpole, alt: 'The flagpole and main building on the Blackshear campus' },
+  { src: campusFrontWalk, alt: 'The front walkway and entrance of Blackshear Elementary' },
+  { src: campusFrontage, alt: 'The E. 11th Street frontage of the school' },
+  { src: campusSideEntrance, alt: 'The side entrance to the Blackshear building' },
+];
+---
+
+<PageLayout page={entry.data}>
+  {entry.data.body.map((paragraph) => <p class="prose">{paragraph}</p>)}
+
+  <ul class="grid">
+    {
+      photos.map((photo, index) => (
+        <li>
+          <Image
+            src={photo.src}
+            alt={photo.alt}
+            width={640}
+            height={480}
+            densities={[1, 2]}
+            loading={index < EAGER_ROWS ? 'eager' : 'lazy'}
+          />
+        </li>
+      ))
+    }
+  </ul>
+
+  <section class="block">
+    <div class="rule" role="presentation"></div>
+    <h2>More on Instagram</h2>
+    <p class="prose">
+      We post most things there first: events, student work, and whatever is
+      going on in the garden.
+    </p>
+    <p class="cta-row">
+      <a class="cta" href={INSTAGRAM} target="_blank" rel="noopener">
+        Follow @blackshearpta
+        <span class="sr-only"> (opens in a new tab)</span>
+      </a>
+    </p>
+  </section>
+
+  {
+    entry.data.contact && (
+      <section class="block contact">
+        <div class="rule" role="presentation" />
+        <h2>Questions?</h2>
+        <p class="prose">
+          <a href={`mailto:${entry.data.contact.email}`}>{entry.data.contact.email}</a>
+        </p>
+        {entry.data.contact.note && (
+          <p class="prose note-line">{entry.data.contact.note}</p>
+        )}
+      </section>
+    )
+  }
+</PageLayout>
+
+<style>
+  .prose {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  .prose:first-child {
+    margin-block-start: var(--pta-section-y);
+  }
+
+  /*
+    auto-fill rather than auto-fit: with auto-fit a single leftover photo on the
+    last row stretches to the full container width, which looks like a mistake.
+    auto-fill keeps every cell the same size regardless of how many there are.
+  */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--pta-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    /* Fixed ratio so the grid stays a grid: the sources are a mix of portrait
+       and landscape, and letting each cell take its own height gives a ragged
+       masonry look this theme has no other instance of. */
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    /* No placeholder fill. --pta-surface-alt is full lemon, which is fine
+       behind a 5.5rem committee thumbnail and awful behind nine large cells:
+       the grid flashes as a wall of yellow before the photos arrive. The
+       border is enough to hold the cell's shape. */
+  }
+
+  li :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block-end: var(--pta-gap);
+  }
+
+  .block {
+    padding-block-start: var(--pta-section-y);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .cta-row {
+    margin: 0;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  .note-line {
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .contact {
+    padding-block-end: var(--pta-section-y);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
