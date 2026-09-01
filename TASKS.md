@@ -14,7 +14,7 @@
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 | U3 | ~~Confirm the Phase 2 page set~~ | JON | ✅ Confirmed 2026-08-31, plus the four committee pages. Four built, four to go - see [A20](#phase-2---real-site) |
 | U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly. **I cannot do this one** - wrangler is not authenticated locally and I have no dashboard access |
-| U5 | **Set the `SITE_PASSWORD` secret** | JON | [A30](#phase-2---real-site). The pre-launch gate **fails closed** without it, so the site is unreachable for everyone until it is set. `npx wrangler secret put SITE_PASSWORD`, or dashboard → Workers & Pages → blackshear-pta → Settings → Variables and Secrets → Add → Secret. **Do this at merge time, not before** |
+| U5 | ~~Set the `SITE_PASSWORD` secret~~ | JON | ✅ Set 2026-09-01 and verified live. One leftover: a stray secret named `littleeast26` was created by a first attempt that passed the value where the *name* goes. Harmless but confusing; remove with `npx wrangler secret delete littleeast26` from the repo directory |
 | U6 | ~~Decide how the calendar works~~ | JON | ✅ **Google stays the source**, decided 2026-09-01. The site reads its iCal feed and renders its own list; the iframe goes. See [D10](#open-decisions) |
 | U7 | ~~Decide what `/gallery` actually is~~ | JON | ✅ **Photo grid plus an Instagram link**, decided 2026-09-01. No token treadmill. See [D11](#open-decisions) |
 
@@ -112,7 +112,7 @@
 - [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
-- [x] **A30**: **Pre-launch gate** - `CLAUDE` + `JON` - One shared password for the e-board, so anyone who wanders onto the domain early gets "under construction, here is our current site" rather than a half-built PTA site they take for real. A small Worker (`src/worker.ts`) in front of the static assets; cookie lasts 30 days. **Blocked on U5** until the secret exists. **The password is deliberately not in this repo** - the repo is public, so a committed password is no password. Not a security boundary and not meant to be: treat everything behind it as public
+- [x] **A30**: **Pre-launch gate** - `CLAUDE` + `JON` - **Live and verified 2026-09-01.** One shared password for the e-board, so anyone who wanders onto the domain early gets "under construction, here is our current site" rather than a half-built PTA site they take for real. A small Worker (`src/worker.ts`) in front of the static assets; cookie lasts 30 days. **The password is deliberately not in this repo** - the repo is public, so a committed password is no password. Not a security boundary and not meant to be: treat everything behind it as public
 - [x] **A31**: **Split the documentation** - `CLAUDE` - The root `README.md` was a developer document sitting where a board member would look first, and it still described the repo as an empty scaffold with placeholder themes. It is now written for a non-technical reader: what the site is, how it works in plain terms, which file holds which words, and who to ask. Everything technical moved to `docs/`, split by concern, with an index at [`docs/README.md`](docs/README.md). Point of the exercise is bringing more people in - somebody arriving cold should not have to read about `run_worker_first` to find out what this is
 - [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, remove the pre-launch gate ([A30](#phase-2---real-site): delete `src/worker.ts` plus the three lines marked TEMPORARY in `wrangler.jsonc`), submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
 
@@ -242,6 +242,43 @@ A wall of photos pulled live from Instagram is genuinely harder than it looks no
 **F6 - The photo library is thin.** Fifteen unique images across all six Weebly pages, but almost all are event flyers, donor banners, and sponsor logos. Only four are actual photographs. The strongest by far is the E. 11th St. shot of the building with the mural and sponsor banners, and it contains no children's faces, so there's no release question. Getting 15-20 real photos from Instagram and the board is a parallel task.
 
 **F7 - ~~No brand assets exist.~~** *Superseded by [F10](#f9)* - four logo files surfaced 2026-08-28. The mascot is the **yellow jacket** (named **Buzz**), not a honeybee, so no hive/honeycomb/honey motifs.
+
+<a name="f25"></a>
+**F25 - Three PRs reported MERGED without reaching `main`.** PRs #14, #15 and
+#16 were part of a six-deep stack, each based on the branch below it. GitHub
+retargets a stacked PR to `main` when its base merges, but that is not
+instantaneous, and all six were merged inside about ten seconds. #13 landed on
+`main` at 13:46:46; #14 merged into `pages/committee-pages` four seconds later,
+a branch already absorbed into `main`. The same happened to #15 and #16.
+
+**The dangerous part is that nothing looked wrong.** All six PRs reported
+`MERGED`, `gh pr list --state open` was empty, and the Cloudflare build was
+green. The work was simply absent from `main` and from the live site. Recovered
+in [PR #17](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/17).
+
+Two lessons, both about process rather than code. **Do not build deep PR
+stacks** - two is the practical limit, and only when the PRs genuinely need
+separate review; these should have been one or two PRs. And **PR status is not
+proof that work landed**: verify with
+`git merge-base --is-ancestor origin/<branch> origin/main`.
+
+<a name="f26"></a>
+**F26 - The gate page was served without the site-wide `noindex` header.** The
+Worker built a fresh `Headers` for the gate response containing only
+`Content-Type` and `Cache-Control`, which discarded everything `public/_headers`
+adds: `X-Robots-Tag: noindex`, `X-Content-Type-Options`, `Referrer-Policy`.
+Since every other route 302s to the gate, that page was the entire crawlable
+surface of the site, running without the header meant to keep it out of Google.
+
+Nothing was indexed - `BaseLayout` also emits `<meta name="robots">` and that
+still worked - but the reason there are two mechanisms is that neither should be
+load-bearing alone. Fixed by copying the asset response's headers and overriding
+only `Cache-Control`.
+
+Worth remembering **how** it was found: by diffing the gate page's response
+headers against a passthrough `/_astro` asset's on the deployed site. It was
+invisible to `astro dev` and `astro preview`, which never run the Worker at all.
+Anything the Worker touches has to be checked on `:8787` or in production.
 
 ---
 
