@@ -59,6 +59,13 @@ fail into.
   unchecked turns the unlock endpoint into an open redirect.
 - **The gate page is a real Astro page**, not HTML built inside the Worker, so it
   inherits the theme tokens instead of reimplementing them.
+- **The gate response copies the asset server's headers** rather than building a
+  fresh set. Building fresh silently dropped everything `public/_headers` adds,
+  including the site-wide `X-Robots-Tag: noindex`, on the one page a crawler can
+  actually reach. Caught on the live site by diffing the gate page's headers
+  against a passthrough asset's. The `<meta>` tag in `BaseLayout` still covered
+  it so nothing was indexed, but the point of having both mechanisms is that
+  neither is load-bearing on its own.
 
 ## Working on it locally
 

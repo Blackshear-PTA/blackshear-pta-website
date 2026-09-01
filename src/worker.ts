@@ -152,13 +152,20 @@ export default {
     if (unlocked) return env.ASSETS.fetch(request);
 
     // The gate page has to be reachable while gated, or this redirects forever.
-    // no-store so an unlocked visitor never gets a cached copy of the gate.
     if (url.pathname === GATE_PATH || url.pathname === '/under-construction') {
       const page = await env.ASSETS.fetch(request);
-      return new Response(page.body, {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
-      });
+      // Copy the asset server's headers and override one, rather than building a
+      // fresh set. Constructing a new Headers from scratch here silently dropped
+      // everything public/_headers adds - including the site-wide
+      // X-Robots-Tag: noindex - on the ONE page a crawler can actually reach,
+      // which is the worst possible page to lose it on. The <meta> tag in
+      // BaseLayout still covered it, so nothing was indexed, but the whole point
+      // of having both is that neither is load-bearing alone.
+      const headers = new Headers(page.headers);
+      // Never cache the gate: an unlocked visitor must not be served it, and a
+      // locked one must not be served a stale copy of the page behind it.
+      headers.set('Cache-Control', 'no-store');
+      return new Response(page.body, { status: 200, headers });
     }
 
     return toGate(url.origin, url.pathname + url.search);
