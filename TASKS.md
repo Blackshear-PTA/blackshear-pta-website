@@ -14,9 +14,14 @@
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 | U3 | ~~Confirm the Phase 2 page set~~ | JON | ✅ Confirmed 2026-08-31, plus the four committee pages. Four built, four to go - see [A20](#phase-2---real-site) |
 | U4 | ~~Cloudflare Web Analytics~~ | JON | ✅ **Already on.** Enabled automatically when the zone was added 2026-08-28, automatic setup, no snippet needed. Confirmed collecting: 74 page views / 13 visits in 24h. Closes [A7](#phase-0---accounts--scaffold) with no code change |
-| U5 | ~~Set the `SITE_PASSWORD` secret~~ | JON | ✅ Set 2026-09-01 and verified live. One leftover: a stray secret named `littleeast26` was created by a first attempt that passed the value where the *name* goes. Harmless but confusing; remove with `npx wrangler secret delete littleeast26` from the repo directory |
+| U5 | ~~Set the `SITE_PASSWORD` secret~~ | JON | ✅ Set 2026-09-01, verified live, stray secret deleted 2026-09-01 |
 | U6 | ~~Decide how the calendar works~~ | JON | ✅ **Google stays the source**, decided 2026-09-01. The site reads its iCal feed and renders its own list; the iframe goes. See [D10](#open-decisions) |
 | U7 | ~~Decide what `/gallery` actually is~~ | JON | ✅ **Photo grid plus an Instagram link**, decided 2026-09-01. No token treadmill. See [D11](#open-decisions) |
+
+| U8 | **Set up Cloudflare Access + a GitHub token for `/admin`** | JON | [A23](#phase-2---real-site). The editor is built and fails closed until three Worker secrets exist. Full steps in [docs/ADMIN.md](docs/ADMIN.md). One-time PIN works today; swap to Google SSO when Workspace lands (B4) without touching the repo |
+| U9 | **Set build watch paths** | JON | [A21](#phase-2---real-site). Exact click path and exclude list now in [docs/DEPLOYS.md](docs/DEPLOYS.md). A docs-only PR still deployed on 2026-09-01, so this is definitely unset |
+
+| U10 | **Rotate the pre-launch password** | JON | [F28](#f28). The current value was committed to this **public** repo in `9ac7e9c` and is in the history. Pick a new word, `npx wrangler secret put SITE_PASSWORD`, tell the board. Low stakes - the gate was never a security boundary - but a password anyone can read defeats the one job it has |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -104,11 +109,11 @@
   - [x] `/calendar` - Google stays the source ([D10](#open-decisions)); the iframe is gone. Events are **baked at build time** from a committed snapshot, refreshed daily by a GitHub Action - see [F25](#f25) for why not live. 139 upcoming events, grouped by month, with "add to your calendar" for Google, Apple and Outlook
   - [x] `/gallery` - photo grid plus an Instagram link, per [D11](#open-decisions). **Thin on purpose**: nine photos, mostly the campus. It is a frame waiting for [A28](#phase-2---real-site)
   - [x] **Nav is fully internal.** Volunteer, Calendar, Little EAST, Sponsors and Contact all point at this site. "Join" is a Zeffy store link and stays external by design
-- [ ] **A21**: Cloudflare build watch paths - `JON` - Dashboard setting (Workers → Builds → Build watch paths). Excludes `TASKS.md`, `docs/**`, `README.md` so a task-board edit does not redeploy the site. Exclude list is in [`docs/DEPLOYS.md`](docs/DEPLOYS.md)
+- [~] **A21**: Cloudflare build watch paths - `JON` - **Blocked on U9.** Exact click path and the full exclude list are in [`docs/DEPLOYS.md`](docs/DEPLOYS.md), now also excluding `scripts/**` (the check gates are never read by `astro build`). Confirmed unset: PR #18 was docs-only and still triggered a build and a deploy
 - [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
-- [ ] **A23**: `/admin` editor behind Cloudflare Access + Google IdP - `CLAUDE` + `JON` - Implements [D1](#open-decisions). **The single biggest long-term risk** ([F18](#f18)): the Weebly site went stale because editing it was harder than not editing it. Depends on C7/B4 for the Google IdP, but can be built against a temporary one-time-PIN Access policy first
+- [~] **A23**: `/admin` editor behind Cloudflare Access - `CLAUDE` + `JON` - **Built; blocked on U8 for setup.** Implements [D1](#open-decisions). Covers announcements, which is the content that actually changes week to week. A save is a git commit, so history is the audit log and `git revert` is undo. Cloudflare Access in front, and the Worker re-verifies the signed identity itself so the commit carries the editor's address. One-time PIN today, Google SSO when B4 lands - a dashboard swap, no code. Page copy and homepage YAML are still hand-edited; widening the editor is another route and another form, not a rewrite
 - [ ] **A24**: R2 bucket for images uploaded through `/admin` - `CLAUDE` + `JON` - Free tier is 10GB. Needed before A23 is genuinely useful; a board member adding a post will want to attach a photo
-- [ ] **A25**: Announcements feed + RSS - `CLAUDE` - Markdown collection, newest-first, with a real feed. Cheap now, and it means the homepage "What's Happening" block stops being hand-edited copy
+- [x] **A25**: Announcements feed + RSS - `CLAUDE` - **Done.** One markdown file per post in `src/content/announcements/`, so two people cannot conflict and `/admin` can create or delete a post by writing one file. `/news` lists everything, `/rss.xml` is a real feed, and the homepage shows the most recent four. Ordering and draft filtering live in one shared function so the three surfaces cannot disagree - which matters most for the feed, where a leaked draft has already been pulled by the time anyone notices
 - [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
@@ -301,6 +306,27 @@ already visited the site has the fonts cached, which is precisely the condition
 where the shift does not occur. Only first-time visitors see it, and only RUM
 sees them. Verification of the fix has to come from the same place - watch CLS
 in Web Analytics over the next few days rather than trusting a local number.
+
+<a name="f28"></a>
+**F28 - The pre-launch password was committed to the public repo, by me,
+in the note describing how to clean up a different mistake with it.** Commit
+`9ac7e9c` (PR #18) recorded that a stray Cloudflare secret had been created
+whose *name* was the password value, and named it inline. `src/worker.ts`,
+`README.md` and `docs/PRE-LAUNCH-GATE.md` all state that the password must never
+be in this repo because the repo is public. It went in anyway, in a task-board
+row, because a value used as an identifier did not read like a secret.
+
+**Redacting the file does not fix it** - the value is in the pushed history and
+this repo is public. The fix is rotation (U10), not a history rewrite: rewriting
+public history is disruptive and the gate was explicitly never a security
+boundary, so the cost of a new word is one command and one message to the board.
+
+Two things worth carrying forward. A secret pasted into the wrong field becomes
+an identifier, and identifiers get quoted in documentation without a second
+thought - so the cleanup instructions for a leaked credential are themselves a
+leak risk. And a rule enforced only by prose gets broken; `scripts/check-secrets.mjs`
+now greps the tree for known secret shapes so the next one fails a gate instead
+of a code review.
 
 ---
 

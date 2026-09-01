@@ -29,7 +29,10 @@ All exit non-zero on failure, all runnable by hand:
 npm run check           # types and Astro diagnostics
 npm run check:contrast  # WCAG AA across every theme
 npm run check:fonts     # typeface wiring agrees across three files
+npm run check:frontmatter # what /admin writes is what Astro reads back
+npm run check:access    # Access token verification refuses every forgery
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
+npm run check:secrets   # no recognisable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
 ```
 
@@ -48,6 +51,13 @@ while looking perfectly plausible; again when `theme.fonts` was added and could
 drift from the CSS. Preloading a face the page never paints is wasted bytes on a
 phone; missing one brings back the layout shift the preload exists to remove.
 Neither shows up in a screenshot.
+
+`check:secrets` exists because this repo is public, three documents already
+said the password must never be committed, and it was committed anyway (F28) -
+in the note explaining how to clean up a different mistake involving it. Prose
+did not hold. It is honest about its limits: it cannot recognise a secret that
+looks like an ordinary English word, which is exactly what leaked. A green run
+means "no *recognisable* secret", not "no secret".
 
 `check:ical` runs in CI before the calendar refresh, so a parser regression
 keeps yesterday's good snapshot instead of committing a broken one.

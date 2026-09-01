@@ -1,6 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
-import { file } from 'astro/loaders';
+import { file, glob } from 'astro/loaders';
 
 /**
  * Blackshear PTA - content schema.
@@ -31,14 +31,6 @@ const hero = z.object({
  */
 const quickAction = link.extend({
   note: z.string().optional(),
-});
-
-/** Announcements. `href` optional so a note with no destination still renders. */
-const newsItem = z.object({
-  title: z.string(),
-  body: z.string(),
-  href: z.string().optional(),
-  date: z.coerce.date().optional(),
 });
 
 /**
@@ -163,6 +155,39 @@ const pages = defineCollection({
   }),
 });
 
+/**
+ * Announcements - one markdown file per post, src/content/announcements/.
+ *
+ * A file each, rather than a list inside one YAML file, for three reasons that
+ * all point the same way: two people adding posts in the same week cannot
+ * conflict, /admin can create and delete a post by writing or removing one
+ * file, and `git log` on that directory is a readable history of what the PTA
+ * announced and when.
+ *
+ * Filenames are `YYYY-MM-DD-slug.md`. The date in the name is for humans
+ * sorting a directory listing; the `date` field is what the site actually uses.
+ *
+ * These replaced a hand-maintained `news.items` list in home.yaml. That list
+ * went stale for the same reason the Weebly site did (F18): editing it meant
+ * knowing where it lived.
+ */
+const announcements = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),
+  schema: z.object({
+    title: z.string(),
+    /** Publication date. Drives ordering and the RSS pubDate. */
+    date: z.coerce.date(),
+    /** Optional destination for "read more". */
+    href: z.string().optional(),
+    /** Link text. Defaults in the component, so most posts never set it. */
+    linkLabel: z.string().optional(),
+    /** Sorts above everything else regardless of date. Use sparingly. */
+    pinned: z.boolean().default(false),
+    /** Written but not published. Excluded from the site and the feed. */
+    draft: z.boolean().default(false),
+  }),
+});
+
 const site = defineCollection({
   loader: file('src/content/site.yaml'),
   schema: z.object({
@@ -202,9 +227,14 @@ const home = defineCollection({
       heading: z.string(),
       items: z.array(quickAction),
     }),
+    /**
+     * Only the heading now. The items live in the announcements collection so
+     * they can be edited one file at a time from /admin.
+     */
     news: z.object({
       heading: z.string(),
-      items: z.array(newsItem),
+      /** How many to show on the homepage before "see all". */
+      limit: z.number().int().positive().default(4),
     }),
     getInvolved: z.object({
       heading: z.string(),
@@ -223,4 +253,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { home, pages, site };
+export const collections = { announcements, home, pages, site };

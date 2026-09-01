@@ -1,5 +1,6 @@
 ---
 import { uid } from '../../uid';
+import { getAnnouncements, formatDate } from '../../lib/announcements';
 import type { HomeData } from '../../types';
 
 interface Props {
@@ -12,24 +13,37 @@ const { news } = Astro.props;
 // id would ship once per design and aria-labelledby would be ambiguous.
 const headingId = uid('news-heading');
 
-// Fixed locale and time zone so the build machine's settings cannot shift a date.
-const formatDate = (date: Date): string =>
-  new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(date);
+/**
+ * Posts come from the announcements collection, not from home.yaml. The
+ * homepage shows the most recent few; /news has all of them. Ordering and
+ * draft filtering live in one place so this block, /news and the RSS feed
+ * cannot disagree about what is published.
+ */
+const posts = await getAnnouncements(news.limit);
+const total = (await getAnnouncements()).length;
 ---
 
 <section class="news" aria-labelledby={headingId}>
   <h2 id={headingId}>{news.heading}</h2>
   <ul>
     {
-      news.items.map((item) => (
+      posts.map((post) => (
         <li>
-          {item.date && <time datetime={item.date.toISOString()}>{formatDate(item.date)}</time>}
-          <h3>{item.href ? <a href={item.href}>{item.title}</a> : item.title}</h3>
-          <p>{item.body}</p>
+          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+          <h3>
+            {post.data.href ? <a href={post.data.href}>{post.data.title}</a> : post.data.title}
+          </h3>
+          <p>{post.body}</p>
         </li>
       ))
     }
   </ul>
+
+  {total > posts.length && (
+    <p class="more">
+      <a href="/news">See all {total} announcements</a>
+    </p>
+  )}
 </section>
 
 <style>
@@ -78,5 +92,26 @@ const formatDate = (date: Date): string =>
 
   p {
     margin: 0;
+  }
+
+  .more {
+    margin-block-start: var(--pta-gap);
+  }
+
+  .more a {
+    display: inline-flex;
+    align-items: center;
+    /* Genuine 44px target without a visible box; padding alone lands short. */
+    min-height: 44px;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink);
+  }
+
+  .more a::after {
+    content: ' \2192';
   }
 </style>

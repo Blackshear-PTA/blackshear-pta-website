@@ -1,0 +1,110 @@
+/**
+ * Blackshear PTA - committed-secret gate.
+ *
+ * This repository is PUBLIC. Three separate documents say the site password and
+ * the GitHub token must never be committed, and the password was committed
+ * anyway (F28) - in the note explaining how to clean up a different mistake
+ * involving it. Prose did not hold. This is the same rule with an exit code.
+ *
+ * WHAT IT CANNOT DO, stated plainly so nobody trusts it further than it goes:
+ * it cannot recognise a secret that looks like an ordinary English word, which
+ * is exactly what leaked. No grep can. What it catches is token-shaped strings,
+ * private keys, a real value sitting in an .env-style assignment, and the two
+ * command shapes that put a credential on a documented command line.
+ *
+ * A green run means "no *recognisable* secret", not "no secret".
+ *
+ * Run: npm run check:secrets
+ */
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+  .split('\n')
+  .filter(Boolean)
+  .filter((f) => !/\.(png|jpe?g|gif|webp|ico|woff2?|pdf|zip)$/i.test(f));
+
+/** Names whose values must never appear beside them in a committed file. */
+const SECRET_NAMES = ['SITE_PASSWORD', 'GITHUB_TOKEN', 'CF_ACCESS_AUD', 'CF_API_TOKEN'];
+
+/** Values that are obviously not real credentials. */
+const PLACEHOLDER = /^(replace-me|changeme|xxx+|your[-_].*|<.*>|\$\{.*\}|fake.*|example.*|\.\.\.)$/i;
+
+const RULES = [
+  {
+    name: 'GitHub token',
+    // eslint-disable-next-line no-useless-escape
+    pattern: /\b(gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,})\b/,
+  },
+  { name: 'AWS access key id', pattern: /\bAKIA[0-9A-Z]{16}\b/ },
+  { name: 'private key block', pattern: /-----BEGIN (?:RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----/ },
+  { name: 'Slack token', pattern: /\bxox[abprs]-[A-Za-z0-9-]{10,}\b/ },
+];
+
+/**
+ * `wrangler secret put NAME value` - the value belongs at the interactive
+ * prompt, never on the command line. This is exactly how the stray secret in
+ * F28 was created.
+ *
+ * Only checked inside code spans and fenced/indented command lines. Matching
+ * raw prose flagged the sentence "run `wrangler secret put SITE_PASSWORD`, then
+ * tell the board", because the words after the closing backtick look like an
+ * argument. A rule that cries wolf on its own documentation gets switched off.
+ */
+const WRANGLER_ARG = /(?:npx\s+)?wrangler\s+secret\s+(?:put|delete)\s+\S+\s+\S/;
+
+function commandSpans(line) {
+  const spans = [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+  // A fenced or indented command line: nothing before the command but spaces
+  // or a shell prompt marker.
+  if (/^\s*\$?\s*(npx\s+)?wrangler\b/.test(line)) spans.push(line);
+  return spans;
+}
+
+const failures = [];
+
+for (const file of files) {
+  let text;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    continue;
+  }
+  const lines = text.split('\n');
+
+  lines.forEach((line, i) => {
+    const where = `${file}:${i + 1}`;
+
+    for (const rule of RULES) {
+      if (rule.pattern.test(line)) failures.push(`${where}  ${rule.name}`);
+    }
+
+    if (commandSpans(line).some((span) => WRANGLER_ARG.test(span))) {
+      failures.push(`${where}  secret value on a wrangler command line`);
+    }
+
+    // NAME=value or NAME: value with a value that is not a placeholder.
+    for (const name of SECRET_NAMES) {
+      const match = new RegExp(`\\b${name}\\b\\s*[=:]\\s*["']?([^"'\\s,}]+)`).exec(line);
+      const value = match?.[1];
+      if (value && !PLACEHOLDER.test(value) && !value.startsWith('env.') && value !== 'undefined') {
+        failures.push(`${where}  ${name} assigned a literal value ("${value.slice(0, 12)}...")`);
+      }
+    }
+  });
+}
+
+// .dev.vars holds the real password locally and must never be tracked.
+if (files.includes('.dev.vars')) {
+  failures.push('.dev.vars is tracked by git - it holds real secrets and must be ignored');
+}
+
+console.log(`Scanned ${files.length} tracked files.`);
+if (failures.length) {
+  console.error(`\n${failures.length} problem(s):`);
+  for (const f of failures) console.error(`  FAIL  ${f}`);
+  console.error('\nIf a secret reached a commit, redacting the file is not enough.');
+  console.error('The value is in the history and must be rotated.');
+  process.exit(1);
+}
+console.log('No recognisable committed secrets. (Cannot detect a secret that looks like a normal word.)');

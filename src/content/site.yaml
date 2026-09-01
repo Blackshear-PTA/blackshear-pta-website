@@ -25,6 +25,8 @@ site:
       external: true
     - label: "Volunteer"
       href: "/volunteer"
+    - label: "News"
+      href: "/news"
     - label: "Calendar"
       href: "/calendar"
     - label: "Little EAST"

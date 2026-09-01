@@ -15,6 +15,7 @@ before the details.
 | 4 | [DEPLOYS.md](DEPLOYS.md) | How a push becomes a live site, build settings, domain monitoring |
 | 5 | [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md) | The shared password in front of the site, and how to remove it at launch |
 | 6 | [CALENDAR.md](CALENDAR.md) | How Google Calendar reaches the site, and why it is baked rather than fetched |
+| 7 | [ADMIN.md](ADMIN.md) | The `/admin` announcements editor: how it works, and the Cloudflare Access and GitHub token setup it needs |
 
 [`../TASKS.md`](../TASKS.md) is the live task board: current status, open
 decisions, and numbered findings that other documents cite as `F12`, `D3` and so
@@ -31,6 +32,7 @@ collected here:
 | [`../src/assets/photos/README.md`](../src/assets/photos/README.md) | Every photo: what it shows, where it is used, and its crop quirks |
 | `src/themes/registry.ts` | How to add or retire a theme, in the file you would add it to |
 | `src/lib/ical.ts` | Exactly which parts of the iCalendar spec are supported, and which are not |
+| `src/worker/frontmatter.mjs` | The narrow YAML subset `/admin` writes, and why it is hand-rolled |
 | `wrangler.jsonc` | Which lines are temporary and must come out at launch |
 
 ## The habit worth keeping

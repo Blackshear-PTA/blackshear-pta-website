@@ -11,9 +11,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "wrangler types && astro check",
+    "check:access": "node scripts/check-access.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:fonts": "node scripts/check-fonts.mjs",
+    "check:frontmatter": "node scripts/check-frontmatter.mjs",
     "check:ical": "node scripts/check-ical.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
     "check:domain": "node scripts/check-domain.mjs",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
@@ -22,6 +25,7 @@
     "refresh:events": "node scripts/refresh-events.mjs"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "astro": "^7.2.9"
   },
   "devDependencies": {

@@ -18,8 +18,20 @@ Some paths are documentation or source material and are never read by
 `astro build`, so a commit touching only those rebuilds and redeploys
 byte-identical output. Two ways to avoid that:
 
-**1. Build watch paths.** Set once in the Cloudflare dashboard under the
-Worker's build settings, applies automatically thereafter.
+**1. Build watch paths.** Set once in the Cloudflare dashboard, applies
+automatically thereafter. **Not yet configured** - a docs-only PR still
+triggered a full build and deploy on 2026-09-01, which is how we know.
+
+Exact steps:
+
+1. Cloudflare dashboard -> **Workers & Pages** -> `blackshear-pta`
+2. **Settings** -> **Build** -> **Build watch paths**
+3. Leave **Include paths** as `*` (everything builds by default)
+4. Add each line from the exclude list below as an **Exclude path**
+
+Exclude paths use glob syntax and are matched against paths relative to the
+repository root. A push whose every changed file matches an exclude path is
+skipped entirely - no build, no new Worker version.
 
 **2. `[skip ci]` in the commit message.** Cloudflare honours the usual skip
 tokens. Useful for a one-off the watch paths do not cover.
@@ -33,6 +45,7 @@ outside it, so the root `assets/` folder is reference material only.
 docs/**            architecture and decisions
 assets/**          brand originals and the Weebly salvage - NOT src/assets
 .claude/**         local dev-server launch config
+scripts/**         the check gates; run by hand and in CI, never by astro build
 TASKS.md
 README.md
 dev-control.sh
