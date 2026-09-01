@@ -138,7 +138,14 @@ const pages = defineCollection({
      * Astro's build-time pipeline can see the import and resize it. A path
      * string here would ship the multi-megabyte original untouched.
      */
-    backdrop: z.enum(['little-east', 'garden', 'campus-flagpole', 'bake-sale']),
+    backdrop: z.enum([
+      'little-east',
+      'garden',
+      'campus-flagpole',
+      'bake-sale',
+      'campus-front-walk',
+      'campus-frontage',
+    ]),
     /** Opening paragraphs, before any section. */
     body: z.array(z.string()).default([]),
     /** The one action this page most wants. Rendered as a button. */

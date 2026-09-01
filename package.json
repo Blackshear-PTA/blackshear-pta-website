@@ -16,7 +16,9 @@
     "astro": "astro",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:domain": "node scripts/check-domain.mjs",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "refresh:events": "node scripts/refresh-events.mjs",
+    "check:ical": "node scripts/check-ical.mjs"
   },
   "dependencies": {
     "astro": "^7.2.9"

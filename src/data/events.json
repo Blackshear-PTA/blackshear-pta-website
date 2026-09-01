@@ -1,0 +1,986 @@
+{
+  "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
+  "generated": "2026-09-01",
+  "window": {
+    "from": "2026-09-01",
+    "to": "2027-09-01"
+  },
+  "events": [
+    {
+      "id": "3cv3e0gbsh9rd133fi1geklgfo@google.com@2026-09-01T12:45:00.000Z",
+      "title": "PTA Meeting #1",
+      "start": "2026-09-01T12:45:00.000Z",
+      "end": "2026-09-01T14:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "6s46tjihcm7sj4io4uot1a37aa@google.com@2026-09-06T19:00:00.000Z",
+      "title": "Community Meetup",
+      "start": "2026-09-06T19:00:00.000Z",
+      "end": "2026-09-06T22:00:00.000Z",
+      "allDay": false,
+      "location": "Industry, 1211 E 5th St. Ste 150, Austin, TX 78702, USA"
+    },
+    {
+      "id": "6hcc0nt464nq2qbqbakn8v98cb@google.com@2026-09-07T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2026-09-07T00:00:00.000Z",
+      "end": "2026-09-08T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4li4bajl4fvaccpkigesvvujbi@google.com@2026-09-11T20:10:00.000Z",
+      "title": "PTA Bake Sale (3rd grade)",
+      "start": "2026-09-11T20:10:00.000Z",
+      "end": "2026-09-11T21:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "7rr34phsk3iicu775jsa7jl996@google.com@2026-09-13T00:00:00.000Z",
+      "title": "Ms. Soliz's Birthday (PK3 Teacher)",
+      "start": "2026-09-13T00:00:00.000Z",
+      "end": "2026-09-14T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "24kcbgjtm071mcqpr1stamj9hc@google.com@2026-09-14T00:00:00.000Z",
+      "title": "Fine Arts Starts",
+      "start": "2026-09-14T00:00:00.000Z",
+      "end": "2026-09-15T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2026-09-15T00:00:00.000Z",
+      "title": "Ms. Virginia's Birthday! (Cafeteria)",
+      "start": "2026-09-15T00:00:00.000Z",
+      "end": "2026-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2026-09-15T00:00:00.000Z",
+      "title": "Ms. Earl's Birthday! (Cafeteria)",
+      "start": "2026-09-15T00:00:00.000Z",
+      "end": "2026-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
+    },
+    {
+      "id": "0pkcpbuj7ebkbn67gpu1cbijti@google.com@2026-09-17T22:00:00.000Z",
+      "title": "Back to School Night",
+      "start": "2026-09-17T22:00:00.000Z",
+      "end": "2026-09-18T00:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2026-09-20T00:00:00.000Z",
+      "title": "Ms. Clay's Birthday (Instructional Coach)",
+      "start": "2026-09-20T00:00:00.000Z",
+      "end": "2026-09-21T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "51jknqlnd9pi1k4ifu7h7hojp4@google.com@2026-09-21T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2026-09-21T00:00:00.000Z",
+      "end": "2026-09-22T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-09-23T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-09-23T20:30:00.000Z",
+      "end": "2026-09-23T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-09-24T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-09-24T12:40:00.000Z",
+      "end": "2026-09-24T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
+      "start": "2026-10-05T00:00:00.000Z",
+      "end": "2026-10-06T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
+      "start": "2026-10-05T00:00:00.000Z",
+      "end": "2026-10-06T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2t9cvefhos4inm4ghstqkcbo2t@google.com@2026-10-06T00:00:00.000Z",
+      "title": "PTA E-Board Meeting - extra",
+      "start": "2026-10-06T00:00:00.000Z",
+      "end": "2026-10-07T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5k6o23g867umo8j77cg7begq6l@google.com@2026-10-07T12:15:00.000Z",
+      "title": "Bike to School Day",
+      "start": "2026-10-07T12:15:00.000Z",
+      "end": "2026-10-07T12:45:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "58ln2o0dki9q6bo2040upaneks@google.com@2026-10-09T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2026-10-09T00:00:00.000Z",
+      "end": "2026-10-10T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1sa9s7115qtane7407km2ogurb@google.com@2026-10-12T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2026-10-12T00:00:00.000Z",
+      "end": "2026-10-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5t462orn4ltmr3b355qihj8qj4@google.com@2026-10-12T00:00:00.000Z",
+      "title": "Fall Family Conferences",
+      "start": "2026-10-12T00:00:00.000Z",
+      "end": "2026-10-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0hetq24us89ih0h1afps6s73nu@google.com@2026-10-13T23:00:00.000Z",
+      "title": "PTA Meeting - extra (VIRTUAL)",
+      "start": "2026-10-13T23:00:00.000Z",
+      "end": "2026-10-14T00:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "32tvh5u7fcvpv1l0oe9g4asf62@google.com@2026-10-16T20:10:00.000Z",
+      "title": "PTA Bake Sale (4th Grade)",
+      "start": "2026-10-16T20:10:00.000Z",
+      "end": "2026-10-16T21:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "42cqc2l5u8fh66kt0o1fgm2bcg@google.com@2026-10-18T00:00:00.000Z",
+      "title": "Garden Work Day",
+      "start": "2026-10-18T00:00:00.000Z",
+      "end": "2026-10-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "65gro2h7s61u5b5anauh5dllka@google.com@2026-10-19T00:00:00.000Z",
+      "title": "Ms. Zaroba's Birthday (Interventionist)",
+      "start": "2026-10-19T00:00:00.000Z",
+      "end": "2026-10-20T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "13d8ebc48i20sf8u52he4l6au6@google.com@2026-10-20T00:00:00.000Z",
+      "title": "Fall Picture Day",
+      "start": "2026-10-20T00:00:00.000Z",
+      "end": "2026-10-21T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-10-22T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-10-22T12:40:00.000Z",
+      "end": "2026-10-22T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "5m8ld9j06jdabsdd3l43bciutc@google.com@2026-10-22T22:00:00.000Z",
+      "title": "CatchALL Night",
+      "start": "2026-10-22T22:00:00.000Z",
+      "end": "2026-10-22T23:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-10-28T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-10-28T20:30:00.000Z",
+      "end": "2026-10-28T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-10-29T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-10-29T12:40:00.000Z",
+      "end": "2026-10-29T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0b7i3lu8nktutngbrp50tbm3ce@google.com@2026-11-02T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2026-11-02T00:00:00.000Z",
+      "end": "2026-11-03T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
+      "start": "2026-11-03T00:00:00.000Z",
+      "end": "2026-11-04T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2026-11-03T00:00:00.000Z",
+      "end": "2026-11-04T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "72un1h078vaiqp0radpl0bv765@google.com@2026-11-10T14:00:00.000Z",
+      "title": "PTA Meeting #2 (8am-9am)",
+      "start": "2026-11-10T14:00:00.000Z",
+      "end": "2026-11-10T15:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "2c1d7kjrn5v361ojh0k8qplt6e@google.com@2026-11-13T00:00:00.000Z",
+      "title": "Reading Rock Stars Author Visits",
+      "start": "2026-11-13T00:00:00.000Z",
+      "end": "2026-11-14T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4062pl6amdqtmbh85lpe4nvfnh@google.com@2026-11-14T17:00:00.000Z",
+      "title": "Little EAST (& 5th Bake Sale)",
+      "start": "2026-11-14T17:00:00.000Z",
+      "end": "2026-11-14T21:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "7ldqa265bnen2fa9bth9eqt6hh_R20261118@google.com@2026-11-18T00:00:00.000Z",
+      "title": "Ms. Rush's Birthday! (3rd Grade Teacher)",
+      "start": "2026-11-18T00:00:00.000Z",
+      "end": "2026-11-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-11-18T21:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-11-18T21:30:00.000Z",
+      "end": "2026-11-18T22:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
+      "start": "2026-11-19T00:00:00.000Z",
+      "end": "2026-11-20T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
+      "start": "2026-11-19T00:00:00.000Z",
+      "end": "2026-11-20T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-11-19T13:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-11-19T13:40:00.000Z",
+      "end": "2026-11-19T14:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "1a4n6unith1jsmebomc809tni1@google.com@2026-11-23T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2026-11-23T00:00:00.000Z",
+      "end": "2026-11-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-11-25T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-11-25T20:30:00.000Z",
+      "end": "2026-11-25T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-11-26T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-11-26T12:40:00.000Z",
+      "end": "2026-11-26T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "1knefbcdutld6s84ethgcstuik@google.com@2026-12-02T00:00:00.000Z",
+      "title": "Scholastic Book Fair",
+      "start": "2026-12-02T00:00:00.000Z",
+      "end": "2026-12-12T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "36d79c8sq7di33gm9fj4mn36f6@google.com@2026-12-04T00:00:00.000Z",
+      "title": "Fine Arts Ends",
+      "start": "2026-12-04T00:00:00.000Z",
+      "end": "2026-12-05T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "25177qf28m6fe8qmd1qnkukib9@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Mrs. Ward's 1/2 Birthday (ECSE)",
+      "start": "2026-12-07T00:00:00.000Z",
+      "end": "2026-12-08T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1461a6fp3jh7hi363ctect6tkj@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Dr. Hunt's Birthday (AP)",
+      "start": "2026-12-07T00:00:00.000Z",
+      "end": "2026-12-08T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1rf0co9r4toff5n9puj1dun8rt@google.com@2026-12-08T00:00:00.000Z",
+      "title": "PK, K, 1st Dance Showcase - TBD",
+      "start": "2026-12-08T00:00:00.000Z",
+      "end": "2026-12-09T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "601n21nnu2lphf8iickfhjd9a1@google.com@2026-12-09T00:00:00.000Z",
+      "title": "2nd - 5th Fine Arts Showcase",
+      "start": "2026-12-09T00:00:00.000Z",
+      "end": "2026-12-10T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "39rp9rm4upb1pnr76cqa0t319u@google.com@2026-12-11T21:10:00.000Z",
+      "title": "PTA Bake Sale (Kinder)",
+      "start": "2026-12-11T21:10:00.000Z",
+      "end": "2026-12-11T22:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "00e6kmgn1omnp09pci8ln57ol5_R20261214@google.com@2026-12-14T00:00:00.000Z",
+      "title": "Ms. Houston's Birthday (SpEd Team)",
+      "start": "2026-12-14T00:00:00.000Z",
+      "end": "2026-12-15T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0kqgpa5328uudtfuk713ub6htq@google.com@2026-12-16T00:00:00.000Z",
+      "title": "Coach Hines's 1/2 Birthday (PE Teacher)",
+      "start": "2026-12-16T00:00:00.000Z",
+      "end": "2026-12-17T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-12-16T21:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-12-16T21:30:00.000Z",
+      "end": "2026-12-16T22:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-12-17T13:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-12-17T13:40:00.000Z",
+      "end": "2026-12-17T14:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "76nk4gm5qib5d9l019b1pgpb64@google.com@2026-12-21T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2026-12-21T00:00:00.000Z",
+      "end": "2027-01-02T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-12-23T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2026-12-23T20:30:00.000Z",
+      "end": "2026-12-23T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "6gc6aa9skqbq55nc09v3m0d967@google.com@2026-12-24T00:00:00.000Z",
+      "title": "Mr. Makan's Birthday! (PK4 Teacher)",
+      "start": "2026-12-24T00:00:00.000Z",
+      "end": "2026-12-25T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-12-24T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2026-12-24T12:40:00.000Z",
+      "end": "2026-12-24T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "7fdd4b8n19ne2d0d6ij3bq060f@google.com@2026-12-27T00:00:00.000Z",
+      "title": "Mr. Harrington's 1/2 Birthday (4th Grade Teacher)",
+      "start": "2026-12-27T00:00:00.000Z",
+      "end": "2026-12-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "72s12q83r34r78h1t1eja42ee6@google.com@2026-12-28T00:00:00.000Z",
+      "title": "Mrs. Smith's 1/2 Birthday (2nd Grade Teacher)",
+      "start": "2026-12-28T00:00:00.000Z",
+      "end": "2026-12-29T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5i6crqtpie4s0dfrhlc45jnehi@google.com@2027-01-01T00:00:00.000Z",
+      "title": "Ms. Clark's Birthday! (PK Teacher)",
+      "start": "2027-01-01T00:00:00.000Z",
+      "end": "2027-01-02T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2egit18eh0ji5m6tcd91cs3ga2_R20270102@google.com@2027-01-02T00:00:00.000Z",
+      "title": "Ms. Bell's Birthday! (Principal)",
+      "start": "2027-01-02T00:00:00.000Z",
+      "end": "2027-01-03T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1nlg15mkhfbi084r8acd07s5l7@google.com@2027-01-03T00:00:00.000Z",
+      "title": "Ms. Young's 1/2 Birthday (1st Grade Teacher)",
+      "start": "2027-01-03T00:00:00.000Z",
+      "end": "2027-01-04T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "52vlfldqt4d05ltad3j9lj0k3j@google.com@2027-01-04T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2027-01-04T00:00:00.000Z",
+      "end": "2027-01-05T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "04f06v1h03anmfrc10dstnoe9r@google.com@2027-01-06T00:00:00.000Z",
+      "title": "Ms. Lee's 1/2 Birthday (Counselor)",
+      "start": "2027-01-06T00:00:00.000Z",
+      "end": "2027-01-07T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1dfd4bgj3i5ulvdlngnnuc0tan@google.com@2027-01-08T00:00:00.000Z",
+      "title": "Mrs. Hunt's Birthday (Interventionist)",
+      "start": "2027-01-08T00:00:00.000Z",
+      "end": "2027-01-09T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4t9s7str8mrfv9rtjfic78hp3e@google.com@2027-01-10T00:00:00.000Z",
+      "title": "Ms. Moriera's 1/2 Birthday (PSS)",
+      "start": "2027-01-10T00:00:00.000Z",
+      "end": "2027-01-11T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5n8tpmrhsbchspgru1tucoj5vd@google.com@2027-01-12T23:30:00.000Z",
+      "title": "PTA Meeting #2b - extra (5:30pm-6:30pm)",
+      "start": "2027-01-12T23:30:00.000Z",
+      "end": "2027-01-13T00:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "2ti268d9n9cevnag2scp6co6ac_R20270117@google.com@2027-01-17T00:00:00.000Z",
+      "title": "Ms. Patterson's Birthday! (PE Teacher)",
+      "start": "2027-01-17T00:00:00.000Z",
+      "end": "2027-01-18T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "start": "2027-01-18T00:00:00.000Z",
+      "end": "2027-01-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2027-01-18T00:00:00.000Z",
+      "end": "2027-01-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "7b0i2181ben0dd5q9vfcmpdtqe@google.com@2027-01-18T16:00:00.000Z",
+      "title": "MLK March",
+      "start": "2027-01-18T16:00:00.000Z",
+      "end": "2027-01-18T18:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "06l50ljelmcinq4atdoevi6165_R20270122@google.com@2027-01-22T00:00:00.000Z",
+      "title": "Dr. G's Birthday (Music Teacher)",
+      "start": "2027-01-22T00:00:00.000Z",
+      "end": "2027-01-23T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1gam9maf2sj206g77auahpdok3@google.com@2027-01-25T00:00:00.000Z",
+      "title": "Fine Arts Starts",
+      "start": "2027-01-25T00:00:00.000Z",
+      "end": "2027-01-26T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2027-01-27T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2027-01-27T20:30:00.000Z",
+      "end": "2027-01-27T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-01-28T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-01-28T12:40:00.000Z",
+      "end": "2027-01-28T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "63d7ru2ao6a5gq7vptj8lg4llf@google.com@2027-01-29T00:00:00.000Z",
+      "title": "Dr. Merriweather's Birthday! (Dyslexia Interventionist)",
+      "start": "2027-01-29T00:00:00.000Z",
+      "end": "2027-01-30T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "6e30a760k3ju6rlgdr2qt62nfo@google.com@2027-01-29T21:10:00.000Z",
+      "title": "PTA Bake Sale (1st Grade)",
+      "start": "2027-01-29T21:10:00.000Z",
+      "end": "2027-01-29T22:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4oobvva0kti0caiiuam03m1q5g@google.com@2027-02-01T00:00:00.000Z",
+      "title": "Ms. Valadez's 1/2 Birthday (SpEd Team)",
+      "start": "2027-02-01T00:00:00.000Z",
+      "end": "2027-02-02T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2eoa9cji8ii1jtpqqq94a5a0f6_R20270202@google.com@2027-02-02T00:00:00.000Z",
+      "title": "Ms. Andi's Birthday! (2nd Grade Teacher)",
+      "start": "2027-02-02T00:00:00.000Z",
+      "end": "2027-02-03T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "3l8t0r9h8lvkpe7bjff6grjl3i@google.com@2027-02-07T00:00:00.000Z",
+      "title": "Ms. Vanessa's Birthday! (SpEd Team)",
+      "start": "2027-02-07T00:00:00.000Z",
+      "end": "2027-02-08T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "3igipq3dak3b378c9gpqqa9p8u@google.com@2027-02-09T00:00:00.000Z",
+      "title": "100th Day of School",
+      "start": "2027-02-09T00:00:00.000Z",
+      "end": "2027-02-10T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0e80kqjrgfg3gprc66r54tjgb2@google.com@2027-02-09T13:45:00.000Z",
+      "title": "PTA E-board Meeting #3 (8am-9am)",
+      "start": "2027-02-09T13:45:00.000Z",
+      "end": "2027-02-09T14:45:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Ms. Chalida's Birthday! (Cafeteria)",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Buzz Grams",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "1s994sd2e001t7medc4ngsdj52@google.com@2027-02-15T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2027-02-15T00:00:00.000Z",
+      "end": "2027-02-16T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5uhji5jfvp9vud70gvk3k7d15v@google.com@2027-02-16T14:00:00.000Z",
+      "title": "PTA Meeting #3 (8am-9am)",
+      "start": "2027-02-16T14:00:00.000Z",
+      "end": "2027-02-16T15:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "102fceb02vfvg9s7p7r5kj1d59_R20270217@google.com@2027-02-17T00:00:00.000Z",
+      "title": "Ms. Flores's Birthday (PK3 TA)",
+      "start": "2027-02-17T00:00:00.000Z",
+      "end": "2027-02-18T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2027-02-24T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2027-02-24T20:30:00.000Z",
+      "end": "2027-02-24T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-02-25T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-02-25T12:40:00.000Z",
+      "end": "2027-02-25T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "28avjhu8l23fbm9hjtmoah2ree@google.com@2027-03-05T21:10:00.000Z",
+      "title": "PTA Bake Sale (2nd Grade)",
+      "start": "2027-03-05T21:10:00.000Z",
+      "end": "2027-03-05T22:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "58t9jcs9kc3bopglbtggqj16od@google.com@2027-03-08T00:00:00.000Z",
+      "title": "Mrs. Crenshaw's Birthday! (PK3 TA)",
+      "start": "2027-03-08T00:00:00.000Z",
+      "end": "2027-03-09T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "6drku5hgq4qbfsoj5t121lb6rn@google.com@2027-03-09T00:00:00.000Z",
+      "title": "Picture Day",
+      "start": "2027-03-09T00:00:00.000Z",
+      "end": "2027-03-10T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "00d747q7tj79645dek1u2kh03g@google.com@2027-03-10T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2027-03-10T00:00:00.000Z",
+      "end": "2027-03-11T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "3scktl988ib6a16psb81mfil1s@google.com@2027-03-12T00:00:00.000Z",
+      "title": "Fun Field Day",
+      "start": "2027-03-12T00:00:00.000Z",
+      "end": "2027-03-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2u5nn2kurv0v84pbgn4d37cm6v@google.com@2027-03-15T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2027-03-15T00:00:00.000Z",
+      "end": "2027-03-20T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "31i1p13s3sg46ki9c233e8e6tg_R20270316@google.com@2027-03-16T00:00:00.000Z",
+      "title": "Ms. Wilson's Birthday! (Counselor)",
+      "start": "2027-03-16T00:00:00.000Z",
+      "end": "2027-03-17T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5f1mtn5gtdn6fg9c73u4mjt0hr_R20270320@google.com@2027-03-20T00:00:00.000Z",
+      "title": "Ms. Michaelis's Birthday! (1st Grade Teacher)",
+      "start": "2027-03-20T00:00:00.000Z",
+      "end": "2027-03-21T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "7sg6qu542cnhs2ttueul87bo7p@google.com@2027-03-22T13:30:00.000Z",
+      "title": "Math Kangaroo Competition",
+      "start": "2027-03-22T13:30:00.000Z",
+      "end": "2027-03-22T15:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2027-03-24T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2027-03-24T20:30:00.000Z",
+      "end": "2027-03-24T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-03-25T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-03-25T12:40:00.000Z",
+      "end": "2027-03-25T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "32rse72jp9ulv7de1m9pv1fl43@google.com@2027-03-26T00:00:00.000Z",
+      "title": "School Holiday",
+      "start": "2027-03-26T00:00:00.000Z",
+      "end": "2027-03-27T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "29ee638cs4gv100nguhqcc84nr_R20270328@google.com@2027-03-28T00:00:00.000Z",
+      "title": "Ms. Welcome's Birthday! (SpEd)",
+      "start": "2027-03-28T00:00:00.000Z",
+      "end": "2027-03-29T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "17la24vno5ef52cn5m8eqaaj51@google.com@2027-03-30T12:45:00.000Z",
+      "title": "PTA E-board Meeting #4",
+      "start": "2027-03-30T12:45:00.000Z",
+      "end": "2027-03-30T13:45:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "1kk6q1gaa615o2a3a5ja1d1pn6@google.com@2027-03-31T00:00:00.000Z",
+      "title": "Ms. Locklear's Birthday (Kinder Teacher)",
+      "start": "2027-03-31T00:00:00.000Z",
+      "end": "2027-04-01T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "3rdsqvn9m41nr0dm81daek5ohe@google.com@2027-04-06T13:00:00.000Z",
+      "title": "PTA Meeting #4 (8am-9am) *Voting*",
+      "start": "2027-04-06T13:00:00.000Z",
+      "end": "2027-04-06T14:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "12daif51m7gkfrn99epddm4d31@google.com@2027-04-09T00:00:00.000Z",
+      "title": "PTA Bake Sale (PK)",
+      "start": "2027-04-09T00:00:00.000Z",
+      "end": "2027-04-10T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5op4nq1mhhfc0qal9i9r30spqp@google.com@2027-04-11T00:00:00.000Z",
+      "title": "Garden Work Day",
+      "start": "2027-04-11T00:00:00.000Z",
+      "end": "2027-04-12T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-04-22T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-04-22T12:40:00.000Z",
+      "end": "2027-04-22T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "6nc0e5hko1aprpvndi2gdph564_R20270427@google.com@2027-04-27T00:00:00.000Z",
+      "title": "Ms. Vinklarek's Birthday! (SpEd)",
+      "start": "2027-04-27T00:00:00.000Z",
+      "end": "2027-04-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2027-04-28T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2027-04-28T20:30:00.000Z",
+      "end": "2027-04-28T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-04-29T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-04-29T12:40:00.000Z",
+      "end": "2027-04-29T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0n7bjro65870c3a22etc5l4qc7@google.com@2027-04-30T00:00:00.000Z",
+      "title": "Student Holiday",
+      "start": "2027-04-30T00:00:00.000Z",
+      "end": "2027-05-01T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4b8jbd7hke2qk4kv4vii9n2vjn@google.com@2027-05-01T00:00:00.000Z",
+      "title": "No Sting Fundraiser #4",
+      "start": "2027-05-01T00:00:00.000Z",
+      "end": "2027-05-18T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "7tcbqmk7agab4sht4kp2m151v2@google.com@2027-05-03T00:00:00.000Z",
+      "title": "Teachers-Staff Appreciation Week",
+      "start": "2027-05-03T00:00:00.000Z",
+      "end": "2027-05-08T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2aopperns0jtk9nilevpht2cfu@google.com@2027-05-05T12:15:00.000Z",
+      "title": "Bike to School Day",
+      "start": "2027-05-05T12:15:00.000Z",
+      "end": "2027-05-05T12:45:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "6drn03vl0aja3o9f2p1ojqehtc@google.com@2027-05-11T12:45:00.000Z",
+      "title": "PTA E-board Meeting #5",
+      "start": "2027-05-11T12:45:00.000Z",
+      "end": "2027-05-11T13:45:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "6su2kcq5p66jlbegvanturtlfc@google.com@2027-05-12T00:00:00.000Z",
+      "title": "Scholastic Book Fair",
+      "start": "2027-05-12T00:00:00.000Z",
+      "end": "2027-05-22T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0s30ofdgi5g2p88c9pfsmn3t7e@google.com@2027-05-18T00:00:00.000Z",
+      "title": "Ms. Silvia's Birthday (PK TA)",
+      "start": "2027-05-18T00:00:00.000Z",
+      "end": "2027-05-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4e6ecka8cu2rpqc8i3lavdf4h9@google.com@2027-05-18T13:00:00.000Z",
+      "title": "PTA Meeting #5 (8am-9am)",
+      "start": "2027-05-18T13:00:00.000Z",
+      "end": "2027-05-18T14:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-05-20T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-05-20T12:40:00.000Z",
+      "end": "2027-05-20T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "1ru6hrctfsshahk2l67tsh1k7m@google.com@2027-05-25T00:00:00.000Z",
+      "title": "Mr. Alejandro's Birthday! (Custodian)",
+      "start": "2027-05-25T00:00:00.000Z",
+      "end": "2027-05-26T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2bsdacjka44hvavoodfb4p977p@google.com@2027-05-26T13:00:00.000Z",
+      "title": "PK Promotion",
+      "start": "2027-05-26T13:00:00.000Z",
+      "end": "2027-05-26T14:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "2jplia6op7scdunb2cjr3sf6f7@google.com@2027-05-26T19:00:00.000Z",
+      "title": "Kinder Promotion",
+      "start": "2027-05-26T19:00:00.000Z",
+      "end": "2027-05-26T20:00:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0etoqfsc8jmavths3kfdibv907@google.com@2027-05-26T20:30:00.000Z",
+      "title": "CAC Meeting",
+      "start": "2027-05-26T20:30:00.000Z",
+      "end": "2027-05-26T21:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "start": "2027-05-27T00:00:00.000Z",
+      "end": "2027-05-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
+      "start": "2027-05-27T00:00:00.000Z",
+      "end": "2027-05-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2027-05-27T12:40:00.000Z",
+      "title": "Tea with Tiona",
+      "start": "2027-05-27T12:40:00.000Z",
+      "end": "2027-05-27T13:40:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "1ipci7qbrpm7lu7gumjr8ofeo8@google.com@2027-05-27T14:30:00.000Z",
+      "title": "5th Grade Promotion",
+      "start": "2027-05-27T14:30:00.000Z",
+      "end": "2027-05-27T16:30:00.000Z",
+      "allDay": false
+    },
+    {
+      "id": "0eq10n42u87ene40q2ic5uhn9e_R20270627@google.com@2027-06-27T00:00:00.000Z",
+      "title": "Mr. Harrington's Birthday! (4th Grade Teacher)",
+      "start": "2027-06-27T00:00:00.000Z",
+      "end": "2027-06-28T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "7201i4k3f23i9kkhb615vu9ij4_R20270628@google.com@2027-06-28T00:00:00.000Z",
+      "title": "Ms. Smith's Birthday! (2nd Grade Teacher)",
+      "start": "2027-06-28T00:00:00.000Z",
+      "end": "2027-06-29T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "6fjrnaqv0ulj7ne5suvn1c1fq9_R20270703@google.com@2027-07-03T00:00:00.000Z",
+      "title": "Ms. Young's Birthday (1st Grade Teacher)",
+      "start": "2027-07-03T00:00:00.000Z",
+      "end": "2027-07-04T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0d7q3a1k8u3fo1qjfjmvb252pl@google.com@2027-07-06T00:00:00.000Z",
+      "title": "Ms. Lee's Birthday! (Counselor)",
+      "start": "2027-07-06T00:00:00.000Z",
+      "end": "2027-07-07T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "7e8i0miugii7908m02lfpkk73s_R20270718@google.com@2027-07-18T00:00:00.000Z",
+      "title": "Ms. Turner's Birthday (5th Grade Teacher)",
+      "start": "2027-07-18T00:00:00.000Z",
+      "end": "2027-07-19T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "37m2c0caun9dia0emgeg6pfq5o_R20260801@google.com@2027-08-01T00:00:00.000Z",
+      "title": "Ms. Valadez's Birthday! (Dyslexia Interventionist)",
+      "start": "2027-08-01T00:00:00.000Z",
+      "end": "2027-08-02T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5jm32hlgtuancgsj76rvme0sr5_R20260802@google.com@2027-08-02T00:00:00.000Z",
+      "title": "Ms. Beaton's Birthday! (Bookkeeper)",
+      "start": "2027-08-02T00:00:00.000Z",
+      "end": "2027-08-03T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "5c9vjtnf1bt4jdggk9n8mudrgj_R20260803@google.com@2027-08-03T00:00:00.000Z",
+      "title": "Ms. Nancy's Birthday! (Custodian)",
+      "start": "2027-08-03T00:00:00.000Z",
+      "end": "2027-08-04T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "2srtn68088tnsm8db4da78jdlj_R20260825@google.com@2027-08-25T00:00:00.000Z",
+      "title": "Ms. Melgoza's Birthday! (Registrar)",
+      "start": "2027-08-25T00:00:00.000Z",
+      "end": "2027-08-26T00:00:00.000Z",
+      "allDay": true
+    }
+  ]
+}

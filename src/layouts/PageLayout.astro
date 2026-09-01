@@ -4,6 +4,8 @@ import littleEast from '../assets/photos/little-east.jpg';
 import garden from '../assets/photos/garden.jpg';
 import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
 import bakeSale from '../assets/photos/bake-sale.jpg';
+import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
+import campusFrontage from '../assets/photos/campus-frontage.jpg';
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/sections/SiteHeader.astro';
 import Footer from '../components/sections/Footer.astro';
@@ -50,8 +52,14 @@ const titleId = uid('page-title');
 const backdrops = {
   'little-east': { src: littleEast, position: 'center 45%' },
   garden: { src: garden, position: 'center 60%' },
-  'campus-flagpole': { src: campusFlagpole, position: 'center 35%' },
+  // Lower than the others on purpose: at 35% this frame was mostly sky and
+  // power lines. 65% puts the building and the flagpole base in the band.
+  'campus-flagpole': { src: campusFlagpole, position: 'center 65%' },
   'bake-sale': { src: bakeSale, position: 'center 55%' },
+  // Same crop the homepage uses, which is what makes it right for /contact:
+  // the front entrance is literally the answer to "where do we find you".
+  'campus-front-walk': { src: campusFrontWalk, position: 'center 30%' },
+  'campus-frontage': { src: campusFrontage, position: 'center 40%' },
 } as const;
 
 const backdrop = backdrops[page.backdrop];

@@ -12,8 +12,25 @@ import PageLayout from '../layouts/PageLayout.astro';
  * outgrows the schema can graduate to src/pages/<name>.astro and keep its URL.
  */
 export async function getStaticPaths() {
+  /**
+   * Pages that have graduated to their own route because they need something
+   * the schema cannot express. Their text still lives in pages.yaml and still
+   * edits the same way; only the rendering moved.
+   *
+   * Astro already gives explicit routes priority, so listing them changes no
+   * behaviour - it stops the build warning about the collision firing on every
+   * single run, which would be permanent noise a real warning could hide in.
+   *
+   * Declared inside the function on purpose: Astro hoists getStaticPaths and
+   * evaluates it detached from the rest of this frontmatter, so a constant
+   * declared out there type-checks fine and then throws at build time.
+   */
+  const hasOwnRoute = new Set(['gallery', 'calendar']);
+
   const pages = await getCollection('pages');
-  return pages.map((entry) => ({ params: { page: entry.id }, props: { entry } }));
+  return pages
+    .filter((entry) => !hasOwnRoute.has(entry.id))
+    .map((entry) => ({ params: { page: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;

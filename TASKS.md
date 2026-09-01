@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-08-31 (session 10)
+**Last updated:** 2026-09-01 (session 10)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
@@ -15,8 +15,8 @@
 | U3 | ~~Confirm the Phase 2 page set~~ | JON | ✅ Confirmed 2026-08-31, plus the four committee pages. Four built, four to go - see [A20](#phase-2---real-site) |
 | U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly. **I cannot do this one** - wrangler is not authenticated locally and I have no dashboard access |
 | U5 | **Set the `SITE_PASSWORD` secret** | JON | [A30](#phase-2---real-site). The pre-launch gate **fails closed** without it, so the site is unreachable for everyone until it is set. `npx wrangler secret put SITE_PASSWORD`, or dashboard → Workers & Pages → blackshear-pta → Settings → Variables and Secrets → Add → Secret. **Do this at merge time, not before** |
-| U6 | **Decide how the calendar works** | JON | Blocks `/calendar` in [A20](#phase-2---real-site). This is an architecture decision, not a copy lift: which system is the *source of truth* for events. Recommendation and the three options are in [D10](#open-decisions) |
-| U7 | **Decide what `/gallery` actually is** | JON | Blocks `/gallery` in [A20](#phase-2---real-site). A live Instagram wall is much harder than it looks in 2026 - the API that used to do it was shut down. Options in [D11](#open-decisions) |
+| U6 | ~~Decide how the calendar works~~ | JON | ✅ **Google stays the source**, decided 2026-09-01. The site reads its iCal feed and renders its own list; the iframe goes. See [D10](#open-decisions) |
+| U7 | ~~Decide what `/gallery` actually is~~ | JON | ✅ **Photo grid plus an Instagram link**, decided 2026-09-01. No token treadmill. See [D11](#open-decisions) |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -94,17 +94,17 @@
 *Started 2026-08-31. Ordered roughly by dependency: the page set has to exist before cutover is meaningful, and the admin editor has to exist before the site can survive handoff.*
 
 - [x] **A19**: Promote Civic Letterpress A to `/` - `CLAUDE` - Homepage renders the chosen design; the `/ → /preview/` vote redirect is deleted. `siteThemeId` (the live site's design) is now a separate export from `defaultThemeId` (which panel `/preview` opens on), so pointing the preview at a reserve cannot silently re-skin the homepage. B and Print Shop still build and still pass the contrast gate
-- [~] **A20**: **Build the page set** - `CLAUDE` + `JON` - Page list confirmed 2026-08-31. Pages are content, not code: a top-level key in `src/content/pages.yaml` publishes a URL, so adding one needs no code change. Copy is **lifted from Weebly to match current state**, with a rewrite pass deferred.
+- [x] **A20**: **Build the page set** - `CLAUDE` + `JON` - Page list confirmed 2026-08-31. Pages are content, not code: a top-level key in `src/content/pages.yaml` publishes a URL, so adding one needs no code change. Copy is **lifted from Weebly to match current state**, with a rewrite pass deferred.
   - [x] `/little-east` - year-by-year archive. Four broken or mislabelled links corrected or dropped ([F21](#f21))
   - [x] `/sponsors` - Fundraising committee lands here. Full tier list; see [F22](#f22) for the Family Buzz question
   - [x] `/staff-appreciation` - **no Weebly page existed**; built from the homepage blurb and a Drive PDF ([F23](#f23))
   - [x] `/campus-beautification` - **no Weebly page existed**, and it was called "Garden"; renamed throughout ([F23](#f23))
-  - [ ] `/volunteer` - straightforward lift; AISD Voly + interest form + event PDFs
-  - [ ] `/contact` - board roster, principal, address. **Individual emails are Cloudflare-obfuscated on Weebly and could not be read**; needs them from Jon
-  - [ ] `/calendar` - **blocked on U6**, a real architecture decision rather than a copy lift
-  - [ ] `/gallery` - **blocked on U7**; a live Instagram feed is harder than it looks in 2026
-  - [ ] Flip each `site.yaml` nav entry from its Weebly URL to the internal path, one page at a time, so the nav is never broken mid-flight. "Join" is a Zeffy store link and stays external
-- [ ] **A21**: Cloudflare build watch paths - `JON` - Dashboard setting (Workers → Builds → Build watch paths). Excludes `TASKS.md`, `docs/**`, `README.md` so a task-board edit does not redeploy the site. Exclude list is documented in the README
+  - [x] `/volunteer` - AISD Voly, interest form, activity sheets. Three Weebly links pointed at one wrong PDF ([F24](#f24))
+  - [x] `/contact` - board roster, principal, address. **Individual emails are Cloudflare-obfuscated on Weebly and could not be read**, so everything routes through the PTA address until Jon supplies them. Roster privacy: [F22](#f22)
+  - [x] `/calendar` - Google stays the source ([D10](#open-decisions)); the iframe is gone. Events are **baked at build time** from a committed snapshot, refreshed daily by a GitHub Action - see [F25](#f25) for why not live. 139 upcoming events, grouped by month, with "add to your calendar" for Google, Apple and Outlook
+  - [x] `/gallery` - photo grid plus an Instagram link, per [D11](#open-decisions). **Thin on purpose**: nine photos, mostly the campus. It is a frame waiting for [A28](#phase-2---real-site)
+  - [x] **Nav is fully internal.** Volunteer, Calendar, Little EAST, Sponsors and Contact all point at this site. "Join" is a Zeffy store link and stays external by design
+- [ ] **A21**: Cloudflare build watch paths - `JON` - Dashboard setting (Workers → Builds → Build watch paths). Excludes `TASKS.md`, `docs/**`, `README.md` so a task-board edit does not redeploy the site. Exclude list is in [`docs/DEPLOYS.md`](docs/DEPLOYS.md)
 - [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
 - [ ] **A23**: `/admin` editor behind Cloudflare Access + Google IdP - `CLAUDE` + `JON` - Implements [D1](#open-decisions). **The single biggest long-term risk** ([F18](#f18)): the Weebly site went stale because editing it was harder than not editing it. Depends on C7/B4 for the Google IdP, but can be built against a temporary one-time-PIN Access policy first
 - [ ] **A24**: R2 bucket for images uploaded through `/admin` - `CLAUDE` + `JON` - Free tier is 10GB. Needed before A23 is genuinely useful; a board member adding a post will want to attach a photo
@@ -113,6 +113,7 @@
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
 - [x] **A30**: **Pre-launch gate** - `CLAUDE` + `JON` - One shared password for the e-board, so anyone who wanders onto the domain early gets "under construction, here is our current site" rather than a half-built PTA site they take for real. A small Worker (`src/worker.ts`) in front of the static assets; cookie lasts 30 days. **Blocked on U5** until the secret exists. **The password is deliberately not in this repo** - the repo is public, so a committed password is no password. Not a security boundary and not meant to be: treat everything behind it as public
+- [x] **A31**: **Split the documentation** - `CLAUDE` - The root `README.md` was a developer document sitting where a board member would look first, and it still described the repo as an empty scaffold with placeholder themes. It is now written for a non-technical reader: what the site is, how it works in plain terms, which file holds which words, and who to ask. Everything technical moved to `docs/`, split by concern, with an index at [`docs/README.md`](docs/README.md). Point of the exercise is bringing more people in - somebody arriving cold should not have to read about `run_worker_first` to find out what this is
 - [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, remove the pre-launch gate ([A30](#phase-2---real-site): delete `src/worker.ts` plus the three lines marked TEMPORARY in `wrangler.jsonc`), submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
 
 ### Phase 3 - Member accounts *(not started, only if still wanted)*
@@ -133,8 +134,8 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D6 | Cloudflare Access gate on the preview | ✅ **Decided** | Dropped for Phase 1 - friction kills vote participation and there's nothing confidential. Reinstated in Phase 2 for `/admin` |
 | D7 | Registrar transfer timing | ✅ **Decided** | Defer to October. Renewal is 6 days out; a failed transfer near expiry risks losing the domain to save ~$20 |
 | D8 | Replace SignUpGenius / ClassDojo / WhatsApp | ✅ **Decided** | Phase 2 aggregates and links out. Replacement is a later phase, evaluated on its own |
-| D10 | **What is the source of truth for events** | ⏳ **Needs Jon** (U6) | Three options below. **Recommendation: keep Google Calendar as the source, and stop embedding it.** |
-| D11 | **What `/gallery` is** | ⏳ **Needs Jon** (U7) | A live Instagram feed is a maintenance treadmill in 2026; see below. **Recommendation: a real photo grid now, Instagram link alongside it.** |
+| D10 | **What is the source of truth for events** | ✅ **Decided** 2026-09-01 | **Google Calendar stays the source, and the site stops embedding it.** Site reads the public iCal feed and renders its own list. Full reasoning below |
+| D11 | **What `/gallery` is** | ✅ **Decided** 2026-09-01 | **Real photo grid, Instagram link beside it.** No Meta app, no 60-day token to refresh. Full reasoning below |
 | D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ### D10 in full - the calendar
@@ -213,8 +214,19 @@ A wall of photos pulled live from Instagram is genuinely harder than it looks no
 <a name="f21"></a>
 **F21 - Four of the Little EAST links on the current site are broken or mislabelled.** Found by actually following every one of them while lifting the copy, rather than assuming. (1) The 2023 auction link is written `tinyurl.com10thLittleEAST` - **no slash** - so it has never worked; the corrected URL resolves fine and is what the new page uses. (2) `tinyurl.com/11thLittleEAST`, labelled "2024 Silent Auction", actually goes to **a YouTube video**; relabelled. (3) `tinyurl.com/BlackshearLEPics`, labelled "photos", **downloads a Dropbox zip** rather than opening a gallery; the new page says so. (4) `biddingowl.com/blackshearlittleeast` (2022 auction) now redirects to BiddingOwl's own homepage - the auction is gone - so it is **dropped rather than carried over**. Shipping a link already known to be dead is worse than not shipping it. Reinforces [F19](#f19): opaque redirects nobody can audit without clicking.
 
+<a name="f25"></a>
+**F25 - The calendar is baked, not fetched, and the numbers are why.** The Google feed is ~300KB and carries every event back to 2020; parsing it costs about 8ms against a **10ms CPU ceiling per request** on the Cloudflare Workers free plan. Caching makes an overrun rare rather than impossible, and "the calendar occasionally 500s" is a bad failure for the page a parent checks on the way out of the door. So `scripts/refresh-events.mjs` parses it into `src/data/events.json`, a GitHub Action reruns that daily and commits any change, and the commit is what triggers the rebuild. The site stays fully static and the calendar has no runtime failure mode at all. **The unplanned benefit: calendar changes are now reviewable diffs** - "who moved the PTA meeting" is answerable from `git log`. Cost is up to a day of staleness, which is well inside tolerance for events scheduled weeks out, and `/calendar` prints the snapshot date so nobody has to guess.
+
+<a name="f26"></a>
+**F26 - All-day events render a day early if you format them in a timezone.** An all-day event is a square on a calendar, not an instant, so the parser stores it as midnight UTC - anchor it to a zone and it moves a day for anyone reading from a different one. But formatting *that* value in `America/Chicago` turns midnight UTC into 7pm the previous evening, and Labor Day on Sept 7 displays as Sept 6. Caught in review of the first build, where "School Holiday" showed Sun 6 against a feed that plainly said Monday the 7th. `/calendar` now keeps two sets of formatters and picks by `allDay`. Worth remembering because it is invisible in code review and only shows up if you check a rendered date against the source.
+
+<a name="f24"></a>
+**F24 - Three links on the volunteer page all point at the same PDF.** "Bike day", "GARDEN WORK DAYS" and "LITTLE EAST" every one resolves to Drive file `1QaYYK...`, which is `PTA Activity Sheets-Bike Day.pdf`. Only the first is right; the other two are a copy-paste that has been live long enough that nobody noticed. **There is no garden or Little EAST activity sheet** - they were never made, or were never linked. The new `/volunteer` page links Bike Day, Bake Sales and Staff Appreciation to their real files and points the other two at their committee pages instead, with a note saying no sheet exists yet. I had already copied this bug into `/campus-beautification` in the previous PR; corrected there too.
+
 <a name="f22"></a>
 **F22 - The Family Buzz sponsor tier lists children's first names with family surnames.** Fifteen entries in the form "June Flowers's Family". They are already public on Weebly and the families paid for the recognition, so the new `/sponsors` page reproduces them as-is - quietly dropping a donor tier would be the bigger error. **But this is a board decision worth making deliberately**, because at cutover ([A29](#phase-2---real-site)) the `noindex` comes off and this page becomes searchable, which the Weebly page may never have been. Options if it is a concern: surnames only, "The Flowers Family", or an opt-in at sponsorship time.
+
+**The same question applies to `/contact`, more sharply.** The board roster carries each member's children by first name *and grade* - "Vice President: Laura Dablain (Gabby 2nd, Segolene 5th)" - which is a precise child-to-school-to-grade mapping for eight named children, and unlike the sponsors those families did not pay for the listing. It is conventional on PTA rosters and it is the current public state, so both pages reproduce it as-is. Of the two, this is the one worth reviewing first.
 
 <a name="f23"></a>
 **F23 - Two of the four committees have no page on the current site at all.** Staff Appreciation and Garden/Campus Beautification exist only as a homepage blurb and a Google Drive PDF linked from the volunteer page. Their new pages are built from those two sources and are **genuinely starting points, not lifted copy** - flagged inline in `src/content/pages.yaml`. Staff Appreciation also has **no chair** for 2026-2027, so there is currently nobody to write it.

@@ -10,7 +10,7 @@
 # later pass. Two of the four had no Weebly page at all and are noted inline.
 #
 # Broken links found while copying are corrected here and recorded in TASKS.md
-# as F21-F24. Shipping a link that is already known to be dead is worse than
+# as F21-F26. Shipping a link that is already known to be dead is worse than
 # not shipping it.
 
 little-east:
@@ -198,8 +198,9 @@ campus-beautification:
     description: "The Campus Beautification committee runs the Blackshear garden and campus work days in East Austin."
   title: "Campus Beautification"
   # NO WEEBLY PAGE EXISTS for this committee, and it was called "Garden" there.
-  # Copy below is expanded from the homepage blurb plus the volunteer page's
-  # garden work days PDF. Needs a real pass from the committee.
+  # Copy below is expanded from the homepage blurb. Needs a real pass from the
+  # committee. There is no garden activity sheet to link: Weebly's "GARDEN WORK
+  # DAYS" link points at the Bike Day PDF (F24), so one does not exist yet.
   lede: "The garden, the grounds, and every work day that keeps them going."
   backdrop: garden
   body:
@@ -216,10 +217,135 @@ campus-beautification:
         - label: "AISD Voly background check"
           href: "https://austinisd.voly.org/volunteer/home.html"
           note: "Required once a year for all campus volunteers"
-        - label: "Garden work days"
-          href: "https://drive.google.com/file/d/1QaYYKEFyMKMBlbAnfgmvMfEuV4LXGb64/view?usp=share_link"
-          note: "PDF on Google Drive"
       names: []
   contact:
     email: "blackshearpta@gmail.com"
     note: "Email the PTA and we will point you at the next work day."
+
+volunteer:
+  meta:
+    title: "Volunteer - Blackshear PTA"
+    description: "How to volunteer at Blackshear Elementary: the Austin ISD background check, our interest form, and the events that need help."
+  title: "Volunteer"
+  lede: "To make a difference in someone's life you don't have to be brilliant, rich, beautiful or perfect. You just have to care."
+  backdrop: campus-flagpole
+  body:
+    - "Two steps, in this order. Both are free and neither takes long."
+  cta:
+    label: "Fill out the interest form"
+    href: "https://tinyurl.com/VolunteeratBlackshear"
+  sections:
+    - heading: "Step one: the background check"
+      body:
+        - "To chaperone field trips or volunteer on campus, every volunteer must register and complete an annual Austin ISD background check through Voly. It has to be renewed each school year, even if you did one last year."
+      links:
+        - label: "AISD Voly background check"
+          href: "https://austinisd.voly.org/volunteer/home.html"
+          note: "Required once a year, for everyone"
+      names: []
+    - heading: "Step two: tell us what you're interested in"
+      body:
+        - "The interest form is how we know who to call when something comes up. You are not committing to anything by filling it in."
+      links:
+        - label: "Volunteer interest survey"
+          href: "https://tinyurl.com/VolunteeratBlackshear"
+          note: "Google Form, about two minutes"
+      names: []
+    - heading: "What we need help with"
+      body:
+        - "Activity sheets explain what each event involves and how much time it takes."
+      links:
+        - label: "Bike Day"
+          href: "https://drive.google.com/file/d/1QaYYKEFyMKMBlbAnfgmvMfEuV4LXGb64/view?usp=share_link"
+          note: "PDF on Google Drive"
+        - label: "Monthly bake sales"
+          href: "https://drive.google.com/file/d/1bOjZNDvu3FY-gcppBamGhwXZhtYei9vo/view?usp=share_link"
+          note: "PDF on Google Drive"
+        - label: "Staff appreciation"
+          href: "https://drive.google.com/file/d/1B3Jrx3KjhITmpNIzltQGhJnPQLP1NF7W/view?usp=sharing"
+          note: "PDF on Google Drive"
+        - label: "Campus beautification"
+          href: "/campus-beautification"
+          note: "No activity sheet yet. See the committee page"
+        - label: "Fine Arts and Little EAST"
+          href: "/little-east"
+          note: "No activity sheet yet. See the committee page"
+      names: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "Not sure where you would fit? Email us and we will find something."
+
+contact:
+  meta:
+    title: "Contact - Blackshear PTA"
+    description: "Reach the Blackshear Elementary PTA: email, phone, our 2026-2027 executive board, and the school's address in East Austin."
+  title: "Contact us"
+  lede: "You've got questions. Email us anything, including suggestions."
+  backdrop: campus-front-walk
+  body:
+    - "The fastest way to reach any of us is the PTA address below. It goes to the whole board, so you do not need to work out who to ask."
+    - "We also run a WhatsApp community. Email us if you would like to be added."
+  cta:
+    label: "Email the PTA"
+    href: "mailto:blackshearpta@gmail.com"
+  sections:
+    # Reproduces the current Weebly roster, children and grades included. See
+    # F22 in TASKS.md: this becomes searchable at cutover, and is worth a
+    # deliberate board decision rather than being carried over by default.
+    - heading: "Your 2026-2027 PTA executive board"
+      body: []
+      links: []
+      names:
+        - "President: Neal Hall (Grayton, 4th)"
+        - "Vice President: Laura Dablain (Gabby 2nd, Segolene 5th)"
+        - "Secretary: Gabe Hernandez (Nate, 4th)"
+        - "Treasurer: Darrell Merriweather (Arica 1st, Lynell 2nd)"
+        - "Communications: Jon Flowers (June, Kinder)"
+        - "Fundraising Chair: Lennie King (Grayton, 4th)"
+        - "Little EAST Chair: Ryann Matthews (Navy 3rd, Arrow 5th)"
+        - "Room Parent Coordination Chair: Bree Miller (Eleanor, 4th)"
+        - "Parliamentarian: not yet appointed"
+        - "Staff Appreciation Chair: not yet appointed"
+    - heading: "The school"
+      body:
+        - "Blackshear Elementary Fine Arts Academy, 1712 E. 11th St., Austin, TX 78702. Principal: Tiona Bell."
+        - "The PTA is a legally separate organisation from the school. For anything about classes, enrolment or attendance, the school office is the right place."
+      links:
+        - label: "Austin ISD staff directory"
+          href: "https://www.austinisd.org/schools/blackshear/directory"
+          note: "Every teacher and staff email"
+      names: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "PTA phone: (512) 402-2023. Individual board addresses are obfuscated on the current site and could not be read, so everything routes through the PTA address for now."
+
+gallery:
+  meta:
+    title: "Gallery - Blackshear PTA"
+    description: "Photos from Blackshear Elementary: the campus, the garden, Little EAST, and PTA events in East Austin."
+  title: "Gallery"
+  lede: "The school, the garden, and what we get up to."
+  backdrop: little-east
+  # Rendered by src/pages/gallery.astro, not [page].astro: the photo grid needs
+  # static imports the schema cannot express. Text still lives here so it edits
+  # the same way as every other page.
+  body:
+    - "A few photos from around Blackshear. There will be more here soon."
+  sections: []
+  contact:
+    email: "blackshearpta@gmail.com"
+    note: "Got a photo we should use? Send it over. Please make sure anyone recognisable is happy to be on the site."
+
+calendar:
+  meta:
+    title: "Calendar - Blackshear PTA"
+    description: "Upcoming events at Blackshear Elementary: PTA meetings, bake sales, holidays, Little EAST and more."
+  title: "Calendar"
+  lede: "Everything coming up at Blackshear, and how to get it onto your own phone."
+  backdrop: campus-frontage
+  # Rendered by src/pages/calendar.astro, not [page].astro: the event list comes
+  # from src/data/events.json, which the schema cannot express. Text still lives
+  # here so it edits the same way as every other page.
+  body:
+    - "The PTA calendar lives in Google Calendar. This page shows what is coming up; the buttons below put the whole thing in the calendar app you already use, so it updates itself."
+  sections: []
