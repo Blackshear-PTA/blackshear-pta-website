@@ -13,7 +13,7 @@
 | U1 | ~~Pick a design~~ | JON | ✅ **Civic Letterpress A**, decided 2026-08-31. B and Print Shop held in reserve at `/preview`, not deleted |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 | U3 | ~~Confirm the Phase 2 page set~~ | JON | ✅ Confirmed 2026-08-31, plus the four committee pages. Four built, four to go - see [A20](#phase-2---real-site) |
-| U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly. **I cannot do this one** - wrangler is not authenticated locally and I have no dashboard access |
+| U4 | ~~Cloudflare Web Analytics~~ | JON | ✅ **Already on.** Enabled automatically when the zone was added 2026-08-28, automatic setup, no snippet needed. Confirmed collecting: 74 page views / 13 visits in 24h. Closes [A7](#phase-0---accounts--scaffold) with no code change |
 | U5 | ~~Set the `SITE_PASSWORD` secret~~ | JON | ✅ Set 2026-09-01 and verified live. One leftover: a stray secret named `littleeast26` was created by a first attempt that passed the value where the *name* goes. Harmless but confusing; remove with `npx wrangler secret delete littleeast26` from the repo directory |
 | U6 | ~~Decide how the calendar works~~ | JON | ✅ **Google stays the source**, decided 2026-09-01. The site reads its iCal feed and renders its own list; the iframe goes. See [D10](#open-decisions) |
 | U7 | ~~Decide what `/gallery` actually is~~ | JON | ✅ **Photo grid plus an Instagram link**, decided 2026-09-01. No token treadmill. See [D11](#open-decisions) |
@@ -73,7 +73,7 @@
 - [x] **A4**: Wire GitHub → Cloudflare Workers deploy on push - `JON` - Cloudflare **Workers Builds** connected to the repo. Worker `blackshear-pta`, build `npm run build`, deploy `npx wrangler deploy`, branch previews via `npx wrangler versions upload`. Build token `blackshear-pta-builds` is created and held by Cloudflare - nothing to store in GitHub
 - [~] **A5**: Deploy end-to-end - `CLAUDE` + `JON` - First `main` build triggered 2026-08-30. Branch builds confirmed working on [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1), which validates `versions upload` against an assets-only Worker with no `main` field
 - [~] **A6**: Site-wide `noindex` - `CLAUDE` - In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Two mechanisms: `public/_headers` (`X-Robots-Tag`) and a `<meta name="robots">` in `BaseLayout.astro`. **Both must be deleted at cutover, not before**
-- [!] **A7**: Cloudflare Web Analytics - `CLAUDE` + `JON` - **Blocked on U4.** Free, cookieless, no consent banner required. Needs the site token from Cloudflare → Web Analytics → Add a site; the beacon then goes in `BaseLayout.astro`. Worth having *before* cutover so there is a baseline to compare Weebly against
+- [x] **A7**: Cloudflare Web Analytics - `JON` - **Done, and it was already done.** Enabled automatically when the zone was added; automatic setup injects the beacon at the edge, so no snippet in `BaseLayout.astro` and nothing to maintain. Free, cookieless, no consent banner. Confirms in passing that edge injection still works with `assets.run_worker_first`, which was an open question. It is also the source of [F27](#f27)
 
 ### Phase 1 - Theme demo and board vote *(complete)*
 
@@ -279,6 +279,28 @@ Worth remembering **how** it was found: by diffing the gate page's response
 headers against a passthrough `/_astro` asset's on the deployed site. It was
 invisible to `astro dev` and `astro preview`, which never run the Worker at all.
 Anything the Worker touches has to be checked on `:8787` or in production.
+
+<a name="f27"></a>
+**F27 - Real-user monitoring caught a layout shift no local check could.**
+Cloudflare Web Analytics reported LCP and INP fully green with **CLS in the
+red**. Cause: all 14 `@font-face` blocks are `font-display: swap` and nothing
+was preloaded, so a first-time visitor gets the fallback face painted first and
+a reflow when the webfont lands - on the largest slab display type on the page.
+
+The blanket "never preload" was a deliberate, *correct* decision when `/preview`
+was the landing page holding every theme at once: preloading there fetches six
+faces to show two. It silently stopped being correct when `/` became a
+single-theme page, and nothing flagged the change. **Decisions can expire
+without anything failing.**
+
+Fixed by preloading per theme: real pages preload their two faces, `/preview`
+still preloads nothing. Guarded by a new `npm run check:fonts`.
+
+Worth noting **why local testing could not find this**: any browser that has
+already visited the site has the fonts cached, which is precisely the condition
+where the shift does not occur. Only first-time visitors see it, and only RUM
+sees them. Verification of the fix has to come from the same place - watch CLS
+in Web Analytics over the next few days rather than trusting a local number.
 
 ---
 

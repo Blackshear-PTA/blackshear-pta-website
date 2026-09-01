@@ -11,14 +11,15 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "wrangler types && astro check",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:fonts": "node scripts/check-fonts.mjs",
+    "check:ical": "node scripts/check-ical.mjs",
+    "check:domain": "node scripts/check-domain.mjs",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
-    "check:contrast": "node scripts/check-contrast.mjs",
-    "check:domain": "node scripts/check-domain.mjs",
     "types": "wrangler types",
-    "refresh:events": "node scripts/refresh-events.mjs",
-    "check:ical": "node scripts/check-ical.mjs"
+    "refresh:events": "node scripts/refresh-events.mjs"
   },
   "dependencies": {
     "astro": "^7.2.9"

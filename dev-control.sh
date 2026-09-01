@@ -280,9 +280,11 @@ do_check() {
   $NODE_RUNNER npm run check   || { printf '%s  type check failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ contrast gate%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:contrast || { printf '%s  contrast gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ font wiring%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:fonts || { printf '%s  font gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n'
   if [[ "$failed" == "0" ]]; then
-    printf '%s✓ All three green.%s\n' "$GREEN" "$RESET"
+    printf '%s✓ All four green.%s\n' "$GREEN" "$RESET"
   else
     printf '%s✗ Something failed above.%s\n' "$RED" "$RESET"
   fi
