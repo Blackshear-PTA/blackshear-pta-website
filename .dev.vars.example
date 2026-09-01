@@ -1,0 +1,10 @@
+# Copy to .dev.vars (gitignored) for local `wrangler dev` runs.
+#
+# The real value is NOT in this repo and must not be - the repo is public, so a
+# committed password is no password. In production it lives in a Cloudflare
+# secret, set once with:
+#
+#   npx wrangler secret put SITE_PASSWORD
+#
+# Ask the PTA for the current value. See src/worker.ts.
+SITE_PASSWORD=replace-me

@@ -98,6 +98,41 @@ Node is pinned in `.node-version` (Astro 7 needs >= 22.12). In a terminal your
 because tmux runs commands without an interactive shell, so every launch goes
 through `fnm exec`.
 
+## The pre-launch gate
+
+The site sits behind one shared password until launch. Someone who has not been
+given it gets `/under-construction/`: "we are still building, here is our current
+site," with a password field underneath. Once unlocked, a cookie keeps them in
+for 30 days.
+
+This is a **speed bump, not a security boundary.** It exists so a parent who
+finds the domain early does not mistake a half-built site for the real one.
+A password a dozen people share is not a secret. Treat everything behind it as
+public. Real access control for `/admin` comes later, via Cloudflare Access with
+Google SSO.
+
+**The password is not in this repo, and must not be.** The repo is public, so a
+committed password is no password. It lives in a Cloudflare secret:
+
+```
+npx wrangler secret put SITE_PASSWORD
+```
+
+or dashboard → Workers & Pages → `blackshear-pta` → Settings → Variables and
+Secrets → Add → Secret. Secrets live on the Worker, so branch previews inherit
+the same one.
+
+**Without the secret the gate fails closed** and nobody gets in, including us.
+That is on purpose: a site that is ungated while everyone believes it is gated is
+worse than no gate at all.
+
+Locally, `npm run dev` and `npm run preview` are **ungated** - they never run the
+Worker. To exercise the gate, copy `.dev.vars.example` to `.dev.vars`, put the
+real password in it, and use the `worker` server on `:8787`.
+
+Removing it at cutover is two deletions: `src/worker.ts`, and the three lines
+marked `TEMPORARY` in `wrangler.jsonc`. Nothing else depends on it.
+
 ## Deploys
 
 Every push to `main` triggers a Cloudflare Workers build, which deploys to

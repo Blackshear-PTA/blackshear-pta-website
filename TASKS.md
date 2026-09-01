@@ -13,7 +13,8 @@
 | U1 | ~~Pick a design~~ | JON | ✅ **Civic Letterpress A**, decided 2026-08-31. B and Print Shop held in reserve at `/preview`, not deleted |
 | U2 | ~~Renew the domain~~ | Gabe | ✅ Handled |
 | U3 | **Confirm the Phase 2 page set** | JON | [A20](#phase-2---real-site) is the largest remaining chunk and cannot start without it. Proposal is the five nav destinations still pointing at Weebly |
-| U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly |
+| U4 | **Cloudflare Web Analytics site token** | JON | [A7](#phase-0---accounts--scaffold). One value from the dashboard; without it there is no traffic data at cutover to compare against Weebly. **I cannot do this one** - wrangler is not authenticated locally and I have no dashboard access |
+| U5 | **Set the `SITE_PASSWORD` secret** | JON | [A30](#phase-2---real-site). The pre-launch gate **fails closed** without it, so the site is unreachable for everyone until it is set. `npx wrangler secret put SITE_PASSWORD`, or dashboard → Workers & Pages → blackshear-pta → Settings → Variables and Secrets → Add → Secret. **Do this at merge time, not before** |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -100,7 +101,8 @@
 - [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
-- [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
+- [x] **A30**: **Pre-launch gate** - `CLAUDE` + `JON` - One shared password for the e-board, so anyone who wanders onto the domain early gets "under construction, here is our current site" rather than a half-built PTA site they take for real. A small Worker (`src/worker.ts`) in front of the static assets; cookie lasts 30 days. **Blocked on U5** until the secret exists. **The password is deliberately not in this repo** - the repo is public, so a committed password is no password. Not a security boundary and not meant to be: treat everything behind it as public
+- [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, remove the pre-launch gate ([A30](#phase-2---real-site): delete `src/worker.ts` plus the three lines marked TEMPORARY in `wrangler.jsonc`), submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
 
 ### Phase 3 - Member accounts *(not started, only if still wanted)*
 

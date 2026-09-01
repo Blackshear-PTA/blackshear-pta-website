@@ -19,11 +19,13 @@
 #     preview  astro preview    :4322  the built static output, no HMR.
 #     worker   wrangler dev     :8787  the real Cloudflare Workers runtime.
 #
-#   The third one matters more than it looks. `_headers` (the site-wide noindex)
-#   and `_redirects` (none today; the design-vote one is gone) are Workers
-#   static-asset features. `astro dev` and `astro preview` ignore both, so a
-#   change to either LOOKS fine locally and only fails once deployed. If you are
-#   touching those files, verify on :8787.
+#   The third one matters more than it looks. `_headers` (the site-wide noindex),
+#   `_redirects` (none today), and src/worker.ts (the pre-launch password gate)
+#   only exist in the Workers runtime. `astro dev` and `astro preview` know
+#   nothing about any of them, so on :4321 and :4322 the site is UNGATED and a
+#   change to those files LOOKS fine and only fails once deployed. If you are
+#   touching them, verify on :8787 - and copy .dev.vars.example to .dev.vars
+#   first, or the gate will fail closed and let nobody through.
 #
 #   preview and worker build first, so they show you the real thing rather than
 #   whatever was in dist/ from last time.

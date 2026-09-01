@@ -10,12 +10,13 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "wrangler types && astro check",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
     "check:contrast": "node scripts/check-contrast.mjs",
-    "check:domain": "node scripts/check-domain.mjs"
+    "check:domain": "node scripts/check-domain.mjs",
+    "types": "wrangler types"
   },
   "dependencies": {
     "astro": "^7.2.9"
