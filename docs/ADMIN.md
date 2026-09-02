@@ -110,9 +110,23 @@ but that is the moment to turn the toggle off and select Google specifically.
 Then collect the value the Worker needs: select the application ->
 **Configure** -> **Additional settings** -> **Application Audience (AUD) Tag**.
 
-Your **team domain** is `<team-name>.cloudflareaccess.com`, where `team-name` is
-what you chose during Zero Trust onboarding. The Worker fetches its signing keys
-from `https://<team-domain>/cdn-cgi/access/certs`, so this has to be exact.
+Your **team domain** is `<team-name>.cloudflareaccess.com`. If you did not
+choose the team name yourself, Cloudflare generated one and it is not obvious
+where to read it back. The quickest way is to ask the site:
+
+```sh
+curl -sI https://blackshearpta.org/admin | grep -i '^location:'
+```
+
+The redirect goes to the Access login page, and its hostname **is** your team
+domain. The same URL also carries this application's AUD tag as its `kid`
+parameter, so it doubles as a cross-check that you copied the right one from the
+dashboard. Neither value is sensitive - both are in every unauthenticated
+redirect, which is why this works.
+
+The Worker fetches its signing keys from
+`https://<team-domain>/cdn-cgi/access/certs`, so the team domain has to be
+exact: bare hostname, no scheme, no trailing slash.
 
 ### 2. A GitHub token for the write path
 
@@ -181,6 +195,7 @@ payloads are all refused.
 | Saved, but the site looks unchanged | Give it a minute. Check the build in Workers & Pages -> `blackshear-pta` -> Builds. |
 | `Could not verify sign-in: Access certs fetch failed` | `CF_ACCESS_TEAM_DOMAIN` is wrong. It is the bare hostname, no `https://` and no trailing slash. |
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
+| `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
 
 ## Seats and billing
 

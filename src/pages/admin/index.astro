@@ -129,10 +129,42 @@ const theme = getTheme(siteThemeId);
   }
   const clearStatus = () => { statusEl.hidden = true; };
 
+  const EXPIRED = 'Your sign-in session expired. Reload the page and sign in again.';
+
   async function api(path: string, init?: RequestInit) {
-    const response = await fetch(`/admin/api/${path}`, init);
-    let payload: Record<string, unknown> = {};
-    try { payload = await response.json(); } catch { /* non-JSON error page */ }
+    let response: Response;
+    try {
+      response = await fetch(`/admin/api/${path}`, init);
+    } catch {
+      // A cross-origin redirect to the Access login page fails CORS and lands
+      // here as a bare TypeError with no useful message.
+      throw new Error(EXPIRED);
+    }
+
+    /**
+     * Require JSON, and treat anything else as an expired session.
+     *
+     * When an Access session lapses, /admin/api/* answers 302 to the login
+     * page. fetch follows it, so what arrives is a 200 carrying HTML:
+     * response.ok is TRUE, and a silent JSON-parse failure used to leave an
+     * empty payload behind. The read paths then threw something confusing about
+     * undefined - but the SAVE path saw no error at all and reported "Saved.
+     * The live site will show it in about a minute" having written nothing.
+     *
+     * A false success on the write path is the worst outcome this page can
+     * produce, so the check is on content type rather than status.
+     */
+    if (response.redirected || !(response.headers.get('content-type') ?? '').includes('application/json')) {
+      throw new Error(EXPIRED);
+    }
+
+    let payload: Record<string, unknown>;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error(`The server sent something unreadable (${response.status}).`);
+    }
+
     if (!response.ok) {
       // Surface the server's own words. It knows things the browser does not,
       // like which Worker secret is missing.
