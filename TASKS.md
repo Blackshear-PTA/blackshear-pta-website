@@ -26,7 +26,7 @@
 | U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
 | U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
 
-| U13 | **Enable One-time PIN as an identity provider** | JON | Zero Trust → Integrations → Identity providers → Add new → One-time PIN. **Not on by default** ([F30](#f30)), so `/admin` currently asks board members to sign in with a *Cloudflare account*, which none of them have |
+| U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -371,6 +371,18 @@ worth roughly nothing - this file asserted the opposite of the documented
 behaviour and cost a round trip. And when a real outage is in progress it is
 tempting to attribute everything odd to it; two of these three symptoms were
 plain misconfiguration sitting in plain sight.
+
+<a name="f31"></a>
+**F31 - Access tells an unauthorised address that a code was sent.** Entering an
+email that is not in the Access policy produces "A code has been emailed to you"
+and no email. Cloudflare documents this as deliberate: revealing the difference
+would let anyone enumerate which addresses are configured.
+
+Correct behaviour, and worth knowing twice over. It means an accidental attempt
+with a non-listed address is a **positive test** that the allowlist is enforcing
+- which is how the policy got confirmed working. And it means the most likely
+cause of "the editor is broken" is a typo in the email, with the UI actively
+implying otherwise. Triage order is in [docs/ADMIN.md](docs/ADMIN.md).
 
 ---
 
