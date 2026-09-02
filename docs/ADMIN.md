@@ -38,16 +38,19 @@ done any time; 4 onwards is the Access work.
 - [ ] **4.** Check <https://www.cloudflarestatus.com> for open **Access**
       incidents before touching anything. A control-plane degradation makes
       toggles do nothing and can silently discard a created application.
-- [ ] **5.** Create the Access application (section 1 below).
-- [ ] **6.** **Reload the Applications list and confirm it is still there.**
+- [ ] **5.** Enable **One-time PIN** as an identity provider (section 1, step 0).
+      Not on by default; skip it and the login page asks board members for a
+      Cloudflare account.
+- [ ] **6.** Create the Access application (section 1 below).
+- [ ] **7.** **Reload the Applications list and confirm it is still there.**
       Cloudflare will let you complete the wizard during a degradation and then
       lose the result.
-- [ ] **7.** Copy the **AUD tag** and note your **team domain**.
-- [ ] **8.** Create the fine-grained GitHub token (section 2 below).
-- [ ] **9.** Set the three Worker secrets (section 3 below).
-- [ ] **10.** Create the photo bucket:
+- [ ] **8.** Copy the **AUD tag** and note your **team domain**.
+- [ ] **9.** Create the fine-grained GitHub token (section 2 below).
+- [ ] **10.** Set the three Worker secrets (section 3 below).
+- [ ] **11.** Create the photo bucket:
       `npx wrangler r2 bucket create blackshear-pta-images`
-- [ ] **11.** Open `/admin`, sign in, and post something with a photo. Delete it
+- [ ] **12.** Open `/admin`, sign in, and post something with a photo. Delete it
       afterwards.
 
 If sign-in never arrives, check the status page again before assuming
@@ -69,6 +72,13 @@ announcements.
 regularly; if the wording below does not match, the shape of the task is the
 same and the labels are close.
 
+0. **Enable One-time PIN first.** Zero Trust -> **Integrations** -> **Identity
+   providers** -> **Add new identity provider** -> **One-time PIN** -> Save.
+
+   Do this before creating the application. It is not on by default, and every
+   confusing thing about the Authentication step downstream traces back to
+   having no identity provider configured.
+
 1. Cloudflare dashboard -> **Zero Trust** -> **Access controls** ->
    **Applications**
 2. **Create new application** -> **Self-hosted and private**
@@ -83,16 +93,24 @@ same and the labels are close.
    > the difference between "the board" and "anyone who can receive mail at a
    > domain".
 
-6. **Authentication**: leave **Accept all available identity providers** ON.
+6. **Authentication**: select **One-time PIN**, and nothing else.
 
-   > There is no "one-time PIN" checkbox to find, and looking for one is a
-   > reliable way to lose ten minutes. One-time PIN is built into Access and
-   > always available, so with no other provider configured, "accept all"
-   > resolves to exactly it. Turning the toggle off makes the provider dropdown
-   > selectable if you want to see it named.
+   > This only works if you did step 0. **One-time PIN is not enabled by
+   > default** - Cloudflare's docs are explicit that "OTP is no longer added
+   > automatically". A Zero Trust account with no identity provider configured
+   > has an *empty* provider list, and Access falls back to making people sign
+   > in with a **Cloudflare account**, which no board member has. The login page
+   > then offers exactly one option, "Sign in with Cloudflare", and looks
+   > nothing like what you set out to build.
+   >
+   > Two symptoms of the same cause, both of which read as bugs: toggling
+   > **Accept all available identity providers** off reveals an empty dropdown,
+   > and **Apply instant authentication** is greyed out. Instant auth needs
+   > exactly one login method, and zero is not one.
 
-   Also turn **Apply instant authentication** ON. With one login method it skips
-   the "choose your provider" screen and goes straight to the PIN prompt.
+   Then turn **Apply instant authentication** ON. With one method it skips the
+   provider chooser entirely, so a board member goes straight to "enter your
+   email, get a code".
 
 7. **Session Duration**: 24 hours is reasonable
 8. **Create**
@@ -105,7 +123,8 @@ same and the labels are close.
 
 ### When Google SSO arrives
 
-Adding Google as a provider does not remove one-time PIN. With **Accept all
+Add it the same way, at Zero Trust -> Integrations -> Identity providers, then
+select it on the application. Adding Google does not remove one-time PIN. With **Accept all
 available identity providers** still on, someone on the allowlist could sign in
 with an emailed PIN instead of Google - the allowlist still bounds who that is,
 but that is the moment to turn the toggle off and select Google specifically.
@@ -297,6 +316,7 @@ payloads are all refused.
 | `Could not verify sign-in: Access certs fetch failed` | `CF_ACCESS_TEAM_DOMAIN` is wrong. It is the bare hostname, no `https://` and no trailing slash. |
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
 | `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
+| Login page offers only "Sign in with Cloudflare" | No identity provider is configured. Section 1, step 0. |
 
 ## Seats and billing
 
