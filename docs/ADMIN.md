@@ -219,9 +219,43 @@ the next deploy.
 
 Free tier is 10GB, which at the sizes below is several thousand photos.
 
+## Using the editor
+
+The list of posts is the page. Writing happens in a panel on top of it, so the
+list is never lost and there is no question of where you are.
+
+**The panel cannot be dismissed by clicking away from it.** That gesture is the
+most common way people lose a half-written post and there is no upside to
+supporting it, so only Cancel closes the panel - and Cancel asks first if there
+is anything unsaved. Escape does the same thing as Cancel rather than nothing,
+because a modal with no keyboard exit traps anyone not using a mouse.
+
+Each row shows what matters at a glance: the date, the title, and labels for
+pinned, draft, which grades it is aimed at, and how many photos it has. Editing
+is an explicit **Edit** button rather than clicking the title, which previously
+gave no clue it was clickable. **View** opens the live post in a new tab.
+
+**Grades** default to "everyone at the school", which is the common case and
+therefore costs nobody a decision. Untick it to pick specific grades; they show
+as a label on the post and are there for filtering and targeted notifications
+later.
+
 ## Photos
 
-**Every photo is shrunk in the browser before it is uploaded**, and that is
+Drag photos onto the box, or click it to choose. Several at once is fine.
+
+**Every photo is cropped before it is uploaded, and you approve the crop.**
+Photos are shown as a wide rectangle across the site, so a portrait shot of one
+child becomes a band across their middle unless somebody aims it. The crop step
+shows the exact frame, lets you drag and zoom, and asks for the description at
+the same time. Nothing is uploaded until you confirm it.
+
+A post can hold **several photos**. One is the **cover**, which is what appears
+on the homepage and in lists; the rest form a gallery on the post's own page.
+With a single photo there is nothing to choose and it becomes the cover
+automatically.
+
+**Every photo is also shrunk in the browser before it is uploaded**, and that is
 doing more work than it looks like:
 
 - **It removes the location.** A phone photo carries GPS coordinates in its EXIF

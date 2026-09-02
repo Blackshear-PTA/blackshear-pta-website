@@ -171,35 +171,69 @@ const pages = defineCollection({
  * went stale for the same reason the Weebly site did (F18): editing it meant
  * knowing where it lived.
  */
+/**
+ * Grades a post can be aimed at. Empty or absent means the whole school, which
+ * is the common case - so the default costs nobody a decision.
+ *
+ * Stored as slugs and rendered through GRADE_LABELS, because "1" sorts and
+ * compares sanely while "1st Grade" does not, and because a later notification
+ * feature will want to match on a stable value rather than display text.
+ */
+export const gradeSlugs = ['pre-k', 'kinder', '1', '2', '3', '4', '5'] as const;
+export type GradeSlug = (typeof gradeSlugs)[number];
+
+export const GRADE_LABELS: Record<GradeSlug, string> = {
+  'pre-k': 'Pre-K',
+  kinder: 'Kinder',
+  '1': '1st',
+  '2': '2nd',
+  '3': '3rd',
+  '4': '4th',
+  '5': '5th',
+};
+
+/** One photo. `alt` is not optional; see the refine below. */
+const postImage = z.object({
+  /** R2 object key as returned by /admin. Not a path - the URL prefix is a
+      serving detail and belongs in the component. */
+  key: z.string(),
+  alt: z.string(),
+});
+
 const announcements = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),
-  schema: z.object({
-    title: z.string(),
-    /** Publication date. Drives ordering and the RSS pubDate. */
-    date: z.coerce.date(),
-    /** Optional destination for "read more". */
-    href: z.string().optional(),
-    /** Link text. Defaults in the component, so most posts never set it. */
-    linkLabel: z.string().optional(),
-    /**
-     * Photo key in R2, as returned by /admin. Just the object key, not a path:
-     * the URL prefix is a serving detail and belongs in the component.
-     */
-    image: z.string().optional(),
-    /**
-     * Required whenever `image` is set - enforced below rather than here,
-     * because zod cannot express "required if a sibling is present" inline.
-     * A photo with no description is unusable to anyone on a screen reader.
-     */
-    imageAlt: z.string().optional(),
-    /** Sorts above everything else regardless of date. Use sparingly. */
-    pinned: z.boolean().default(false),
-    /** Written but not published. Excluded from the site and the feed. */
-    draft: z.boolean().default(false),
-  }).refine((data) => !data.image || Boolean(data.imageAlt?.trim()), {
-    message: 'imageAlt is required when image is set: describe the photo for anyone who cannot see it.',
-    path: ['imageAlt'],
-  }),
+  schema: z
+    .object({
+      title: z.string(),
+      /** Publication date. Drives ordering and the RSS pubDate. */
+      date: z.coerce.date(),
+      /** Optional destination for a "read more" link on the post's own page. */
+      href: z.string().optional(),
+      /** Link text. Defaults in the component, so most posts never set it. */
+      linkLabel: z.string().optional(),
+      /** Ordered gallery. The whole set renders on the post's own page. */
+      images: z.array(postImage).default([]),
+      /**
+       * Which image represents the post in a list. Defaults to the first, so a
+       * single-photo post never has to think about it.
+       */
+      cover: z.string().optional(),
+      /** Empty means the whole school. */
+      grades: z.array(z.enum(gradeSlugs)).default([]),
+      /** Sorts above everything else regardless of date. Use sparingly. */
+      pinned: z.boolean().default(false),
+      /** Written but not published. Excluded from the site and the feed. */
+      draft: z.boolean().default(false),
+    })
+    .refine((data) => data.images.every((image) => image.alt.trim().length > 0), {
+      message:
+        'Every image needs alt text: describe the photo for anyone who cannot see it.',
+      path: ['images'],
+    })
+    .refine((data) => !data.cover || data.images.some((image) => image.key === data.cover), {
+      message: 'cover must be the key of one of this post\'s images.',
+      path: ['cover'],
+    }),
 });
 
 const site = defineCollection({
@@ -242,10 +276,10 @@ const home = defineCollection({
       items: z.array(quickAction),
     }),
     /**
-     * Only the heading now. The items live in the announcements collection so
+     * Only the heading now. The posts live in the announcements collection so
      * they can be edited one file at a time from /admin.
      */
-    news: z.object({
+    announcements: z.object({
       heading: z.string(),
       /** How many to show on the homepage before "see all". */
       limit: z.number().int().positive().default(4),

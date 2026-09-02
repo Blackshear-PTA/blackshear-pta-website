@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { getAnnouncements } from '../lib/announcements';
+import { getAnnouncements, postPath, excerpt } from '../lib/announcements';
 
 /**
  * The announcements feed.
@@ -28,11 +28,12 @@ export async function GET(context: APIContext) {
     items: posts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.date,
-      description: post.body ?? '',
-      // Point at the post's own destination when it has one, otherwise at
-      // /news. Never at a bare "#" - some readers treat that as the site root
-      // and quietly dedupe every item into one.
-      link: post.data.href ?? new URL('/news', context.site).href,
+      description: excerpt(post, 400),
+      // Every post now has a page of its own, so the feed points there rather
+      // than at whatever third-party link the post happens to carry. A reader
+      // clicking through lands on the PTA's own words, and the outbound link is
+      // right there on the page.
+      link: new URL(postPath(post), context.site).href,
     })),
     customData: '<language>en-us</language>',
   });

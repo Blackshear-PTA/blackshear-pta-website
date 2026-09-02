@@ -4,7 +4,7 @@ import backdrop from '../../assets/photos/campus-front-walk.jpg';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
-import News from '../../components/sections/News.astro';
+import Announcements from '../../components/sections/Announcements.astro';
 import GetInvolved from '../../components/sections/GetInvolved.astro';
 import Committees from '../../components/sections/Committees.astro';
 import Footer from '../../components/sections/Footer.astro';
@@ -68,7 +68,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
       */}
       <div class="split">
         <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
-        <div class="wide"><News news={home.news} /></div>
+        <div class="wide"><Announcements announcements={home.announcements} /></div>
       </div>
     </div>
   </div>
@@ -103,11 +103,11 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
   }
 
   /*
-    Drop the hero's bottom rule here. News carries its own top rule, and the
+    Drop the hero's bottom rule here. Announcements carries its own top rule, and
     two land at the same y with different widths - the lede is capped at 52rem
     while the news column follows the grid - so they overlap for the first
     650px and read as one heavier line that then steps down to a thinner one.
-    News's rule is the one to keep: it lines up with the column it belongs to.
+    the Announcements rule is the one to keep: it lines up with its own column.
     stacked-rules keeps the hero border, where it is the whole broadsheet idea.
   */
   .lede :global(.hero) {

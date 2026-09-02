@@ -1,15 +1,22 @@
 ---
 import { getEntry } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import SiteHeader from '../components/sections/SiteHeader.astro';
-import Footer from '../components/sections/Footer.astro';
-import { getAnnouncements, formatDate } from '../lib/announcements';
-import { isExternal } from '../lib/links';
-import { siteThemeId, getTheme } from '../themes/registry';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/sections/SiteHeader.astro';
+import Footer from '../../components/sections/Footer.astro';
+import PostBadges from '../../components/PostBadges.astro';
+import {
+  getAnnouncements,
+  formatDate,
+  postPath,
+  coverImage,
+  imageUrl,
+  excerpt,
+} from '../../lib/announcements';
+import { siteThemeId, getTheme } from '../../themes/registry';
 
 /**
  * Every announcement, newest first. The homepage shows the most recent few and
- * links here.
+ * links here; each title goes to the post's own page.
  *
  * An explicit route rather than an entry in pages.yaml, because this one has
  * real logic behind it - it reads a collection, and it advertises the feed.
@@ -27,14 +34,14 @@ const theme = getTheme(siteThemeId);
 ---
 
 <BaseLayout
-  title="News - Blackshear PTA"
+  title="Announcements - Blackshear PTA"
   description="Announcements from the Blackshear Elementary PTA in East Austin."
   themeId={theme.id}
 >
   <SiteHeader site={siteEntry.data} />
   <main id="main">
     <div class="shell">
-      <h1>News</h1>
+      <h1>Announcements</h1>
       <p class="lede">Everything the PTA has announced, newest first.</p>
 
       <p class="feed">
@@ -53,32 +60,25 @@ const theme = getTheme(siteThemeId);
           posts.map((post) => (
             <li>
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-              {post.data.pinned && <span class="pin">Pinned</span>}
-              <h2>{post.data.title}</h2>
-              {post.data.image && (
-                <img
-                  class="photo"
-                  src={`/images/${post.data.image}`}
-                  alt={post.data.imageAlt}
-                  loading="lazy"
-                  decoding="async"
-                />
+              <h2>
+                <a href={postPath(post)}>{post.data.title}</a>
+              </h2>
+              <PostBadges pinned={post.data.pinned} grades={post.data.grades} />
+              {coverImage(post) && (
+                <a class="photo-link" href={postPath(post)} tabindex="-1" aria-hidden="true">
+                  <img
+                    class="photo"
+                    src={imageUrl(coverImage(post)!.key)}
+                    alt={coverImage(post)!.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
               )}
-              <p class="body">{post.body}</p>
-              {post.data.href && (
-                <p class="link">
-                  <a
-                    href={post.data.href}
-                    target={isExternal(post.data.href) ? '_blank' : undefined}
-                    rel={isExternal(post.data.href) ? 'noopener' : undefined}
-                  >
-                    {post.data.linkLabel ?? 'Read more'}
-                    {isExternal(post.data.href) && (
-                      <span class="sr-only"> (opens in a new tab)</span>
-                    )}
-                  </a>
-                </p>
-              )}
+              <p class="body">{excerpt(post)}</p>
+              <p class="link">
+                <a href={postPath(post)}>Read the full post</a>
+              </p>
             </li>
           ))
         }
@@ -149,7 +149,7 @@ const theme = getTheme(siteThemeId);
     color: var(--pta-ink-muted);
   }
 
-  .pin {
+  .unused-pin {
     margin-inline-start: 0.5rem;
     padding: 0.1rem 0.4rem;
     border: var(--pta-border-width) solid var(--pta-rule);
@@ -170,6 +170,8 @@ const theme = getTheme(siteThemeId);
   /* Intrinsic size is unknown at build time - these come from R2, not from
      Astro's image pipeline - so reserve the space with an aspect-ratio rather
      than letting the text jump when the photo arrives. */
+  .photo-link { display: block; }
+
   .photo {
     display: block;
     width: 100%;

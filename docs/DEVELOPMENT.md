@@ -32,6 +32,7 @@ npm run check:fonts     # typeface wiring agrees across three files
 npm run check:frontmatter # what /admin writes is what Astro reads back
 npm run check:access    # Access token verification refuses every forgery
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
+npm run check:crop      # what you see in the crop frame is what gets stored
 npm run check:images    # only real images reach the bucket, on their bytes
 npm run check:secrets   # no recognisable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
@@ -58,6 +59,14 @@ unreachable from a test over HTTP, so it exercises `storeImage` directly. The
 case that earns it: a `Content-Type` header is a string the client picked, so a
 script renamed to `.jpg` has to be refused on its leading bytes rather than its
 label - otherwise it is stored and later served back with an image content type.
+
+`check:crop` covers the photo cropper's arithmetic. The cropper promises that
+what you see in the frame is what gets published, and that promise is entirely
+that arithmetic - the kind that looks right and is off by a scale factor. It is
+tested as a pure function rather than through the browser on purpose: the DOM
+version was only measurable while the preview pane happened to be laying out,
+and produced three rounds of numbers that turned out to be about the pane rather
+than the code.
 
 `check:secrets` exists because this repo is public, three documents already
 said the password must never be committed, and it was committed anyway (F28) -

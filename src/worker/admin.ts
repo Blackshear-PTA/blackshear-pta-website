@@ -17,10 +17,22 @@ import {
   ConflictError,
   type RepoConfig,
 } from './github';
-import { stringifyPost, parsePost, filenameFor } from './frontmatter.mjs';
+import {
+  stringifyPost,
+  parsePost,
+  filenameFor,
+  dateFromFilename,
+  titleFromFilename,
+} from './frontmatter.mjs';
 import { storeImage, type ImageEnv } from './images';
 
 const DIR = 'src/content/announcements';
+
+/** Must match `gradeSlugs` in src/content.config.ts. */
+const GRADES = new Set(['pre-k', 'kinder', '1', '2', '3', '4', '5']);
+
+/** Keys are content hashes written by src/worker/images.ts. */
+const IMAGE_KEY = /^[0-9a-f]{32}\.(jpg|png|webp)$/;
 
 export interface AdminEnv extends ImageEnv {
   GITHUB_TOKEN?: string;
@@ -58,8 +70,9 @@ function readConfig(env: AdminEnv): { config: RepoConfig } | { error: string } {
 interface PostPayload {
   /** Present when editing; absent when creating. */
   slug?: unknown;
-  image?: unknown;
-  imageAlt?: unknown;
+  images?: unknown;
+  cover?: unknown;
+  grades?: unknown;
   title?: unknown;
   date?: unknown;
   href?: unknown;
@@ -90,11 +103,24 @@ function validate(payload: PostPayload): { ok: true } | { ok: false; error: stri
   // A photo nobody can see is not a photo. Enforced here as well as in the
   // content schema, because the schema failure surfaces as a broken build
   // minutes later and this surfaces as a sentence in the form.
-  if (typeof payload.image === 'string' && payload.image.trim()) {
-    const alt = typeof payload.imageAlt === 'string' ? payload.imageAlt.trim() : '';
-    if (!alt) return { ok: false, error: 'Describe the photo so screen readers can read it out.' };
-    if (!/^[0-9a-f]{32}\.(jpg|png|webp)$/.test(payload.image.trim())) {
-      return { ok: false, error: 'That image reference is not valid. Re-upload the photo.' };
+  const images = readImages(payload.images);
+  if (images === null) return { ok: false, error: 'Those photos could not be read. Re-upload them.' };
+  for (const image of images) {
+    if (!IMAGE_KEY.test(image.key)) {
+      return { ok: false, error: 'One of those photos is not valid. Remove it and upload again.' };
+    }
+    if (!image.alt.trim()) {
+      return { ok: false, error: 'Every photo needs a description. Add one for each.' };
+    }
+  }
+  if (typeof payload.cover === 'string' && payload.cover.trim()) {
+    if (!images.some((image) => image.key === payload.cover)) {
+      return { ok: false, error: 'The cover photo is not one of this post\'s photos.' };
+    }
+  }
+  if (payload.grades !== undefined) {
+    if (!Array.isArray(payload.grades) || payload.grades.some((g) => !GRADES.has(String(g)))) {
+      return { ok: false, error: 'One of those grades is not a grade we know about.' };
     }
   }
 
@@ -112,6 +138,23 @@ function validate(payload: PostPayload): { ok: true } | { ok: false; error: stri
     }
   }
   return { ok: true };
+}
+
+/**
+ * Normalises the images array off the wire. Returns null when the shape is
+ * wrong, so a malformed payload is a clear message rather than a crash.
+ */
+function readImages(value: unknown): Array<{ key: string; alt: string }> | null {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) return null;
+  const out: Array<{ key: string; alt: string }> = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') return null;
+    const { key, alt } = item as { key?: unknown; alt?: unknown };
+    if (typeof key !== 'string') return null;
+    out.push({ key, alt: typeof alt === 'string' ? alt : '' });
+  }
+  return out;
 }
 
 /** Rejects anything that could climb out of the announcements directory. */
@@ -151,13 +194,27 @@ export async function handleAdminApi(
           .map(async (file) => {
             const found = await readFile(config, file.path);
             const parsed = found ? parsePost(found.text) : null;
+            /**
+             * Fall back to the filename for both title and date.
+             *
+             * Reading a file GitHub has only just committed can 404 while the
+             * directory listing already shows it. When that happened the row
+             * lost its date as well as its title, so a brand new post rendered
+             * as a raw ".md" filename and sorted to the very bottom - the two
+             * places it should least be. The name always carries the date.
+             */
             return {
               slug: file.name,
               sha: file.sha,
-              title: parsed?.meta.title ?? file.name,
-              date: parsed?.meta.date ?? '',
+              title: parsed?.meta.title ?? titleFromFilename(file.name),
+              date: parsed?.meta.date ?? dateFromFilename(file.name) ?? '',
+              images: parsed?.meta.images ?? [],
+              cover: parsed?.meta.cover ?? '',
+              grades: parsed?.meta.grades ?? [],
               pinned: Boolean(parsed?.meta.pinned),
               draft: Boolean(parsed?.meta.draft),
+              /** True when the read failed; the row is showing derived values. */
+              partial: !parsed,
             };
           }),
       );
@@ -199,12 +256,13 @@ export async function handleAdminApi(
           typeof payload.linkLabel === 'string' && payload.linkLabel.trim()
             ? payload.linkLabel.trim()
             : undefined,
-        image:
-          typeof payload.image === 'string' && payload.image.trim() ? payload.image.trim() : undefined,
-        imageAlt:
-          typeof payload.imageAlt === 'string' && payload.imageAlt.trim()
-            ? payload.imageAlt.trim()
-            : undefined,
+        images: (readImages(payload.images) ?? []).map((image) => ({
+          key: image.key,
+          alt: image.alt.trim(),
+        })),
+        cover:
+          typeof payload.cover === 'string' && payload.cover.trim() ? payload.cover.trim() : undefined,
+        grades: Array.isArray(payload.grades) ? payload.grades.map(String) : [],
         pinned: payload.pinned === true,
         draft: payload.draft === true,
       };

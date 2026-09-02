@@ -48,11 +48,11 @@ home:
       - label: "Help with school supplies"
         href: "https://tinyurl.com/BlackshearSuppliesHelp"
 
-  # Announcements themselves live in src/content/announcements/ - one markdown
-  # file each, editable from /admin. Only the heading and how many to show on
-  # the homepage are set here.
-  news:
-    heading: "What's happening"
+  # The posts themselves live in src/content/announcements/ - one markdown file
+  # each, editable from /admin. Only the heading and how many to show on the
+  # homepage are set here.
+  announcements:
+    heading: "Announcements"
     limit: 4
 
   getInvolved:
