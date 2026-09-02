@@ -1,6 +1,6 @@
 # Blackshear PTA - all homepage copy, in one file (PROJECT-BRIEF §5.4).
 #
-# Sourced from blackshearpta.weebly.com (Aug 2026) and the 2026-2027 PTA
+# Originally sourced from blackshearpta.weebly.com (Aug 2026) and the 2026-2027 PTA
 # calendar. Where the two disagreed, the calendar won - the Weebly homepage
 # still advertises the 2025-2026 meeting dates.
 #
@@ -38,10 +38,10 @@ home:
         href: "https://www.zeffy.com/en-US/ticketing/2026-2027-blackshear-elementary-shop"
         note: "Zeffy - 100% goes to the PTA, no platform fee"
       - label: "Volunteer"
-        href: "https://blackshearpta.weebly.com/volunteer.html"
+        href: "/volunteer"
         note: "Current sign-ups and opportunities"
       - label: "Calendar"
-        href: "https://blackshearpta.weebly.com/calendar.html"
+        href: "/calendar"
         note: "Meetings, bake sales, and school events"
       - label: "Sign up for the newsletter"
         href: "https://tinyurl.com/BlackshearNewsletterSignup"
@@ -73,7 +73,7 @@ home:
         description: "Help with a monthly bake sale, refresh the decorations in the teachers' lounge, pull weeds at the spring garden work day, or run a station on Bike to School Day."
         cta:
           label: "See volunteer opportunities"
-          href: "https://blackshearpta.weebly.com/volunteer.html"
+          href: "/volunteer"
       - commitment: "More time than that"
         description: "Join a committee, or just get in touch and tell us what you're good at. We will find something."
         cta:

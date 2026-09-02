@@ -1,6 +1,7 @@
 ---
 import { uid } from '../../uid';
 import { getAnnouncements, formatDate } from '../../lib/announcements';
+import { isExternal } from '../../lib/links';
 import type { HomeData } from '../../types';
 
 interface Props {
@@ -31,7 +32,22 @@ const total = (await getAnnouncements()).length;
         <li>
           <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
           <h3>
-            {post.data.href ? <a href={post.data.href}>{post.data.title}</a> : post.data.title}
+            {
+              post.data.href ? (
+                <a
+                  href={post.data.href}
+                  target={isExternal(post.data.href) ? '_blank' : undefined}
+                  rel={isExternal(post.data.href) ? 'noopener' : undefined}
+                >
+                  {post.data.title}
+                  {isExternal(post.data.href) && (
+                    <span class="sr-only"> (opens in a new tab)</span>
+                  )}
+                </a>
+              ) : (
+                post.data.title
+              )
+            }
           </h3>
           {post.data.image && (
             <img
@@ -137,5 +153,16 @@ const total = (await getAnnouncements()).length;
 
   .more a::after {
     content: ' \2192';
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 </style>

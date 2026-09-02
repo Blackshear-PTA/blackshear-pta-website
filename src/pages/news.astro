@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/sections/SiteHeader.astro';
 import Footer from '../components/sections/Footer.astro';
 import { getAnnouncements, formatDate } from '../lib/announcements';
+import { isExternal } from '../lib/links';
 import { siteThemeId, getTheme } from '../themes/registry';
 
 /**
@@ -66,9 +67,15 @@ const theme = getTheme(siteThemeId);
               <p class="body">{post.body}</p>
               {post.data.href && (
                 <p class="link">
-                  <a href={post.data.href} target="_blank" rel="noopener">
+                  <a
+                    href={post.data.href}
+                    target={isExternal(post.data.href) ? '_blank' : undefined}
+                    rel={isExternal(post.data.href) ? 'noopener' : undefined}
+                  >
                     {post.data.linkLabel ?? 'Read more'}
-                    <span class="sr-only"> (opens in a new tab)</span>
+                    {isExternal(post.data.href) && (
+                      <span class="sr-only"> (opens in a new tab)</span>
+                    )}
                   </a>
                 </p>
               )}
