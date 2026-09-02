@@ -23,7 +23,7 @@
 
 | U10 | ~~Rotate the pre-launch password~~ | JON | ✅ Rotated 2026-09-02 and verified: the old value now returns `e=bad`, so the secret is set and the committed one is dead. The old value remains in this repo's history ([F28](#f28)), which is why it was rotated rather than redacted |
 
-| U11 | **Create the R2 photo bucket** | JON | [A24](#phase-2---real-site). One command: `npx wrangler r2 bucket create blackshear-pta-images`. Until it exists the photo field says storage is not set up; everything else in `/admin` works |
+| U11 | **Create the R2 photo bucket, before merging [PR #22](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/22)** | JON | [A24](#phase-2---real-site). `npx wrangler r2 bucket create blackshear-pta-images`. Cloudflare validates R2 bindings at upload, so until the bucket exists **every deploy fails**, not just photo uploads - see [F29](#f29) |
 | U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
@@ -331,6 +331,24 @@ thought - so the cleanup instructions for a leaked credential are themselves a
 leak risk. And a rule enforced only by prose gets broken; `scripts/check-secrets.mjs`
 now greps the tree for known secret shapes so the next one fails a gate instead
 of a code review.
+
+<a name="f29"></a>
+**F29 - A missing R2 bucket fails the entire build, not just the feature.**
+Declaring an `r2_buckets` binding in `wrangler.jsonc` for a bucket that does not
+exist yet makes Cloudflare reject the Worker version outright. The build for
+[PR #22](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/22) went
+red for exactly this reason.
+
+This is a different failure shape from the missing Worker secrets, and the
+difference matters. A missing secret fails *closed* - the feature reports that it
+is not configured and the rest of the site is untouched. A missing bucket fails
+*hard* - nothing deploys. Resource bindings have to be created **before** the
+code that declares them ships, so the ordering is: create the bucket, then merge.
+
+The binding stays in `wrangler.jsonc` rather than being added via the dashboard,
+because `wrangler deploy` replaces a Worker's bindings with whatever the config
+declares - a dashboard-only binding would be wiped by the next deploy without
+anyone touching it.
 
 ---
 

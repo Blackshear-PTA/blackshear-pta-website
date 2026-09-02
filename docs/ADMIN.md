@@ -170,10 +170,18 @@ npx wrangler secret put CF_ACCESS_AUD           # the AUD tag from step 1
 npx wrangler r2 bucket create blackshear-pta-images
 ```
 
-The binding is already declared in `wrangler.jsonc`; this creates the bucket it
-points at. Until it exists, the editor still works and the photo field reports
-that storage is not set up. Free tier is 10GB, which at the sizes below is
-several thousand photos.
+**Do this before deploying the code that declares the binding.** Cloudflare
+validates R2 bindings when a Worker version is uploaded, so a deploy referencing
+a bucket that does not exist **fails the whole build** - not just photo uploads.
+This is not a fail-closed-and-carry-on situation like the missing secrets are;
+nothing deploys at all until the bucket is there.
+
+The binding lives in `wrangler.jsonc` rather than being added through the
+dashboard on purpose: `wrangler deploy` replaces the Worker's bindings with
+whatever the config says, so a dashboard-only binding would be silently wiped by
+the next deploy.
+
+Free tier is 10GB, which at the sizes below is several thousand photos.
 
 ## Photos
 
