@@ -27,6 +27,19 @@
     // /index.html and would be purely decorative.
     "run_worker_first": true
   },
+  // Photos attached to announcements through /admin. Not temporary - this
+  // outlives the pre-launch gate. Free tier is 10GB; the browser shrinks each
+  // photo before upload, so that is several thousand of them.
+  //
+  // The bucket must exist before /admin can accept an image:
+  //   npx wrangler r2 bucket create blackshear-pta-images
+  // Without the binding, uploads fail closed with a message saying so.
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "blackshear-pta-images"
+    }
+  ],
   "observability": {
     "enabled": true
   }

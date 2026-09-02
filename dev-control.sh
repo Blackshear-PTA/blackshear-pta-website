@@ -286,11 +286,13 @@ do_check() {
   $NODE_RUNNER npm run check:frontmatter || { printf '%s  frontmatter gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ Access token verification%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:access || { printf '%s  Access gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ image upload%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:images || { printf '%s  image gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ committed secrets%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:secrets || { printf '%s  secret gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n'
   if [[ "$failed" == "0" ]]; then
-    printf '%s✓ All seven green.%s\n' "$GREEN" "$RESET"
+    printf '%s✓ All eight green.%s\n' "$GREEN" "$RESET"
   else
     printf '%s✗ Something failed above.%s\n' "$RED" "$RESET"
   fi

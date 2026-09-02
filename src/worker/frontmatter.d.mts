@@ -12,6 +12,8 @@ export interface PostMeta {
   date: string;
   href?: string;
   linkLabel?: string;
+  image?: string;
+  imageAlt?: string;
   pinned?: boolean;
   draft?: boolean;
 }

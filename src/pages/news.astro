@@ -54,6 +54,15 @@ const theme = getTheme(siteThemeId);
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
               {post.data.pinned && <span class="pin">Pinned</span>}
               <h2>{post.data.title}</h2>
+              {post.data.image && (
+                <img
+                  class="photo"
+                  src={`/images/${post.data.image}`}
+                  alt={post.data.imageAlt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
               <p class="body">{post.body}</p>
               {post.data.href && (
                 <p class="link">
@@ -149,6 +158,21 @@ const theme = getTheme(siteThemeId);
     font-size: var(--text-lede);
     font-weight: var(--pta-display-weight);
     letter-spacing: var(--pta-display-tracking);
+  }
+
+  /* Intrinsic size is unknown at build time - these come from R2, not from
+     Astro's image pipeline - so reserve the space with an aspect-ratio rather
+     than letting the text jump when the photo arrives. */
+  .photo {
+    display: block;
+    width: 100%;
+    max-width: var(--pta-measure);
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    margin-block-end: var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
   }
 
   .body {

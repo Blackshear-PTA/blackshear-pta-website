@@ -18,10 +18,13 @@
 | U6 | ~~Decide how the calendar works~~ | JON | ✅ **Google stays the source**, decided 2026-09-01. The site reads its iCal feed and renders its own list; the iframe goes. See [D10](#open-decisions) |
 | U7 | ~~Decide what `/gallery` actually is~~ | JON | ✅ **Photo grid plus an Instagram link**, decided 2026-09-01. No token treadmill. See [D11](#open-decisions) |
 
-| U8 | **Set up Cloudflare Access + a GitHub token for `/admin`** | JON | [A23](#phase-2---real-site). The editor is built and fails closed until three Worker secrets exist. Full steps in [docs/ADMIN.md](docs/ADMIN.md). One-time PIN works today; swap to Google SSO when Workspace lands (B4) without touching the repo |
-| U9 | **Set build watch paths** | JON | [A21](#phase-2---real-site). Exact click path and exclude list now in [docs/DEPLOYS.md](docs/DEPLOYS.md). A docs-only PR still deployed on 2026-09-01, so this is definitely unset |
+| U8 | ~~Set up Cloudflare Access + a GitHub token~~ | JON | ✅ Done 2026-09-02. Application live at `blackshearpta.org/admin`, team domain `tight-cell-8e63.cloudflareaccess.com`, three secrets set. Token owned by the **PTA** GitHub account with no expiry - see [D12](#open-decisions) |
+| U9 | ~~Set build watch paths~~ | JON | ✅ Done 2026-09-02. Exclude list is in [docs/DEPLOYS.md](docs/DEPLOYS.md) |
 
-| U10 | **Rotate the pre-launch password** | JON | [F28](#f28). The current value was committed to this **public** repo in `9ac7e9c` and is in the history. Pick a new word, `npx wrangler secret put SITE_PASSWORD`, tell the board. Low stakes - the gate was never a security boundary - but a password anyone can read defeats the one job it has |
+| U10 | ~~Rotate the pre-launch password~~ | JON | ✅ Rotated 2026-09-02 and verified: the old value now returns `e=bad`, so the secret is set and the committed one is dead. The old value remains in this repo's history ([F28](#f28)), which is why it was rotated rather than redacted |
+
+| U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
+| U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -111,8 +114,8 @@
   - [x] **Nav is fully internal.** Volunteer, Calendar, Little EAST, Sponsors and Contact all point at this site. "Join" is a Zeffy store link and stays external by design
 - [~] **A21**: Cloudflare build watch paths - `JON` - **Blocked on U9.** Exact click path and the full exclude list are in [`docs/DEPLOYS.md`](docs/DEPLOYS.md), now also excluding `scripts/**` (the check gates are never read by `astro build`). Confirmed unset: PR #18 was docs-only and still triggered a build and a deploy
 - [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
-- [~] **A23**: `/admin` editor behind Cloudflare Access - `CLAUDE` + `JON` - **Built; blocked on U8 for setup.** Implements [D1](#open-decisions). Covers announcements, which is the content that actually changes week to week. A save is a git commit, so history is the audit log and `git revert` is undo. Cloudflare Access in front, and the Worker re-verifies the signed identity itself so the commit carries the editor's address. One-time PIN today, Google SSO when B4 lands - a dashboard swap, no code. Page copy and homepage YAML are still hand-edited; widening the editor is another route and another form, not a rewrite
-- [ ] **A24**: R2 bucket for images uploaded through `/admin` - `CLAUDE` + `JON` - Free tier is 10GB. Needed before A23 is genuinely useful; a board member adding a post will want to attach a photo
+- [~] **A23**: `/admin` editor behind Cloudflare Access - `CLAUDE` + `JON` - **Built. Access application and secrets configured 2026-09-02; awaiting the end-to-end test (U12).** Implements [D1](#open-decisions). Covers announcements, which is the content that actually changes week to week. A save is a git commit, so history is the audit log and `git revert` is undo. Cloudflare Access in front, and the Worker re-verifies the signed identity itself so the commit carries the editor's address. One-time PIN today, Google SSO when B4 lands - a dashboard swap, no code. Page copy and homepage YAML are still hand-edited; widening the editor is another route and another form, not a rewrite
+- [x] **A24**: Photos on announcements, stored in R2 - `CLAUDE` + `JON` - **Built; blocked on U11 for the bucket.** Shrunk in the browser before upload, which removes the EXIF GPS coordinates a phone photo carries and takes a 2.8MB photo to about 410KB. Astro's image pipeline cannot help here - the file arrives long after the build - so whatever is uploaded is what parents download. Alt text is required in three places: the form, the API, and the content schema. Content-addressed keys served through the Worker, so no public bucket and no second hostname
 - [x] **A25**: Announcements feed + RSS - `CLAUDE` - **Done.** One markdown file per post in `src/content/announcements/`, so two people cannot conflict and `/admin` can create or delete a post by writing one file. `/news` lists everything, `/rss.xml` is a real feed, and the homepage shows the most recent four. Ordering and draft filtering live in one shared function so the three surfaces cannot disagree - which matters most for the feed, where a leaked draft has already been pulled by the time anyone notices
 - [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
@@ -141,6 +144,7 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D8 | Replace SignUpGenius / ClassDojo / WhatsApp | ✅ **Decided** | Phase 2 aggregates and links out. Replacement is a later phase, evaluated on its own |
 | D10 | **What is the source of truth for events** | ✅ **Decided** 2026-09-01 | **Google Calendar stays the source, and the site stops embedding it.** Site reads the public iCal feed and renders its own list. Full reasoning below |
 | D11 | **What `/gallery` is** | ✅ **Decided** 2026-09-01 | **Real photo grid, Instagram link beside it.** No Meta app, no 60-day token to refresh. Full reasoning below |
+| D12 | **GitHub token never expires** | ✅ **Decided** 2026-09-02 | An expiring token fails months later, breaks `/admin`, and nobody remembers why - which restarts exactly the staleness [F18](#f18) describes. Exposure is narrow: Contents-write on one already-public repo, no personal data, every change revertible. Compensating control is documentation, not rotation: owner, scope and revocation steps are in [docs/ADMIN.md](docs/ADMIN.md). Owned by the PTA account, not a board member's |
 | D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ### D10 in full - the calendar
@@ -327,6 +331,24 @@ thought - so the cleanup instructions for a leaked credential are themselves a
 leak risk. And a rule enforced only by prose gets broken; `scripts/check-secrets.mjs`
 now greps the tree for known secret shapes so the next one fails a gate instead
 of a code review.
+
+<a name="f29"></a>
+**F29 - A missing R2 bucket fails the entire build, not just the feature.**
+Declaring an `r2_buckets` binding in `wrangler.jsonc` for a bucket that does not
+exist yet makes Cloudflare reject the Worker version outright. The build for
+[PR #22](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/22) went
+red for exactly this reason.
+
+This is a different failure shape from the missing Worker secrets, and the
+difference matters. A missing secret fails *closed* - the feature reports that it
+is not configured and the rest of the site is untouched. A missing bucket fails
+*hard* - nothing deploys. Resource bindings have to be created **before** the
+code that declares them ships, so the ordering is: create the bucket, then merge.
+
+The binding stays in `wrangler.jsonc` rather than being added via the dashboard,
+because `wrangler deploy` replaces a Worker's bindings with whatever the config
+declares - a dashboard-only binding would be wiped by the next deploy without
+anyone touching it.
 
 ---
 
