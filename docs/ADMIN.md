@@ -54,11 +54,32 @@ same and the labels are close.
    > the difference between "the board" and "anyone who can receive mail at a
    > domain".
 
-6. **Identity**: enable **One-time PIN**. It needs no configuration and emails a
-   code. Swap it for **Google** once Workspace exists (B4) - a dashboard change,
-   nothing in this repo.
+6. **Authentication**: leave **Accept all available identity providers** ON.
+
+   > There is no "one-time PIN" checkbox to find, and looking for one is a
+   > reliable way to lose ten minutes. One-time PIN is built into Access and
+   > always available, so with no other provider configured, "accept all"
+   > resolves to exactly it. Turning the toggle off makes the provider dropdown
+   > selectable if you want to see it named.
+
+   Also turn **Apply instant authentication** ON. With one login method it skips
+   the "choose your provider" screen and goes straight to the PIN prompt.
+
 7. **Session Duration**: 24 hours is reasonable
 8. **Create**
+
+> **Check the path before saving.** The application must be
+> `blackshearpta.org` with path `admin`. Leave the path empty and Access
+> protects the **whole site** - every parent gets a login screen, and the
+> pre-launch gate sits unreachable behind it. `admin` covers `/admin` and
+> everything under it, including the `/admin/api/*` calls the editor makes.
+
+### When Google SSO arrives
+
+Adding Google as a provider does not remove one-time PIN. With **Accept all
+available identity providers** still on, someone on the allowlist could sign in
+with an emailed PIN instead of Google - the allowlist still bounds who that is,
+but that is the moment to turn the toggle off and select Google specifically.
 
 Then collect the value the Worker needs: select the application ->
 **Configure** -> **Additional settings** -> **Application Audience (AUD) Tag**.
