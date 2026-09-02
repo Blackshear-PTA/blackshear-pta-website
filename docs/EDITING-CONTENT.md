@@ -118,13 +118,29 @@ Nothing you do there is permanent in the bad sense. Every change is recorded
 with who made it and when, and any change can be undone. The worst realistic
 outcome is a failed build and a site that keeps showing yesterday's version.
 
+## Announcements: use the editor, not the files
+
+Announcements have their own editor at
+[blackshearpta.org/admin](https://blackshearpta.org/admin). Sign in with your
+PTA account, write a title and a paragraph, save. The live site catches up about
+a minute later.
+
+You can pin a post to the top, or save it as a **draft** to finish later - a
+draft is invisible on the site, the news page and the feed.
+
+Behind the scenes each post is one file in `src/content/announcements/`, so
+anything the editor does can also be done by hand, and everything is in the
+history either way. But there is no reason to edit those by hand.
+
+Setup and troubleshooting are in [ADMIN.md](ADMIN.md).
+
 ## Where this is going
 
-The plan is an editing page at `blackshearpta.org/admin` where a board member
-signs in with the PTA Google account and edits through a form, with no YAML at
-all. It is tracked as A23 in [`../TASKS.md`](../TASKS.md) and it is the most
-important thing left to build.
+The editor currently covers announcements, which is the content that actually
+changes week to week. Page copy and the homepage are still YAML files.
 
 The reasoning is on the record as F18: the old Weebly site went a year out of
 date because updating it was harder than not updating it. A site nobody can
-update is a site that goes stale, however well built it is.
+update is a site that goes stale, however well built it is. Announcements were
+the first target because they are the part that goes stale fastest and most
+visibly.

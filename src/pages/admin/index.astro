@@ -1,0 +1,427 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BuzzMascot from '../../components/BuzzMascot.astro';
+import { siteThemeId, getTheme } from '../../themes/registry';
+
+/**
+ * The announcements editor.
+ *
+ * A static page that talks to /admin/api/*, because the site is prerendered and
+ * there is no server to render forms on. Cloudflare Access sits in front of the
+ * whole /admin path, and the Worker re-verifies the signed identity on every
+ * API call.
+ *
+ * Built to be used twice a month by someone who did not choose to be a web
+ * editor, so: one screen, no modals, no drag targets, every field labelled in
+ * plain words, and the save button says what will happen next rather than
+ * leaving them wondering whether it worked.
+ */
+const theme = getTheme(siteThemeId);
+---
+
+<BaseLayout
+  title="Edit announcements - Blackshear PTA"
+  description="Internal editor for Blackshear PTA announcements."
+  themeId={theme.id}
+>
+  <main id="main" class="admin">
+    <div class="shell">
+      <header class="top">
+        <a class="brand" href="/">
+          <BuzzMascot size={44} class="brand-mark" />
+          <span class="brand-name">Announcements</span>
+        </a>
+        <p class="who">Signed in as <b data-who>checking…</b></p>
+      </header>
+
+      <div class="rule" role="presentation"></div>
+
+      <p class="status" data-status hidden role="status"></p>
+
+      <div class="cols">
+        <section class="list-col" aria-labelledby="list-h">
+          <div class="list-head">
+            <h2 id="list-h">Posts</h2>
+            <button type="button" class="btn" data-new>New post</button>
+          </div>
+          <ul class="list" data-list>
+            <li class="muted">Loading…</li>
+          </ul>
+        </section>
+
+        <section class="edit-col" aria-labelledby="edit-h" data-editor hidden>
+          <h2 id="edit-h" data-edit-title>New post</h2>
+
+          <form data-form>
+            <div class="field">
+              <label for="f-title">Title</label>
+              <input id="f-title" name="title" type="text" maxlength="140" required />
+            </div>
+
+            <div class="field">
+              <label for="f-date">Date</label>
+              <input id="f-date" name="date" type="date" required />
+              <p class="hint">Controls the order posts appear in.</p>
+            </div>
+
+            <div class="field">
+              <label for="f-body">What happened</label>
+              <textarea id="f-body" name="body" rows="7" required></textarea>
+              <p class="hint">A short paragraph. Plain words, no formatting needed.</p>
+            </div>
+
+            <div class="field">
+              <label for="f-href">Link (optional)</label>
+              <input id="f-href" name="href" type="url" placeholder="https://" />
+              <p class="hint">Where "read more" should go. Must start with https://</p>
+            </div>
+
+            <div class="field">
+              <label for="f-linkLabel">Link text (optional)</label>
+              <input id="f-linkLabel" name="linkLabel" type="text" placeholder="Read more" />
+            </div>
+
+            <div class="checks">
+              <label class="check">
+                <input type="checkbox" name="pinned" />
+                <span>Pin to the top</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" name="draft" />
+                <span>Draft (not shown on the site)</span>
+              </label>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn primary" data-save>Save and publish</button>
+              <button type="button" class="btn" data-cancel>Cancel</button>
+              <button type="button" class="btn danger" data-delete hidden>Delete</button>
+            </div>
+            <p class="hint">
+              Saving commits to the website's repository. The live site updates about a
+              minute later.
+            </p>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+
+  const listEl = $<HTMLUListElement>('[data-list]');
+  const editor = $<HTMLElement>('[data-editor]');
+  const form = $<HTMLFormElement>('[data-form]');
+  const statusEl = $<HTMLElement>('[data-status]');
+  const editTitle = $<HTMLElement>('[data-edit-title]');
+  const deleteBtn = $<HTMLButtonElement>('[data-delete]');
+  const saveBtn = $<HTMLButtonElement>('[data-save]');
+
+  /** The post being edited. null means the form is creating a new one. */
+  let current: { slug: string; sha: string } | null = null;
+
+  function say(message: string, tone: 'ok' | 'bad' | 'busy' = 'ok') {
+    statusEl.textContent = message;
+    statusEl.dataset.tone = tone;
+    statusEl.hidden = false;
+  }
+  const clearStatus = () => { statusEl.hidden = true; };
+
+  async function api(path: string, init?: RequestInit) {
+    const response = await fetch(`/admin/api/${path}`, init);
+    let payload: Record<string, unknown> = {};
+    try { payload = await response.json(); } catch { /* non-JSON error page */ }
+    if (!response.ok) {
+      // Surface the server's own words. It knows things the browser does not,
+      // like which Worker secret is missing.
+      throw new Error(String(payload.error ?? `Something went wrong (${response.status}).`));
+    }
+    return payload;
+  }
+
+  function setField(name: string, value: string | boolean) {
+    const el = form.elements.namedItem(name);
+    if (!el) return;
+    if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = Boolean(value);
+    else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      el.value = String(value ?? '');
+    }
+  }
+
+  function openEditor(post: Record<string, unknown> | null) {
+    current = post ? { slug: String(post.slug), sha: String(post.sha) } : null;
+    editTitle.textContent = post ? 'Edit post' : 'New post';
+    deleteBtn.hidden = !post;
+    setField('title', String(post?.title ?? ''));
+    setField('date', String(post?.date ?? new Date().toISOString().slice(0, 10)));
+    setField('body', String(post?.body ?? ''));
+    setField('href', String(post?.href ?? ''));
+    setField('linkLabel', String(post?.linkLabel ?? ''));
+    setField('pinned', Boolean(post?.pinned));
+    setField('draft', Boolean(post?.draft));
+    editor.hidden = false;
+    (form.elements.namedItem('title') as HTMLInputElement).focus();
+  }
+
+  async function refresh() {
+    try {
+      const { posts } = (await api('posts')) as { posts: Array<Record<string, unknown>> };
+      listEl.replaceChildren();
+      if (posts.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'muted';
+        li.textContent = 'No posts yet.';
+        listEl.appendChild(li);
+        return;
+      }
+      for (const post of posts) {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'row';
+        // textContent, never innerHTML: these strings come from the repo and
+        // are rendered back into a privileged page.
+        const title = document.createElement('span');
+        title.className = 'row-title';
+        title.textContent = String(post.title);
+        const meta = document.createElement('span');
+        meta.className = 'row-meta';
+        const tags = [String(post.date)];
+        if (post.pinned) tags.push('pinned');
+        if (post.draft) tags.push('draft');
+        meta.textContent = tags.join(' · ');
+        // appendChild, not append: worker-configuration.d.ts declares a global
+        // `interface Element` for HTMLRewriter whose append() takes
+        // string | Response | ReadableStream, and TypeScript merges it with the
+        // DOM's Element. That makes .append() unusable on any DOM node in this
+        // project. appendChild has no such collision.
+        button.appendChild(title);
+        button.appendChild(meta);
+        button.addEventListener('click', async () => {
+          clearStatus();
+          try {
+            openEditor(await api(`posts/${encodeURIComponent(String(post.slug))}`));
+          } catch (error) {
+            say((error as Error).message, 'bad');
+          }
+        });
+        li.appendChild(button);
+        listEl.appendChild(li);
+      }
+    } catch (error) {
+      listEl.replaceChildren();
+      say((error as Error).message, 'bad');
+    }
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    saveBtn.disabled = true;
+    say('Saving…', 'busy');
+    try {
+      await api('posts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: current?.slug,
+          sha: current?.sha,
+          title: data.get('title'),
+          date: data.get('date'),
+          body: data.get('body'),
+          href: data.get('href'),
+          linkLabel: data.get('linkLabel'),
+          pinned: data.get('pinned') === 'on',
+          draft: data.get('draft') === 'on',
+        }),
+      });
+      say('Saved. The live site will show it in about a minute.', 'ok');
+      editor.hidden = true;
+      current = null;
+      await refresh();
+    } catch (error) {
+      say((error as Error).message, 'bad');
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  deleteBtn.addEventListener('click', async () => {
+    if (!current) return;
+    if (!confirm('Delete this post? This cannot be undone from here.')) return;
+    say('Deleting…', 'busy');
+    try {
+      await api(`posts/${encodeURIComponent(current.slug)}`, { method: 'DELETE' });
+      say('Deleted. The live site will catch up in about a minute.', 'ok');
+      editor.hidden = true;
+      current = null;
+      await refresh();
+    } catch (error) {
+      say((error as Error).message, 'bad');
+    }
+  });
+
+  $('[data-new]').addEventListener('click', () => { clearStatus(); openEditor(null); });
+  $('[data-cancel]').addEventListener('click', () => { editor.hidden = true; current = null; });
+
+  (async () => {
+    try {
+      const session = (await api('session')) as { email: string };
+      $('[data-who]').textContent = session.email;
+    } catch (error) {
+      $('[data-who]').textContent = 'not signed in';
+      say((error as Error).message, 'bad');
+    }
+    await refresh();
+  })();
+</script>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding: var(--pta-gutter);
+  }
+
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pta-gap);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .brand-name {
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .who { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block: var(--pta-gap);
+  }
+
+  .status {
+    margin: 0 0 var(--pta-gap);
+    padding: 0.7rem 0.9rem;
+    border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
+    background: var(--pta-surface-alt);
+    font-size: var(--text-fine);
+  }
+  .status[data-tone='bad'] { border-inline-start-color: var(--pta-accent); font-weight: 700; }
+
+  .cols { display: grid; gap: var(--pta-section-y); align-items: start; }
+  @media (min-width: 60rem) {
+    .cols { grid-template-columns: 22rem 1fr; gap: var(--pta-gap); }
+  }
+
+  .list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pta-gap);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+  .list-head h2 { margin: 0; }
+
+  .list { margin: var(--pta-gap) 0 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+  .muted { color: var(--pta-ink-muted); font-size: var(--text-fine); }
+
+  .row {
+    display: grid;
+    gap: 0.2rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.7rem 0.8rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    text-align: start;
+    font: inherit;
+    cursor: pointer;
+  }
+  .row:hover, .row:focus-visible { background: var(--pta-accent); color: var(--pta-ink-on-accent); }
+  .row-title { font-family: var(--pta-font-display); font-weight: var(--pta-display-weight); }
+  .row-meta { font-size: var(--text-fine); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+
+  .field { display: grid; gap: 0.3rem; margin-block-end: var(--pta-gap); }
+
+  label {
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  input[type='text'], input[type='url'], input[type='date'], textarea {
+    min-height: 44px;
+    padding: 0.6rem 0.75rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+    /* 16px minimum, or iOS Safari zooms the viewport on focus and never
+       zooms back out. */
+    font-size: 1rem;
+    width: 100%;
+  }
+  textarea { line-height: 1.5; resize: vertical; }
+
+  .hint { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
+
+  .checks { display: grid; gap: 0.4rem; margin-block-end: var(--pta-gap); }
+  .check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; text-transform: none; letter-spacing: normal; font-family: var(--pta-font-body); font-weight: 400; font-size: var(--text-body); }
+  .check input { width: 1.1rem; height: 1.1rem; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-block-end: var(--pta-gap); }
+
+  .btn {
+    min-height: 44px;
+    padding: 0.6rem 1.1rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+  }
+  .btn.primary {
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    border-color: var(--pta-cta-border);
+    box-shadow: var(--pta-shadow);
+  }
+  .btn.danger { border-style: dashed; }
+  .btn[disabled] { opacity: 0.6; cursor: progress; }
+</style>

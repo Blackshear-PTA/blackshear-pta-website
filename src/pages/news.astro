@@ -1,0 +1,189 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/sections/SiteHeader.astro';
+import Footer from '../components/sections/Footer.astro';
+import { getAnnouncements, formatDate } from '../lib/announcements';
+import { siteThemeId, getTheme } from '../themes/registry';
+
+/**
+ * Every announcement, newest first. The homepage shows the most recent few and
+ * links here.
+ *
+ * An explicit route rather than an entry in pages.yaml, because this one has
+ * real logic behind it - it reads a collection, and it advertises the feed.
+ * [page].astro exists for pages that are only copy.
+ */
+const [homeEntry, siteEntry] = await Promise.all([
+  getEntry('home', 'home'),
+  getEntry('site', 'site'),
+]);
+if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+
+const posts = await getAnnouncements();
+const theme = getTheme(siteThemeId);
+---
+
+<BaseLayout
+  title="News - Blackshear PTA"
+  description="Announcements from the Blackshear Elementary PTA in East Austin."
+  themeId={theme.id}
+>
+  <SiteHeader site={siteEntry.data} />
+  <main id="main">
+    <div class="shell">
+      <h1>News</h1>
+      <p class="lede">Everything the PTA has announced, newest first.</p>
+
+      <p class="feed">
+        <a href="/rss.xml">
+          Subscribe by RSS
+          <span class="sr-only"> (opens the feed file)</span>
+        </a>
+      </p>
+
+      <div class="rule" role="presentation"></div>
+
+      {posts.length === 0 && <p class="empty">Nothing posted yet. Check back soon.</p>}
+
+      <ul>
+        {
+          posts.map((post) => (
+            <li>
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              {post.data.pinned && <span class="pin">Pinned</span>}
+              <h2>{post.data.title}</h2>
+              <p class="body">{post.body}</p>
+              {post.data.href && (
+                <p class="link">
+                  <a href={post.data.href} target="_blank" rel="noopener">
+                    {post.data.linkLabel ?? 'Read more'}
+                    <span class="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+  <div class="shell">
+    <Footer footer={homeEntry.data.footer} social={siteEntry.data.social} />
+  </div>
+</BaseLayout>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+
+  h1 {
+    margin: var(--pta-section-y) 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .lede {
+    margin: 0 0 var(--pta-gap);
+    font-size: var(--text-lede);
+    max-width: var(--pta-measure);
+  }
+
+  .feed a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink);
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block: var(--pta-gap);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--pta-section-y);
+    margin: 0 0 var(--pta-section-y);
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    max-width: var(--pta-measure);
+  }
+
+  time {
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  .pin {
+    margin-inline-start: 0.5rem;
+    padding: 0.1rem 0.4rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0.35rem 0 0.5rem;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+  }
+
+  .body {
+    margin: 0;
+    white-space: pre-line;
+  }
+
+  .link {
+    margin: 0.6rem 0 0;
+  }
+
+  .link a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink);
+  }
+
+  .empty {
+    color: var(--pta-ink-muted);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

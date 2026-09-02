@@ -26,6 +26,10 @@
  * us. That is deliberate: a site that is ungated while everyone believes it is
  * gated is the one outcome worse than having no gate at all.
  *
+ * /admin is exempt from this gate - see the router below. It has its own,
+ * stronger auth (Cloudflare Access), and it has to keep working after the gate
+ * is deleted at cutover.
+ *
  * WHY THE WORKER RUNS FIRST: with static assets, Cloudflare serves a matching
  * file before invoking JS unless assets.run_worker_first is set. Without that
  * flag this file would never run for /index.html and the gate would be purely
@@ -34,7 +38,9 @@
  * on its own when the gate is removed.
  */
 
-interface Env {
+import { handleAdminApi, isAdminPath, type AdminEnv } from './worker/admin';
+
+interface Env extends AdminEnv {
   ASSETS: Fetcher;
   /** Set as a Cloudflare secret. Absent means "fail closed"; see above. */
   SITE_PASSWORD?: string;
@@ -143,6 +149,20 @@ export default {
 
     if (isPublicAsset(url.pathname)) return env.ASSETS.fetch(request);
     if (url.pathname === UNLOCK_PATH) return handleUnlock(request, env);
+
+    /**
+     * /admin is exempt from the pre-launch gate, and must be.
+     *
+     * It sits behind Cloudflare Access with a real identity provider, which is
+     * strictly stronger than a shared password. Making a board member type the
+     * preview password as well would be friction with no security value - and
+     * worse, it would mean the editor stops working the day the gate is removed
+     * at cutover, which is precisely when it starts mattering most.
+     */
+    if (isAdminPath(url.pathname)) {
+      if (url.pathname.startsWith('/admin/api')) return handleAdminApi(request, env, url);
+      return env.ASSETS.fetch(request);
+    }
 
     const expected = env.SITE_PASSWORD ? await sha256Hex(env.SITE_PASSWORD) : null;
     const presented = readCookie(request, COOKIE);
