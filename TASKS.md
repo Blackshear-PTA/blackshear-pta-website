@@ -23,7 +23,7 @@
 
 | U10 | ~~Rotate the pre-launch password~~ | JON | ✅ Rotated 2026-09-02 and verified: the old value now returns `e=bad`, so the secret is set and the committed one is dead. The old value remains in this repo's history ([F28](#f28)), which is why it was rotated rather than redacted |
 
-| U11 | **Create the R2 photo bucket, before merging [PR #22](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/22)** | JON | [A24](#phase-2---real-site). `npx wrangler r2 bucket create blackshear-pta-images`. Cloudflare validates R2 bindings at upload, so until the bucket exists **every deploy fails**, not just photo uploads - see [F29](#f29) |
+| U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
 | U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.

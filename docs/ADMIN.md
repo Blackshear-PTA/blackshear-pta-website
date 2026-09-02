@@ -170,7 +170,24 @@ npx wrangler secret put CF_ACCESS_AUD           # the AUD tag from step 1
 npx wrangler r2 bucket create blackshear-pta-images
 ```
 
-**Do this before deploying the code that declares the binding.** Cloudflare
+Two things will interrupt that, both of them normal:
+
+**`[ERROR] ... Please enable R2 through the Cloudflare Dashboard. [code: 10042]`**
+R2 has to be switched on for the account once before any bucket can exist, and
+that is separate from creating buckets. Dashboard -> **Storage & databases** ->
+**R2**, accept the terms, then re-run. Free tier is 10GB, 1M writes and 10M
+reads a month with **no egress charge** - at roughly 400KB a photo that is about
+25,000 photos, so this stays free.
+
+**"Would you like Wrangler to add it on your behalf?" - say NO.**
+Wrangler offers to write the binding into `wrangler.jsonc` for you and defaults
+the name to a snake_case version of the bucket, `blackshear_pta_images`. The code
+uses **`env.IMAGES`**, and the binding is already declared in this repo. Accepting
+adds a second entry under a name nothing reads, in whatever branch happens to be
+checked out. Ctrl-C once the bucket is created; that is the only part of the
+command that matters here.
+
+**Create the bucket before deploying the code that declares the binding.** Cloudflare
 validates R2 bindings when a Worker version is uploaded, so a deploy referencing
 a bucket that does not exist **fails the whole build** - not just photo uploads.
 This is not a fail-closed-and-carry-on situation like the missing secrets are;
