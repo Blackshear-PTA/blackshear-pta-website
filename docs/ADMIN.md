@@ -45,7 +45,10 @@ done any time; 4 onwards is the Access work.
 - [ ] **7.** Copy the **AUD tag** and note your **team domain**.
 - [ ] **8.** Create the fine-grained GitHub token (section 2 below).
 - [ ] **9.** Set the three Worker secrets (section 3 below).
-- [ ] **10.** Open `/admin`, sign in, and post something. Delete it afterwards.
+- [ ] **10.** Create the photo bucket:
+      `npx wrangler r2 bucket create blackshear-pta-images`
+- [ ] **11.** Open `/admin`, sign in, and post something with a photo. Delete it
+      afterwards.
 
 If sign-in never arrives, check the status page again before assuming
 misconfiguration - one-time PIN delivery has its own failure mode independent of
@@ -161,6 +164,76 @@ npx wrangler secret put CF_ACCESS_AUD           # the AUD tag from step 1
 > build. Merge to `main` first, or use the dashboard: **Workers & Pages** ->
 > `blackshear-pta` -> **Settings** -> **Variables and Secrets**.
 
+### 4. A bucket for photos
+
+```sh
+npx wrangler r2 bucket create blackshear-pta-images
+```
+
+The binding is already declared in `wrangler.jsonc`; this creates the bucket it
+points at. Until it exists, the editor still works and the photo field reports
+that storage is not set up. Free tier is 10GB, which at the sizes below is
+several thousand photos.
+
+## Photos
+
+**Every photo is shrunk in the browser before it is uploaded**, and that is
+doing more work than it looks like:
+
+- **It removes the location.** A phone photo carries GPS coordinates in its EXIF
+  data. Re-encoding through a canvas drops all of it. Publishing the exact spot
+  a picture of children was taken is not something this site should do by
+  accident, and nothing downstream would have caught it.
+- **It makes the page usable on a phone.** A phone photo is 3-5MB. Astro's
+  build-time image pipeline cannot help, because the file arrives long after the
+  build - so whatever is uploaded is what every parent downloads. Measured: a
+  4032x3024 photo goes from 2.8MB to about 410KB, an 85% reduction, with the
+  longest edge capped at 1600px. Small images are left alone rather than
+  upscaled.
+- Portrait photos stay portrait. EXIF is also what records that a phone was held
+  vertically, so the orientation is applied before the data is discarded.
+
+**A description is required.** The form asks for one as soon as a photo is
+attached, the API refuses a save without it, and the content schema fails the
+build if a file ever gets one without the other. A photo with no description is
+unusable to anyone using a screen reader, and this is the one accessibility
+requirement a well-meaning volunteer is most likely to skip.
+
+Photos are stored by content hash and served from `/images/<hash>.<ext>` through
+the Worker, so there is no second hostname and no public bucket to configure.
+The same photo uploaded twice is stored once.
+
+## Token lifetime
+
+The GitHub token is deliberately set to **never expire**, and that is a
+considered trade rather than an oversight.
+
+An expiring token fails in the worst possible way for this project: it stops
+working months later, `/admin` breaks, nobody remembers why, and the site starts
+going stale - which is exactly the failure ([F18](../TASKS.md)) this editor exists
+to prevent. The board turns over annually and there is no guarantee anyone will
+be around who knows what a PAT is.
+
+Against that, the exposure is narrow. The token is scoped to **Contents: write
+on one already-public repository**. A leak would let someone commit to the PTA
+website - no personal data, no money, and every change revertible in git.
+
+Because nothing will ever force a rotation, the compensating control is that it
+is written down:
+
+| | |
+|---|---|
+| Owned by | the **PTA's** GitHub account, not a board member's personal one, so it survives turnover |
+| Resource owner | the `Blackshear-PTA` organization |
+| Scope | Contents: read and write, `blackshear-pta-website` only |
+| Expiry | none |
+| Revoke at | GitHub -> PTA account -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens |
+
+**Revoke and reissue if** the PTA GitHub account's password is ever shared or
+suspected compromised, or if unexplained commits appear in the repository
+history. Reissuing is step 2 and step 3 of the setup above and takes a few
+minutes; nothing else needs touching.
+
 ## Two locks, on purpose
 
 `/admin` is **exempt from the pre-launch password gate** and has to be. Access
@@ -192,6 +265,9 @@ payloads are all refused.
 | `That post was changed by someone else.` | Two people edited the same post. Reload and redo. |
 | `GitHub write failed: 401` | The token is expired or was revoked. Reissue it. |
 | `GitHub write failed: 403` | The token lacks **Contents: write**, or is not scoped to this repo. |
+| `Photo storage is not set up yet` | The R2 bucket does not exist. Section 4 above. |
+| `That file does not look like an image` | The bytes are not a JPEG, PNG or WebP whatever the file is named. |
+| `Describe the photo so screen readers can read it out` | A photo is attached with no description. Required. |
 | Saved, but the site looks unchanged | Give it a minute. Check the build in Workers & Pages -> `blackshear-pta` -> Builds. |
 | `Could not verify sign-in: Access certs fetch failed` | `CF_ACCESS_TEAM_DOMAIN` is wrong. It is the bare hostname, no `https://` and no trailing slash. |
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |

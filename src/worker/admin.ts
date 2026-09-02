@@ -18,10 +18,11 @@ import {
   type RepoConfig,
 } from './github';
 import { stringifyPost, parsePost, filenameFor } from './frontmatter.mjs';
+import { storeImage, type ImageEnv } from './images';
 
 const DIR = 'src/content/announcements';
 
-export interface AdminEnv {
+export interface AdminEnv extends ImageEnv {
   GITHUB_TOKEN?: string;
   GITHUB_REPO?: string;
   GITHUB_BRANCH?: string;
@@ -57,6 +58,8 @@ function readConfig(env: AdminEnv): { config: RepoConfig } | { error: string } {
 interface PostPayload {
   /** Present when editing; absent when creating. */
   slug?: unknown;
+  image?: unknown;
+  imageAlt?: unknown;
   title?: unknown;
   date?: unknown;
   href?: unknown;
@@ -83,6 +86,17 @@ function validate(payload: PostPayload): { ok: true } | { ok: false; error: stri
 
   const body = typeof payload.body === 'string' ? payload.body.trim() : '';
   if (!body) return { ok: false, error: 'Write something in the body.' };
+
+  // A photo nobody can see is not a photo. Enforced here as well as in the
+  // content schema, because the schema failure surfaces as a broken build
+  // minutes later and this surfaces as a sentence in the form.
+  if (typeof payload.image === 'string' && payload.image.trim()) {
+    const alt = typeof payload.imageAlt === 'string' ? payload.imageAlt.trim() : '';
+    if (!alt) return { ok: false, error: 'Describe the photo so screen readers can read it out.' };
+    if (!/^[0-9a-f]{32}\.(jpg|png|webp)$/.test(payload.image.trim())) {
+      return { ok: false, error: 'That image reference is not valid. Re-upload the photo.' };
+    }
+  }
 
   // Only http(s). A javascript: or data: URL here would be a stored XSS on
   // every page that renders the link.
@@ -185,6 +199,12 @@ export async function handleAdminApi(
           typeof payload.linkLabel === 'string' && payload.linkLabel.trim()
             ? payload.linkLabel.trim()
             : undefined,
+        image:
+          typeof payload.image === 'string' && payload.image.trim() ? payload.image.trim() : undefined,
+        imageAlt:
+          typeof payload.imageAlt === 'string' && payload.imageAlt.trim()
+            ? payload.imageAlt.trim()
+            : undefined,
         pinned: payload.pinned === true,
         draft: payload.draft === true,
       };
@@ -211,6 +231,25 @@ export async function handleAdminApi(
         existing,
       );
       return json({ ok: true, slug, sha });
+    }
+
+    if (route === 'images' && request.method === 'POST') {
+      if (!env.IMAGES) {
+        return json(
+          {
+            error:
+              'Photo storage is not set up yet. Someone needs to run: npx wrangler r2 bucket create blackshear-pta-images',
+          },
+          503,
+        );
+      }
+      const form = await request.formData();
+      const file = form.get('file');
+      if (!(file instanceof File)) return json({ error: 'No file was sent.' }, 400);
+
+      const result = await storeImage(env.IMAGES, file);
+      if (!result.ok) return json({ error: result.error }, 400);
+      return json({ ok: true, key: result.key, url: result.url, bytes: result.bytes });
     }
 
     return json({ error: 'Unknown endpoint.' }, 404);

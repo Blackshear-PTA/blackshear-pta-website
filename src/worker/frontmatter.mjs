@@ -5,7 +5,7 @@
  * more general, but general is the problem: /admin writes files that Astro's
  * content loader then parses with a real YAML parser, and the only way that
  * round trip stays safe is if the writer emits a small, boring subset. So this
- * quotes every string, always, and understands exactly the six fields the
+ * quotes every string, always, and understands only the fields the
  * announcements schema declares.
  *
  * .mjs rather than .ts so scripts/check-frontmatter.mjs can import it directly
@@ -14,11 +14,12 @@
  * fine in the editor and breaks the next build.
  *
  * @typedef {{ title: string, date: string, href?: string, linkLabel?: string,
- *             pinned?: boolean, draft?: boolean }} PostMeta
+ *             image?: string, imageAlt?: string, pinned?: boolean,
+ *             draft?: boolean }} PostMeta
  */
 
 /** Fields written, in this order. Anything else is dropped on save. */
-const FIELDS = ['title', 'date', 'href', 'linkLabel', 'pinned', 'draft'];
+const FIELDS = ['title', 'date', 'href', 'linkLabel', 'image', 'imageAlt', 'pinned', 'draft'];
 
 /**
  * A double-quoted YAML scalar. Only backslash and double-quote need escaping

@@ -33,6 +33,15 @@ const total = (await getAnnouncements()).length;
           <h3>
             {post.data.href ? <a href={post.data.href}>{post.data.title}</a> : post.data.title}
           </h3>
+          {post.data.image && (
+            <img
+              class="photo"
+              src={`/images/${post.data.image}`}
+              alt={post.data.imageAlt}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
           <p>{post.body}</p>
         </li>
       ))
@@ -92,6 +101,21 @@ const total = (await getAnnouncements()).length;
 
   p {
     margin: 0;
+  }
+
+  /* aspect-ratio rather than width/height: these come from R2, so the build
+     never sees the file and cannot know its dimensions. Without a reserved box
+     the text below shifts when the photo loads, which is the same layout-shift
+     problem the font preloading fixed. */
+  .photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    margin-block: 0.5rem var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
   }
 
   .more {

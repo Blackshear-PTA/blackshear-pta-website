@@ -71,6 +71,29 @@ const theme = getTheme(siteThemeId);
             </div>
 
             <div class="field">
+              <label for="f-photo">Photo (optional)</label>
+              <input id="f-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" />
+              <p class="hint">
+                Straight from your phone is fine. It gets shrunk in your browser before
+                uploading, which also removes the location the photo was taken.
+              </p>
+              <div class="thumb" data-thumb hidden>
+                <img data-thumb-img alt="" />
+                <button type="button" class="btn" data-remove-photo>Remove photo</button>
+              </div>
+              <input type="hidden" name="image" data-image />
+            </div>
+
+            <div class="field" data-alt-field hidden>
+              <label for="f-imageAlt">Describe the photo</label>
+              <input id="f-imageAlt" name="imageAlt" type="text" />
+              <p class="hint">
+                For anyone using a screen reader. Say what you would say describing it
+                over the phone. Required when there is a photo.
+              </p>
+            </div>
+
+            <div class="field">
               <label for="f-href">Link (optional)</label>
               <input id="f-href" name="href" type="url" placeholder="https://" />
               <p class="hint">Where "read more" should go. Must start with https://</p>
@@ -182,6 +205,59 @@ const theme = getTheme(siteThemeId);
     }
   }
 
+  /**
+   * Shrink in the browser before uploading.
+   *
+   * Three reasons, in order of how much they matter:
+   *
+   * 1. Privacy. Re-encoding through a canvas drops all EXIF, and a phone photo
+   *    carries GPS coordinates. Posting the exact location a picture of children
+   *    was taken is not something a PTA site should do by accident.
+   * 2. Weight. A phone photo is 3-5MB. Astro's build-time image pipeline cannot
+   *    help here because the file arrives long after the build, so whatever is
+   *    uploaded is what parents download. This gets it to a few hundred KB.
+   *    Most of them are on phones, often on school wifi.
+   * 3. It keeps the upload inside the request limits with room to spare.
+   *
+   * imageOrientation: 'from-image' is load-bearing. EXIF is what records that a
+   * phone was held vertically, and dropping it without applying it first would
+   * turn every portrait photo on its side.
+   */
+  async function shrink(file: File, maxEdge = 1600, quality = 0.82): Promise<Blob> {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Could not process that image.');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality),
+    );
+    if (!blob) throw new Error('Could not process that image.');
+    return blob;
+  }
+
+  function showPhoto(key: string) {
+    const field = $<HTMLInputElement>('[data-image]');
+    const wrap = $<HTMLElement>('[data-thumb]');
+    const img = $<HTMLImageElement>('[data-thumb-img]');
+    const altField = $<HTMLElement>('[data-alt-field]');
+    field.value = key;
+    if (key) {
+      img.src = `/images/${key}`;
+      wrap.hidden = false;
+      altField.hidden = false;
+    } else {
+      img.removeAttribute('src');
+      wrap.hidden = true;
+      altField.hidden = true;
+      setField('imageAlt', '');
+    }
+  }
+
   function openEditor(post: Record<string, unknown> | null) {
     current = post ? { slug: String(post.slug), sha: String(post.sha) } : null;
     editTitle.textContent = post ? 'Edit post' : 'New post';
@@ -193,6 +269,9 @@ const theme = getTheme(siteThemeId);
     setField('linkLabel', String(post?.linkLabel ?? ''));
     setField('pinned', Boolean(post?.pinned));
     setField('draft', Boolean(post?.draft));
+    setField('imageAlt', String(post?.imageAlt ?? ''));
+    showPhoto(String(post?.image ?? ''));
+    ($('[data-photo-input]') as HTMLInputElement | null)?.setAttribute('value', '');
     editor.hidden = false;
     (form.elements.namedItem('title') as HTMLInputElement).focus();
   }
@@ -248,6 +327,33 @@ const theme = getTheme(siteThemeId);
     }
   }
 
+  $<HTMLInputElement>('#f-photo').addEventListener('change', async (event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    say('Shrinking and uploading the photo…', 'busy');
+    try {
+      const blob = await shrink(file);
+      const body = new FormData();
+      body.append('file', new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+      const result = (await api('images', { method: 'POST', body })) as { key: string };
+      showPhoto(result.key);
+      const kb = Math.round(blob.size / 1024);
+      say(`Photo added (${kb}KB after shrinking). Now describe it below.`, 'ok');
+      $<HTMLInputElement>('#f-imageAlt').focus();
+    } catch (error) {
+      say((error as Error).message, 'bad');
+    } finally {
+      // Clear it so re-picking the same file fires change again.
+      input.value = '';
+    }
+  });
+
+  $('[data-remove-photo]').addEventListener('click', () => {
+    showPhoto('');
+    clearStatus();
+  });
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
@@ -265,6 +371,8 @@ const theme = getTheme(siteThemeId);
           body: data.get('body'),
           href: data.get('href'),
           linkLabel: data.get('linkLabel'),
+          image: data.get('image'),
+          imageAlt: data.get('imageAlt'),
           pinned: data.get('pinned') === 'on',
           draft: data.get('draft') === 'on',
         }),
@@ -427,6 +535,50 @@ const theme = getTheme(siteThemeId);
   textarea { line-height: 1.5; resize: vertical; }
 
   .hint { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
+
+  /* The native control renders at about 21px, and on a phone this is the
+     primary way a photo gets added. Padding and min-height grow the hit area
+     around the browser-drawn button; the button itself is not stylable, but the
+     whole control becoming a 44px target is what matters. */
+  input[type='file'] {
+    font: inherit;
+    font-size: var(--text-fine);
+    min-height: 44px;
+    padding: 0.6rem 0.75rem;
+    width: 100%;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+  }
+  input[type='file']::file-selector-button {
+    min-height: 32px;
+    margin-inline-end: 0.6rem;
+    padding: 0.3rem 0.7rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+  }
+
+  .thumb {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pta-gap);
+    margin-block-start: 0.5rem;
+  }
+  .thumb img {
+    width: 8rem;
+    height: 8rem;
+    object-fit: cover;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
 
   .checks { display: grid; gap: 0.4rem; margin-block-end: var(--pta-gap); }
   .check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; text-transform: none; letter-spacing: normal; font-family: var(--pta-font-body); font-weight: 400; font-size: var(--text-body); }

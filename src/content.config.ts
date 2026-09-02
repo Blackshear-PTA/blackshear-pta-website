@@ -181,10 +181,24 @@ const announcements = defineCollection({
     href: z.string().optional(),
     /** Link text. Defaults in the component, so most posts never set it. */
     linkLabel: z.string().optional(),
+    /**
+     * Photo key in R2, as returned by /admin. Just the object key, not a path:
+     * the URL prefix is a serving detail and belongs in the component.
+     */
+    image: z.string().optional(),
+    /**
+     * Required whenever `image` is set - enforced below rather than here,
+     * because zod cannot express "required if a sibling is present" inline.
+     * A photo with no description is unusable to anyone on a screen reader.
+     */
+    imageAlt: z.string().optional(),
     /** Sorts above everything else regardless of date. Use sparingly. */
     pinned: z.boolean().default(false),
     /** Written but not published. Excluded from the site and the feed. */
     draft: z.boolean().default(false),
+  }).refine((data) => !data.image || Boolean(data.imageAlt?.trim()), {
+    message: 'imageAlt is required when image is set: describe the photo for anyone who cannot see it.',
+    path: ['imageAlt'],
   }),
 });
 

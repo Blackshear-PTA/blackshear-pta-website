@@ -39,8 +39,9 @@
  */
 
 import { handleAdminApi, isAdminPath, type AdminEnv } from './worker/admin';
+import { isImagePath, serveImage, type ImageEnv } from './worker/images';
 
-interface Env extends AdminEnv {
+interface Env extends AdminEnv, ImageEnv {
   ASSETS: Fetcher;
   /** Set as a Cloudflare secret. Absent means "fail closed"; see above. */
   SITE_PASSWORD?: string;
@@ -162,6 +163,20 @@ export default {
     if (isAdminPath(url.pathname)) {
       if (url.pathname.startsWith('/admin/api')) return handleAdminApi(request, env, url);
       return env.ASSETS.fetch(request);
+    }
+
+    /**
+     * Announcement photos out of R2.
+     *
+     * Deliberately ahead of the gate, so this route does not have to be
+     * untangled from it at cutover - deleting the gate below leaves this
+     * working untouched. Nothing leaks by doing so: keys are 128 bits of
+     * content hash, they are only ever linked from pages that are themselves
+     * gated, and the gate was never a security boundary in the first place.
+     */
+    if (isImagePath(url.pathname)) {
+      if (!env.IMAGES) return new Response('Not found', { status: 404 });
+      return serveImage(env.IMAGES, url.pathname);
     }
 
     const expected = env.SITE_PASSWORD ? await sha256Hex(env.SITE_PASSWORD) : null;

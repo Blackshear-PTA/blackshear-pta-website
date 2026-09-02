@@ -32,6 +32,7 @@ npm run check:fonts     # typeface wiring agrees across three files
 npm run check:frontmatter # what /admin writes is what Astro reads back
 npm run check:access    # Access token verification refuses every forgery
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
+npm run check:images    # only real images reach the bucket, on their bytes
 npm run check:secrets   # no recognisable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
 ```
@@ -51,6 +52,12 @@ while looking perfectly plausible; again when `theme.fonts` was added and could
 drift from the CSS. Preloading a face the page never paints is wasted bytes on a
 phone; missing one brings back the layout shift the preload exists to remove.
 Neither shows up in a screenshot.
+
+`check:images` covers the upload endpoint, which Cloudflare Access makes
+unreachable from a test over HTTP, so it exercises `storeImage` directly. The
+case that earns it: a `Content-Type` header is a string the client picked, so a
+script renamed to `.jpg` has to be refused on its leading bytes rather than its
+label - otherwise it is stored and later served back with an image content type.
 
 `check:secrets` exists because this repo is public, three documents already
 said the password must never be committed, and it was committed anyway (F28) -
