@@ -31,19 +31,41 @@ wondering whether the save worked.
 
 This is what makes it *your board* and not the internet.
 
-1. Cloudflare dashboard -> **Zero Trust** -> **Access** -> **Applications**
-2. **Add an application** -> **Self-hosted**
-3. Name it `Blackshear PTA admin`
-4. Application domain: `blackshearpta.org`, path `admin`
-5. Session duration: 24 hours is reasonable
-6. Add a policy: **Allow**, and pick one of
-   - **Emails** with each board member's address listed, or
-   - **Emails ending in** `@blackshearpta.org` once Workspace is live (B4)
-7. Identity provider: **One-time PIN** works today with no configuration and
-   emails a code. Swap it for **Google** once Workspace exists - the swap is a
-   dashboard change and needs nothing in this repo.
-8. Save, then open the application and copy its **Application Audience (AUD)
-   tag**.
+Zero Trust **Free covers 50 seats**, and a seat is consumed by someone who
+*authenticates* - not by someone who visits the site. Only `/admin` sits behind
+Access, so the count is board members who sign in to post, not parents reading
+announcements.
+
+**Verified against the dashboard flow on 2026-09-01.** Cloudflare moves this UI
+regularly; if the wording below does not match, the shape of the task is the
+same and the labels are close.
+
+1. Cloudflare dashboard -> **Zero Trust** -> **Access controls** ->
+   **Applications**
+2. **Create new application** -> **Self-hosted and private**
+3. **Add public hostname**
+4. **Domain**: pick `blackshearpta.org` from the dropdown, path `admin`
+5. **Access policies**: add one, action **Allow**, and for the rule choose
+   **Include** -> **Emails**, listing each board member's address.
+
+   > Prefer the explicit list over **Emails ending in** `@blackshearpta.org`,
+   > even after Workspace lands. It bounds the seat count to people you named,
+   > so the free-tier limit cannot be drifted into, and on one-time PIN it is
+   > the difference between "the board" and "anyone who can receive mail at a
+   > domain".
+
+6. **Identity**: enable **One-time PIN**. It needs no configuration and emails a
+   code. Swap it for **Google** once Workspace exists (B4) - a dashboard change,
+   nothing in this repo.
+7. **Session Duration**: 24 hours is reasonable
+8. **Create**
+
+Then collect the value the Worker needs: select the application ->
+**Configure** -> **Additional settings** -> **Application Audience (AUD) Tag**.
+
+Your **team domain** is `<team-name>.cloudflareaccess.com`, where `team-name` is
+what you chose during Zero Trust onboarding. The Worker fetches its signing keys
+from `https://<team-domain>/cdn-cgi/access/certs`, so this has to be exact.
 
 ### 2. A GitHub token for the write path
 
@@ -110,6 +132,18 @@ payloads are all refused.
 | `GitHub write failed: 401` | The token is expired or was revoked. Reissue it. |
 | `GitHub write failed: 403` | The token lacks **Contents: write**, or is not scoped to this repo. |
 | Saved, but the site looks unchanged | Give it a minute. Check the build in Workers & Pages -> `blackshear-pta` -> Builds. |
+| `Could not verify sign-in: Access certs fetch failed` | `CF_ACCESS_TEAM_DOMAIN` is wrong. It is the bare hostname, no `https://` and no trailing slash. |
+| Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
+
+## Seats and billing
+
+Zero Trust Free includes 50 seats. A seat is consumed when someone
+**authenticates**, so only board members who sign in to `/admin` count - never
+site visitors, because only `/admin` is behind Access.
+
+With an explicit email allowlist (step 1.5) the ceiling is the length of that
+list, which is the simplest way to be certain the free tier is never exceeded.
+Current usage is under **Zero Trust -> Settings -> Subscription**.
 
 ## Adding more than announcements later
 
