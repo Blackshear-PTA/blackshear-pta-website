@@ -25,6 +25,32 @@ instantly, because Cloudflare rebuilds it. For a PTA announcements page that is
 a fine trade. The editor says so on screen rather than leaving someone
 wondering whether the save worked.
 
+## Setup checklist
+
+Work top to bottom. Steps 1-3 are independent of Cloudflare Access and can be
+done any time; 4 onwards is the Access work.
+
+- [ ] **1.** Merge the PR that adds `/admin`. Until it is on `main` the path does
+      not exist and Access would be protecting nothing.
+- [ ] **2.** Rotate `SITE_PASSWORD` if it has ever been written down anywhere
+      public.
+- [ ] **3.** Set build watch paths ([DEPLOYS.md](DEPLOYS.md)).
+- [ ] **4.** Check <https://www.cloudflarestatus.com> for open **Access**
+      incidents before touching anything. A control-plane degradation makes
+      toggles do nothing and can silently discard a created application.
+- [ ] **5.** Create the Access application (section 1 below).
+- [ ] **6.** **Reload the Applications list and confirm it is still there.**
+      Cloudflare will let you complete the wizard during a degradation and then
+      lose the result.
+- [ ] **7.** Copy the **AUD tag** and note your **team domain**.
+- [ ] **8.** Create the fine-grained GitHub token (section 2 below).
+- [ ] **9.** Set the three Worker secrets (section 3 below).
+- [ ] **10.** Open `/admin`, sign in, and post something. Delete it afterwards.
+
+If sign-in never arrives, check the status page again before assuming
+misconfiguration - one-time PIN delivery has its own failure mode independent of
+anything here.
+
 ## Setup
 
 ### 1. Cloudflare Access in front of `/admin`
