@@ -42,16 +42,36 @@ const RULES = [
 ];
 
 /**
- * `wrangler secret put NAME value` - the value belongs at the interactive
- * prompt, never on the command line. This is exactly how the stray secret in
- * F28 was created.
+ * A secret value on a `wrangler secret put NAME ...` line. The value belongs at
+ * the interactive prompt, never on the command line - that is exactly how the
+ * stray secret in F28 was created.
  *
- * Only checked inside code spans and fenced/indented command lines. Matching
- * raw prose flagged the sentence "run `wrangler secret put SITE_PASSWORD`, then
- * tell the board", because the words after the closing backtick look like an
- * argument. A rule that cries wolf on its own documentation gets switched off.
+ * Getting this precise took three passes, and each miss is worth remembering:
+ *
+ *   1. Matching raw prose flagged "run `wrangler secret put SITE_PASSWORD`,
+ *      then tell the board" - the words after the closing backtick read as an
+ *      argument. Fixed by only looking inside code spans and command lines.
+ *   2. A trailing shell comment is not a value. The documented
+ *      `wrangler secret put GITHUB_TOKEN   # the token from step 2` tripped it.
+ *   3. Nor is a placeholder. Documentation that writes out the shape of the
+ *      command is describing the mistake, not making it.
+ *
+ * A gate that cries wolf on its own documentation is a gate somebody switches
+ * off, which is worse than not having one.
  */
-const WRANGLER_ARG = /(?:npx\s+)?wrangler\s+secret\s+(?:put|delete)\s+\S+\s+\S/;
+const WRANGLER_LINE = /(?:npx\s+)?wrangler\s+secret\s+(?:put|delete)\s+([A-Za-z_][A-Za-z0-9_]*)\s+(\S+)/;
+
+/** Stand-ins a document uses to show the shape of a command. */
+const ARG_PLACEHOLDER = /^(value|<.*>|\.\.\.|\$\{?[A-Z_]+\}?)$/i;
+
+function looksLikeRealValue(span) {
+  // A trailing `# comment` is annotation, not an argument.
+  const command = span.split(/\s+#/)[0] ?? '';
+  const match = WRANGLER_LINE.exec(command);
+  if (!match) return false;
+  const arg = match[2];
+  return !ARG_PLACEHOLDER.test(arg) && !PLACEHOLDER.test(arg);
+}
 
 function commandSpans(line) {
   const spans = [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
@@ -79,7 +99,7 @@ for (const file of files) {
       if (rule.pattern.test(line)) failures.push(`${where}  ${rule.name}`);
     }
 
-    if (commandSpans(line).some((span) => WRANGLER_ARG.test(span))) {
+    if (commandSpans(line).some(looksLikeRealValue)) {
       failures.push(`${where}  secret value on a wrangler command line`);
     }
 
