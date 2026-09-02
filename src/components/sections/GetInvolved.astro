@@ -1,5 +1,6 @@
 ---
 import { uid } from '../../uid';
+import { isExternal } from '../../lib/links';
 import type { HomeData } from '../../types';
 
 interface Props {
@@ -32,11 +33,18 @@ const headingId = uid('get-involved-heading');
     {
       getInvolved.tiers.map((tier) => (
         <li>
-          <a href={tier.cta.href}>
+          <a
+            href={tier.cta.href}
+            target={isExternal(tier.cta.href) ? '_blank' : undefined}
+            rel={isExternal(tier.cta.href) ? 'noopener' : undefined}
+          >
             {/* Time cost first, not job title - that is the point of the block. */}
             <span class="commitment">{tier.commitment}</span>
             <span class="description">{tier.description}</span>
-            <span class="cta">{tier.cta.label}</span>
+            <span class="cta">
+              {tier.cta.label}
+              {isExternal(tier.cta.href) && <span class="sr-only"> (opens in a new tab)</span>}
+            </span>
           </a>
         </li>
       ))
@@ -121,7 +129,20 @@ const headingId = uid('get-involved-heading');
     text-transform: uppercase;
   }
 
+  /* The arrow already reads as "this goes somewhere", so outbound tiles get the
+     screen-reader warning without a second glyph competing with it. */
   .cta::after {
     content: ' \2192';
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 </style>

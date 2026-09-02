@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
+import { isExternal } from '../lib/links';
 
 /**
  * Every standalone page in src/content/pages.yaml, at its own top-level URL.
@@ -43,9 +44,14 @@ const page = entry.data;
   {
     page.cta && (
       <p class="cta-row">
-        <a class="cta" href={page.cta.href} target="_blank" rel="noopener">
+        <a
+          class="cta"
+          href={page.cta.href}
+          target={isExternal(page.cta.href) ? '_blank' : undefined}
+          rel={isExternal(page.cta.href) ? 'noopener' : undefined}
+        >
           {page.cta.label}
-          <span class="sr-only"> (opens in a new tab)</span>
+          {isExternal(page.cta.href) && <span class="sr-only"> (opens in a new tab)</span>}
         </a>
       </p>
     )
@@ -64,9 +70,13 @@ const page = entry.data;
           <ul class="links">
             {section.links.map((item) => (
               <li>
-                <a href={item.href} target="_blank" rel="noopener">
+                <a
+                  href={item.href}
+                  target={isExternal(item.href) ? '_blank' : undefined}
+                  rel={isExternal(item.href) ? 'noopener' : undefined}
+                >
                   {item.label}
-                  <span class="sr-only"> (opens in a new tab)</span>
+                  {isExternal(item.href) && <span class="sr-only"> (opens in a new tab)</span>}
                 </a>
                 {item.note && <span class="note">{item.note}</span>}
               </li>
