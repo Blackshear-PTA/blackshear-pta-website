@@ -29,7 +29,7 @@ import { storeImage, type ImageEnv } from './images';
 const DIR = 'src/content/announcements';
 
 /** Must match `gradeSlugs` in src/content.config.ts. */
-const GRADES = new Set(['pre-k', 'kinder', '1', '2', '3', '4', '5']);
+const GRADES = new Set(['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5']);
 
 /** Keys are content hashes written by src/worker/images.ts. */
 const IMAGE_KEY = /^[0-9a-f]{32}\.(jpg|png|webp)$/;
@@ -208,6 +208,8 @@ export async function handleAdminApi(
               sha: file.sha,
               title: parsed?.meta.title ?? titleFromFilename(file.name),
               date: parsed?.meta.date ?? dateFromFilename(file.name) ?? '',
+              /** First line of the body, so a row is recognisable unopened. */
+              excerpt: (parsed?.body ?? '').trim().split(/\n\s*\n/)[0]?.slice(0, 120) ?? '',
               images: parsed?.meta.images ?? [],
               cover: parsed?.meta.cover ?? '',
               grades: parsed?.meta.grades ?? [],

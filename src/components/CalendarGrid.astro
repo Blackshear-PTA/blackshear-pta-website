@@ -1,0 +1,465 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import bakeSale from '../assets/photos/bake-sale.jpg';
+import littleEast from '../assets/photos/little-east.jpg';
+import garden from '../assets/photos/garden.jpg';
+import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
+import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
+
+/**
+ * A month-at-a-time calendar, built to be read on a phone and printed on one
+ * sheet of paper.
+ *
+ * WHY A TABLE. A calendar is a grid of days indexed by weekday and week, which
+ * is what a table is for. It also gives the print layout something sensible to
+ * break on, and a screen reader a way to say "Wednesday the 12th" rather than
+ * reading forty cells in a row.
+ *
+ * WHY EVERY MONTH IS RENDERED AT ONCE. The site is static, so a month picker
+ * that changed the URL would need a page per month and a rebuild whenever the
+ * window moved. Instead every month in the snapshot is in the HTML and the
+ * arrows just change which one is visible. It costs a few kilobytes and the
+ * navigation is instant.
+ *
+ * ALL DATES ARE COMPUTED IN AMERICA/CHICAGO. Events arrive as UTC instants. A
+ * 7pm meeting is 00:00 the next day in UTC, so grouping on the UTC date puts
+ * half the evening events on the wrong square - the kind of bug that looks
+ * like nothing until somebody misses a meeting.
+ */
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end?: string;
+  allDay?: boolean;
+  location?: string;
+}
+
+interface Props {
+  events: CalendarEvent[];
+  /** How many months of history to keep reachable behind the arrows. */
+  monthsBack?: number;
+}
+
+const { events, monthsBack = 1 } = Astro.props;
+
+const TZ = 'America/Chicago';
+
+/** Art each rule can point at. Slugs match the enum in content.config.ts. */
+const ART = {
+  'bake-sale': { src: bakeSale, alt: '' },
+  'little-east': { src: littleEast, alt: '' },
+  garden: { src: garden, alt: '' },
+  'staff-appreciation': { src: campusFlagpole, alt: '' },
+  campus: { src: campusFrontWalk, alt: '' },
+} as const;
+
+const artEntry = await getEntry('calendarArt', 'calendar');
+const rules = artEntry?.data.rules ?? [];
+
+function artFor(title: string): keyof typeof ART | null {
+  const haystack = title.toLowerCase();
+  for (const rule of rules) {
+    if (haystack.includes(rule.match.toLowerCase())) return rule.art;
+  }
+  return null;
+}
+
+/**
+ * The calendar date an instant falls on, in school time, as YYYY-MM-DD.
+ * en-CA gives ISO order directly, which avoids reassembling parts by hand.
+ */
+const dayKeyFmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone: TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+const dayKey = (date: Date) => dayKeyFmt.format(date);
+
+const timeFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: TZ,
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+interface Placed {
+  key: string;
+  title: string;
+  time: string | null;
+  art: keyof typeof ART | null;
+  location?: string;
+}
+
+/** Events keyed by the day they land on, multi-day events on every day they cover. */
+const byDay = new Map<string, Placed[]>();
+
+for (const event of events) {
+  const start = new Date(event.start);
+  if (Number.isNaN(start.getTime())) continue;
+
+  // An all-day event's DTEND is exclusive: a one-day holiday ends at midnight
+  // the following day. Stepping to the last inclusive day keeps it off the
+  // square after it.
+  const rawEnd = event.end ? new Date(event.end) : start;
+  const end = new Date(
+    event.allDay && rawEnd.getTime() > start.getTime() ? rawEnd.getTime() - 1 : rawEnd.getTime(),
+  );
+
+  const placed: Placed = {
+    key: event.id,
+    title: event.title,
+    time: event.allDay ? null : timeFmt.format(start),
+    art: artFor(event.title),
+    location: event.location,
+  };
+
+  // Walk day by day in school time. Cap the span so one malformed event with a
+  // runaway end date cannot generate an unbounded loop.
+  let cursor = new Date(start);
+  for (let guard = 0; guard < 60; guard += 1) {
+    const key = dayKey(cursor);
+    const list = byDay.get(key) ?? [];
+    list.push(placed);
+    byDay.set(key, list);
+    if (key >= dayKey(end)) break;
+    cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
+  }
+}
+
+/** Today, in school time, so "today" is highlighted correctly. */
+const todayKey = dayKey(new Date());
+const [todayYear, todayMonth] = todayKey.split('-').map(Number) as [number, number, number];
+
+/** Every month worth showing: a little history, plus everything with events. */
+const monthKeys = new Set<string>();
+for (let back = monthsBack; back > 0; back -= 1) {
+  const d = new Date(Date.UTC(todayYear, todayMonth - 1 - back, 1));
+  monthKeys.add(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
+}
+monthKeys.add(`${todayYear}-${String(todayMonth).padStart(2, '0')}`);
+for (const key of byDay.keys()) monthKeys.add(key.slice(0, 7));
+
+const monthList = [...monthKeys].sort();
+const currentMonth = `${todayYear}-${String(todayMonth).padStart(2, '0')}`;
+
+const monthNameFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'UTC',
+  month: 'long',
+  year: 'numeric',
+});
+
+/** Sunday-first, matching every school calendar anyone here has seen. */
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+interface Cell {
+  key: string | null;
+  day: number | null;
+  events: Placed[];
+}
+
+/**
+ * The grid for one month: leading blanks to the first weekday, then the real
+ * days, then trailing blanks to complete the final week. Weeks vary from four
+ * to six depending on where the month starts and how long it is, so the row
+ * count is computed rather than assumed.
+ */
+function buildMonth(monthKey: string): { label: string; weeks: Cell[][] } {
+  const [year, month] = monthKey.split('-').map(Number) as [number, number];
+  const first = new Date(Date.UTC(year, month - 1, 1));
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const leading = first.getUTCDay();
+
+  const cells: Cell[] = [];
+  for (let i = 0; i < leading; i += 1) cells.push({ key: null, day: null, events: [] });
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const key = `${monthKey}-${String(day).padStart(2, '0')}`;
+    cells.push({ key, day, events: byDay.get(key) ?? [] });
+  }
+  while (cells.length % 7 !== 0) cells.push({ key: null, day: null, events: [] });
+
+  const weeks: Cell[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  return { label: monthNameFmt.format(first), weeks };
+}
+
+const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
+---
+
+<section class="calendar" aria-label="Month calendar">
+  <div class="controls">
+    <button type="button" class="btn" data-cal-prev aria-label="Previous month">
+      <svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">
+        <path d="M10 2 4 8l6 6" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <h2 class="month-label" data-cal-label aria-live="polite"></h2>
+    <button type="button" class="btn" data-cal-next aria-label="Next month">
+      <svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">
+        <path d="M6 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <button type="button" class="btn today-btn" data-cal-today>Today</button>
+    <button type="button" class="btn print-btn" data-cal-print>Print this month</button>
+  </div>
+
+  {
+    months.map((month) => (
+      <table
+        class="grid"
+        data-month={month.key}
+        hidden={month.key !== currentMonth}
+      >
+        <caption>{month.label}</caption>
+        <thead>
+          <tr>
+            {WEEKDAYS.map((day) => (
+              <th scope="col">
+                <span aria-hidden="true">{day.slice(0, 1)}</span>
+                <span class="sr-only">{day}</span>
+                <span class="wd-full" aria-hidden="true">{day.slice(1)}</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {month.weeks.map((week) => (
+            <tr>
+              {week.map((cell) => (
+                <td
+                  class:list={['cell', { blank: cell.day === null, today: cell.key === todayKey }]}
+                >
+                  {cell.day !== null && (
+                    <>
+                      <span class="daynum">{cell.day}</span>
+                      {cell.events.length > 0 && (
+                        <ul class="events">
+                          {cell.events.map((event) => (
+                            <li>
+                              {event.art && (
+                                <Image
+                                  class="art"
+                                  src={ART[event.art].src}
+                                  alt=""
+                                  width={48}
+                                  height={32}
+                                  densities={[1, 2]}
+                                  loading="lazy"
+                                />
+                              )}
+                              <span class="ev-text">
+                                {event.time && <b class="ev-time">{event.time}</b>}
+                                <span class="ev-title">{event.title}</span>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ))
+  }
+
+  <p class="empty-note" data-cal-empty hidden>Nothing on the calendar this month.</p>
+</section>
+
+<script>
+  const grids = [...document.querySelectorAll<HTMLTableElement>('[data-month]')];
+  const label = document.querySelector<HTMLElement>('[data-cal-label]');
+  const empty = document.querySelector<HTMLElement>('[data-cal-empty]');
+  if (grids.length && label) {
+    const keys = grids.map((g) => g.dataset.month!);
+    let index = Math.max(0, grids.findIndex((g) => !g.hidden));
+    const startIndex = index;
+
+    function show(to: number) {
+      index = Math.min(keys.length - 1, Math.max(0, to));
+      grids.forEach((grid, i) => { grid.hidden = i !== index; });
+      const active = grids[index]!;
+      label!.textContent = active.querySelector('caption')?.textContent ?? '';
+      // Only the visible month prints, so the print stylesheet needs to know
+      // which one that is without re-querying.
+      grids.forEach((grid) => grid.classList.toggle('printing', grid === active));
+      if (empty) empty.hidden = active.querySelectorAll('.events').length > 0;
+      const atStart = index === 0;
+      const atEnd = index === keys.length - 1;
+      document.querySelector<HTMLButtonElement>('[data-cal-prev]')!.disabled = atStart;
+      document.querySelector<HTMLButtonElement>('[data-cal-next]')!.disabled = atEnd;
+    }
+
+    document.querySelector('[data-cal-prev]')!.addEventListener('click', () => show(index - 1));
+    document.querySelector('[data-cal-next]')!.addEventListener('click', () => show(index + 1));
+    document.querySelector('[data-cal-today]')!.addEventListener('click', () => show(startIndex));
+    document.querySelector('[data-cal-print]')!.addEventListener('click', () => window.print());
+    show(index);
+  }
+</script>
+
+<style>
+  .calendar { margin-block: var(--pta-gap); }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-end: var(--pta-gap);
+  }
+
+  .month-label {
+    margin: 0;
+    flex: 1 1 10rem;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 0.9rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.35; cursor: default; }
+  .print-btn { margin-inline-start: auto; }
+
+  .grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .grid caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+  .grid th {
+    padding: 0.3rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    background: var(--pta-surface-alt);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  /* "S" alone is ambiguous between Sunday and Saturday, so the rest of the
+     name appears as soon as there is room for it. */
+  .wd-full { display: none; }
+  @media (min-width: 34rem) { .wd-full { display: inline; } }
+
+  .cell {
+    height: 6.5rem;
+    padding: 0.25rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    vertical-align: top;
+    overflow: hidden;
+  }
+  .cell.blank { background: repeating-linear-gradient(45deg, #f4f4f4 0 8px, #fafafa 8px 16px); }
+  .cell.today { outline: 3px solid var(--pta-accent); outline-offset: -3px; }
+
+  .daynum {
+    display: block;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+  }
+  .cell.today .daynum { color: var(--pta-accent); }
+
+  .events { margin: 0.15rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.15rem; }
+  .events li { display: flex; gap: 0.25rem; align-items: flex-start; min-width: 0; }
+
+  .art {
+    flex: none;
+    width: 1.5rem;
+    height: 1rem;
+    object-fit: cover;
+    border-radius: 2px;
+    margin-block-start: 0.1rem;
+  }
+
+  .ev-text { min-width: 0; font-size: 0.68rem; line-height: 1.25; }
+  .ev-time { display: block; color: var(--pta-ink-muted); font-size: 0.62rem; }
+  .ev-title { display: block; overflow-wrap: anywhere; }
+
+  .empty-note { margin-block-start: var(--pta-gap); color: var(--pta-ink-muted); }
+
+  /* Phones cannot show seven usable columns. Below that the grid still works
+     but the cells are short, so the day number stays and titles clip. */
+  @media (max-width: 36rem) {
+    .cell { height: 4.5rem; padding: 0.15rem; }
+    .art { display: none; }
+    .ev-text { font-size: 0.6rem; }
+  }
+
+  /*
+    PRINT: one month, landscape, on a single sheet.
+
+    @page carries the orientation, and the cell height switches to a percentage
+    so the six-week months fill the same page as the four-week ones instead of
+    running onto a second sheet.
+  */
+  @media print {
+    /* Landscape, with margins tight enough that a six-week month still fits on
+       one sheet. Declared here rather than only described in a comment, which
+       is what the first version of this did. */
+    @page {
+      size: letter landscape;
+      margin: 0.4in;
+    }
+
+    .controls, .empty-note { display: none !important; }
+
+    .grid { display: none; }
+    .grid.printing {
+      display: table !important;
+      page-break-inside: avoid;
+      height: 6.2in;
+    }
+    .grid.printing caption {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+      overflow: visible;
+      padding-block-end: 0.15in;
+      font-family: var(--pta-font-display);
+      font-size: 16pt;
+      font-weight: var(--pta-display-weight);
+      text-transform: uppercase;
+      text-align: start;
+    }
+
+    .cell { height: auto; border-color: #000; }
+    .cell.blank { background: none; }
+    .cell.today { outline: 2px solid #000; }
+    .grid th { background: none; border-color: #000; font-size: 8pt; }
+    .wd-full { display: inline !important; }
+
+    .art { display: block !important; width: 0.42in; height: 0.28in; }
+    .ev-text { font-size: 6.5pt; }
+    .ev-time { font-size: 6pt; }
+  }
+</style>
