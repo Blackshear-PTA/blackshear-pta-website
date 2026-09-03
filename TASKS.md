@@ -24,7 +24,7 @@
 | U10 | ~~Rotate the pre-launch password~~ | JON | ✅ Rotated 2026-09-02 and verified: the old value now returns `e=bad`, so the secret is set and the committed one is dead. The old value remains in this repo's history ([F28](#f28)), which is why it was rotated rather than redacted |
 
 | U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
-| U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
+| U12 | ~~Test `/admin` end to end~~ | JON | ✅ Proven 2026-09-03. A post written in the editor, with three photos and a chosen cover, committed to `main` and rendered on the site. I cannot do this - Access blocks me, which is the point |
 
 | U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
 
@@ -196,6 +196,7 @@ A wall of photos pulled live from Instagram is genuinely harder than it looks no
 
 **F10 - Real brand palette, sampled from the logos.** Blue `#0048A8`, lemon yellow `#F0E430`, black. Accessible in every combination except yellow-on-white (1.33:1), so **yellow is accent and background only, never text on white**. The original crest PDF is vector and uses Hussar Bold + Sriracha, both open-source. Full detail in `assets/brand/README.md`. This corrects the "jacket gold" guess in `PROJECT-BRIEF.md` §5.2 - the actual yellow is a brighter lemon.
 
+<a name="f11"></a>
 **F11 - All existing marks are school marks, not PTA marks.** The PTA is a legally separate org. Whether it fronts with Blackshear Fine Arts Academy branding or a distinct PTA lockup is a board question with real implications for donations and tax receipts. Tracked as A11.
 
 <a name="f12"></a>
@@ -506,6 +507,24 @@ concrete defect, not a theoretical one.
 **`terraform validate` earned its place here.** Four defects, none of which
 were visible by reading the output, all caught by one command that touches
 nothing. It is the check to run on generated config before trusting it.
+
+<a name="f37"></a>
+**F37 - The brand lemon does not work as a surface, only as an accent.** Three
+separate problems on the admin screens had one cause: `--pta-surface-alt` is the
+brand lemon, so anything using it became a lemon panel. A paragraph of
+instructions on lemon is unpleasant to read even where it clears AA, and a lemon
+primary button sitting on a lemon footer bar was effectively invisible.
+
+Two conclusions. **Lemon is a stripe, a fill behind three words, or a pinned
+badge - not a background for body copy.** And **a primary action cannot share a
+colour with a status marker**: lemon was simultaneously "press this" and "this
+post is pinned" on the same screen. Admin primaries are now blue on white
+(8.43:1, already a defined brand pair) and the lemon survives as an 8px edge on
+the guide box.
+
+The public site still uses lemon CTAs and is untouched - that is the design the
+board picked, and the readability problem was specific to lemon-on-lemon in the
+editor. Worth revisiting together, not unilaterally.
 
 ---
 

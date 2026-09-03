@@ -2,6 +2,7 @@
 import { getEntry } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
 import snapshot from '../data/events.json';
+import CalendarGrid from '../components/CalendarGrid.astro';
 
 /**
  * /calendar - the PTA calendar, rendered from a build-time snapshot of the
@@ -138,6 +139,17 @@ const spansDays = (event: Event) => {
     <a class="cta cta-quiet" href={subscribe}>Subscribe in Apple or Outlook</a>
   </p>
 
+  <CalendarGrid events={snapshot.events} />
+
+  {/*
+    The agenda list stays, collapsed. The grid is better for "what is happening
+    this month"; a flat list is better for "read me the next ten things", which
+    is what a screen reader and a phone both want. Keeping both costs nothing
+    and neither has to be the compromise.
+  */}
+  <details class="agenda">
+    <summary>See the next {upcoming.length} events as a list</summary>
+
   {
     months.map((month) => (
       <section class="month">
@@ -168,6 +180,8 @@ const spansDays = (event: Event) => {
     ))
   }
 
+  </details>
+
   {
     upcoming.length === 0 && (
       <p class="prose empty">
@@ -192,6 +206,30 @@ const spansDays = (event: Event) => {
 </PageLayout>
 
 <style>
+  .agenda {
+    margin-block-start: var(--pta-section-y);
+    border-block-start: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  .agenda summary {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    cursor: pointer;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  /* The grid is the printable artefact; the list would run to many pages. */
+  @media print {
+    .agenda,
+    .cta-row,
+    .block { display: none !important; }
+  }
+
   .prose {
     margin: 0 0 var(--pta-gap);
     max-width: var(--pta-measure);

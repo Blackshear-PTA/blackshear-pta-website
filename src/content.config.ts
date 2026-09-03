@@ -179,11 +179,12 @@ const pages = defineCollection({
  * compares sanely while "1st Grade" does not, and because a later notification
  * feature will want to match on a stable value rather than display text.
  */
-export const gradeSlugs = ['pre-k', 'kinder', '1', '2', '3', '4', '5'] as const;
+export const gradeSlugs = ['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5'] as const;
 export type GradeSlug = (typeof gradeSlugs)[number];
 
 export const GRADE_LABELS: Record<GradeSlug, string> = {
-  'pre-k': 'Pre-K',
+  'pre-k-3': 'Pre-K 3',
+  'pre-k-4': 'Pre-K 4',
   kinder: 'Kinder',
   '1': '1st',
   '2': '2nd',
@@ -234,6 +235,28 @@ const announcements = defineCollection({
       message: 'cover must be the key of one of this post\'s images.',
       path: ['cover'],
     }),
+});
+
+/**
+ * Calendar art rules - src/content/calendar-art.yaml.
+ *
+ * Maps words in a Google Calendar event title to a picture. See that file for
+ * why the match is on the title rather than on the event itself.
+ */
+const calendarArt = defineCollection({
+  loader: file('src/content/calendar-art.yaml'),
+  schema: z.object({
+    rules: z
+      .array(
+        z.object({
+          /** Case-insensitive, matched anywhere in the title. */
+          match: z.string(),
+          /** Must be a key of the ART map in CalendarGrid.astro. */
+          art: z.enum(['bake-sale', 'little-east', 'garden', 'staff-appreciation', 'campus']),
+        }),
+      )
+      .default([]),
+  }),
 });
 
 const site = defineCollection({
@@ -301,4 +324,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { announcements, home, pages, site };
+export const collections = { announcements, calendarArt, home, pages, site };

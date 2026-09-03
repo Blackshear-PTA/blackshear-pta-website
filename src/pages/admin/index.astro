@@ -46,7 +46,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       <div class="rule" role="presentation"></div>
 
       <details class="guide">
-        <summary>What is this page?</summary>
+        <summary>
+          <svg class="chev" viewBox="0 0 12 12" aria-hidden="true" width="13" height="13">
+            <path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span>What is this page?</span>
+          <span class="summary-hint" data-guide-hint>Show</span>
+        </summary>
         <div class="guide-body">
           <p>
             This is where announcements on the PTA website are written. Anything you
@@ -92,9 +99,29 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <button type="button" class="btn primary" data-new>New post</button>
       </div>
 
-      <ul class="list" data-list>
-        <li class="empty">Loading…</li>
-      </ul>
+      {/*
+        A table, not a list of links. Five posts read fine as a list; twenty do
+        not, and a column header tells you what each thing is without having to
+        infer it from position. Reverse chronological with pinned first, matching
+        the site exactly, so this page is never a different order from the one
+        parents see.
+      */}
+      <div class="table-wrap">
+        <table class="posts">
+          <thead>
+            <tr>
+              <th scope="col" class="c-photo"><span class="sr-only">Photo</span></th>
+              <th scope="col" class="c-post">Post</th>
+              <th scope="col" class="c-date">Date</th>
+              <th scope="col" class="c-status">Status</th>
+              <th scope="col" class="c-actions"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody data-list>
+            <tr><td colspan="5" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
 
@@ -120,15 +147,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <div class="field">
           <label for="f-date">Date</label>
           <input id="f-date" name="date" type="date" required />
-          <p class="hint">Controls where the post appears in the list.</p>
+          <p class="hint">Controls where the post appears in the list.  Newest posts show first.</p>
         </div>
 
         <div class="field">
           <label for="f-body">What happened</label>
           <textarea id="f-body" name="body" rows="8" required></textarea>
           <p class="hint">
-            A few short paragraphs. Leave a blank line between them. Plain words are
-            fine.
+            A few short paragraphs. Leave a blank line between them.
           </p>
         </div>
 
@@ -275,7 +301,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     for (const kid of kids) parent.appendChild(kid);
   };
 
-  const listEl = $<HTMLUListElement>('[data-list]');
+  const listEl = $<HTMLTableSectionElement>('[data-list]');
   const dialog = $<HTMLDialogElement>('[data-dialog]');
   const form = $<HTMLFormElement>('[data-form]');
   const statusEl = $<HTMLElement>('[data-status]');
@@ -355,79 +381,131 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   }
 
   const GRADE_LABELS: Record<string, string> = {
-    'pre-k': 'Pre-K', kinder: 'Kinder', '1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th',
+    'pre-k-3': 'Pre-K 3', 'pre-k-4': 'Pre-K 4', kinder: 'Kinder',
+    '1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th',
   };
+
+  function cell(className: string) {
+    const td = document.createElement('td');
+    td.className = className;
+    return td;
+  }
 
   async function refresh() {
     try {
       const { posts } = (await api('posts')) as { posts: Array<Record<string, unknown>> };
       listEl.replaceChildren();
       if (posts.length === 0) {
-        const li = document.createElement('li');
-        li.className = 'empty';
-        li.textContent = 'No posts yet. Use "New post" to write the first one.';
-        listEl.appendChild(li);
+        const tr = document.createElement('tr');
+        const td = cell('empty');
+        td.colSpan = 5;
+        td.textContent = 'No posts yet. Use "New post" to write the first one.';
+        add(tr, td);
+        add(listEl, tr);
         return;
       }
+
       for (const post of posts) {
-        const li = document.createElement('li');
-        li.className = 'row';
+        const tr = document.createElement('tr');
+        const slug = String(post.slug);
+        const images = Array.isArray(post.images)
+          ? (post.images as Array<{ key: string; alt: string }>)
+          : [];
+        const coverKey = String(post.cover || '') || images[0]?.key || '';
 
-        const main = document.createElement('div');
-        main.className = 'row-main';
+        // Photo
+        const photoCell = cell('c-photo');
+        if (coverKey) {
+          const thumb = document.createElement('img');
+          thumb.className = 'thumb';
+          thumb.src = `/images/${coverKey}`;
+          thumb.alt = '';
+          thumb.loading = 'lazy';
+          add(photoCell, thumb);
+        } else {
+          const blank = document.createElement('span');
+          blank.className = 'thumb blank';
+          blank.setAttribute('aria-hidden', 'true');
+          add(photoCell, blank);
+        }
 
-        const date = document.createElement('p');
-        date.className = 'row-date';
-        date.textContent = String(post.date || 'no date');
-
-        const title = document.createElement('h3');
+        // Post: title plus the opening line, so a row is recognisable without
+        // opening it.
+        const postCell = cell('c-post');
+        const title = document.createElement('p');
         title.className = 'row-title';
         // textContent, never innerHTML: these strings come from the repo and
         // are rendered back into a privileged page.
         title.textContent = String(post.title);
+        add(postCell, title);
+        const summary = String(post.excerpt ?? '').trim();
+        if (summary) {
+          const p = document.createElement('p');
+          p.className = 'row-excerpt';
+          p.textContent = summary;
+          add(postCell, p);
+        }
+        const shots = images.length;
+        if (shots > 0) {
+          const count = document.createElement('p');
+          count.className = 'row-photos';
+          count.textContent = `${shots} photo${shots > 1 ? 's' : ''}`;
+          add(postCell, count);
+        }
 
-        const tags = document.createElement('p');
-        tags.className = 'row-tags';
-        if (post.pinned) tags.appendChild(badge('Pinned', 'pin'));
-        if (post.draft) tags.appendChild(badge('Draft', 'draft'));
+        // Date
+        const dateCell = cell('c-date');
+        dateCell.textContent = String(post.date || 'no date');
+
+        // Status
+        const statusCell = cell('c-status');
+        if (post.pinned) add(statusCell, badge('Pinned', 'pin'));
+        if (post.draft) add(statusCell, badge('Draft', 'draft'));
+        if (post.partial) add(statusCell, badge('Still saving', 'partial'));
         const gradeList = Array.isArray(post.grades) ? post.grades : [];
         if (gradeList.length > 0) {
-          tags.appendChild(
+          add(
+            statusCell,
             badge(
-              `${gradeList.length === 1 ? 'Grade' : 'Grades'} ${gradeList
-                .map((g) => GRADE_LABELS[String(g)] ?? String(g))
-                .join(', ')}`,
+              gradeList.map((g) => GRADE_LABELS[String(g)] ?? String(g)).join(', '),
               'grades',
             ),
           );
         }
-        const shots = Array.isArray(post.images) ? post.images.length : 0;
-        if (shots > 0) tags.appendChild(badge(`${shots} photo${shots > 1 ? 's' : ''}`, 'photos'));
-        if (post.partial) tags.appendChild(badge('Still saving', 'partial'));
+        if (statusCell.childElementCount === 0) {
+          const everyone = document.createElement('span');
+          everyone.className = 'muted';
+          everyone.textContent = 'Published';
+          add(statusCell, everyone);
+        }
 
-        add(main, date, title);
-        if (tags.childElementCount > 0) main.appendChild(tags);
-
-        const actions = document.createElement('div');
-        actions.className = 'row-actions';
+        // Actions: both are buttons. Previously these were bare text and a
+        // link crammed together, and neither read as something you could press.
+        const actionCell = cell('c-actions');
         const edit = document.createElement('button');
         edit.type = 'button';
-        edit.className = 'btn';
+        edit.className = 'btn primary small';
         edit.textContent = 'Edit';
-        edit.addEventListener('click', () => openPost(String(post.slug)));
+        edit.addEventListener('click', () => openPost(slug));
         const view = document.createElement('a');
-        view.className = 'btn ghost';
-        view.href = `/announcements/${String(post.slug).replace(/\.md$/, '')}/`;
+        view.className = 'btn small';
+        view.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
         view.target = '_blank';
         view.rel = 'noopener';
         view.textContent = 'View';
-        add(actions, edit, view);
+        add(actionCell, edit, view);
 
-        add(li, main, actions);
-        listEl.appendChild(li);
+        add(tr, photoCell, postCell, dateCell, statusCell, actionCell);
+        add(listEl, tr);
       }
     } catch (error) {
       listEl.replaceChildren();
+      const tr = document.createElement('tr');
+      const td = cell('empty');
+      td.colSpan = 5;
+      td.textContent = (error as Error).message;
+      add(tr, td);
+      add(listEl, tr);
       say(statusEl, (error as Error).message, 'bad');
     }
   }
@@ -452,12 +530,17 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
       const altLabel = document.createElement('label');
       altLabel.className = 'photo-alt';
-      altLabel.textContent = 'Description';
+      const altText = document.createElement('span');
+      altText.textContent = 'Description';
       const altInput = document.createElement('input');
       altInput.type = 'text';
       altInput.value = photo.alt;
+      altInput.placeholder = 'What is in the photo?';
       altInput.addEventListener('input', () => { photos[index]!.alt = altInput.value; });
-      altLabel.appendChild(altInput);
+      add(altLabel, altText, altInput);
+
+      const controls = document.createElement('div');
+      controls.className = 'photo-controls';
 
       const coverLabel = document.createElement('label');
       coverLabel.className = 'check';
@@ -467,19 +550,25 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       coverRadio.checked = photo.key === cover;
       coverRadio.addEventListener('change', () => { cover = photo.key; renderPhotos(); });
       const coverText = document.createElement('span');
-      coverText.textContent = 'Cover photo';
+      coverText.textContent = 'Use as cover';
       add(coverLabel, coverRadio, coverText);
 
       const remove = document.createElement('button');
       remove.type = 'button';
-      remove.className = 'btn ghost';
+      remove.className = 'btn danger small';
       remove.textContent = 'Remove';
       remove.addEventListener('click', () => {
+        // Confirm first. The photo has already been cropped and described by
+        // hand, so an accidental click costs real work, and there is no undo
+        // inside the form.
+        const what = photo.alt.trim() ? `"${photo.alt.trim()}"` : 'this photo';
+        if (!confirm(`Remove ${what} from this post?`)) return;
         photos.splice(index, 1);
         renderPhotos();
       });
 
-      add(body, altLabel, coverLabel, remove);
+      add(controls, coverLabel, remove);
+      add(body, altLabel, controls);
       add(li, img, body);
       photosEl.appendChild(li);
     });
@@ -832,6 +921,13 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   $('[data-new]').addEventListener('click', () => { clear(statusEl); openEditor(null); });
 
+  // The chevron rotates, but a word is unambiguous in a way an icon is not.
+  const guide = $<HTMLDetailsElement>('.guide');
+  const guideHint = $<HTMLElement>('[data-guide-hint]');
+  const syncGuide = () => { guideHint.textContent = guide.open ? 'Hide' : 'Show'; };
+  guide.addEventListener('toggle', syncGuide);
+  syncGuide();
+
   (async () => {
     try {
       const session = (await api('session')) as { email: string };
@@ -883,41 +979,69 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     margin-block: var(--pta-gap);
   }
 
-  /* Collapsed by default: useful the first few times, in the way after that. */
+  /*
+    Collapsed by default: useful the first few times, in the way after that.
+
+    Black on white with a lemon edge, not a lemon panel. --pta-surface-alt is
+    the brand lemon, and a paragraph of body copy on it is unpleasant to read
+    even where it technically clears AA - the accent works as a bar or a fill
+    behind three words, not behind a list of instructions. The colour stays as
+    a stripe so the box still belongs to the site.
+  */
   .guide {
     margin-block-end: var(--pta-gap);
     border: var(--pta-border-width) solid var(--pta-rule);
+    border-inline-start: 8px solid var(--pta-accent-quiet);
     border-radius: var(--pta-radius);
-    background: var(--pta-surface-alt);
+    background: var(--pta-surface);
   }
 
   .guide summary {
     display: flex;
     align-items: center;
-    min-height: 44px;
+    gap: 0.5rem;
+    min-height: 48px;
     padding-inline: 0.9rem;
     cursor: pointer;
     font-family: var(--pta-font-display);
     font-weight: var(--pta-display-weight);
-    font-size: var(--text-fine);
+    font-size: var(--text-body);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
   }
+  .guide summary::-webkit-details-marker { display: none; }
+  .guide summary::marker { content: ''; }
 
-  .guide-body { padding: 0 0.9rem 0.9rem; font-size: var(--text-fine); }
-  .guide-body p { margin: 0 0 0.6rem; max-width: var(--pta-measure); }
-  .guide-body ul { margin: 0 0 0.6rem; padding-inline-start: 1.1rem; max-width: var(--pta-measure); }
-  .guide-body li { margin-block-end: 0.4rem; }
+  .summary-hint {
+    margin-inline-start: auto;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .chev {
+    flex: none;
+    transition: transform 0.15s ease;
+  }
+  .guide[open] .chev { transform: rotate(180deg); }
+
+  /* Body copy, so it is read rather than skimmed past. The old --text-fine was
+     small enough to look like a disclaimer. */
+  .guide-body { padding: 0 0.9rem 0.9rem; font-size: var(--text-body); }
+  .guide-body p { margin: 0 0 0.7rem; max-width: var(--pta-measure); }
+  .guide-body ul { margin: 0 0 0.7rem; padding-inline-start: 1.2rem; max-width: var(--pta-measure); }
+  .guide-body li { margin-block-end: 0.5rem; }
   .guide-help { color: var(--pta-ink-muted); }
 
   .status {
     margin: 0 0 var(--pta-gap);
     padding: 0.7rem 0.9rem;
-    border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
-    background: var(--pta-surface-alt);
-    font-size: var(--text-fine);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-inline-start: 8px solid var(--pta-accent);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    font-size: var(--text-body);
   }
-  .status[data-tone='bad'] { border-inline-start-color: var(--pta-accent); font-weight: 700; }
+  .status[data-tone='bad'] { border-inline-start-color: #b3261e; font-weight: 700; }
 
   .list-head {
     display: flex;
@@ -936,43 +1060,63 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-transform: var(--pta-display-transform);
   }
 
-  .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
-  .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
+  .table-wrap { overflow-x: auto; }
 
-  /* A row, not a link. The title was clickable before and there was nothing to
-     say so - people either did not realise they could edit, or clicked it by
-     accident. An explicit Edit button removes the guesswork. */
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--pta-gap);
-    padding: 0.9rem;
-    border: var(--pta-border-width) solid var(--pta-rule);
-    border-radius: var(--pta-radius);
-    background: var(--pta-surface);
+  .posts {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-body);
   }
 
-  .row-main { min-width: 0; flex: 1 1 18rem; }
-
-  .row-date {
-    margin: 0;
+  .posts th {
+    text-align: start;
+    padding: 0.5rem 0.7rem;
+    border-block-end: var(--pta-rule-width) solid var(--pta-rule);
+    font-family: var(--pta-font-display);
     font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
-    color: var(--pta-ink-muted);
+    white-space: nowrap;
   }
 
+  .posts td {
+    padding: 0.7rem;
+    border-block-end: var(--pta-border-width) solid var(--pta-rule);
+    vertical-align: top;
+  }
+
+  .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 6%, transparent); }
+
+  .c-photo { width: 5.5rem; }
+  .c-date { width: 7rem; white-space: nowrap; }
+  .c-status { width: 12rem; }
+  .c-actions { width: 1%; white-space: nowrap; }
+
+  .thumb {
+    display: block;
+    width: 4.5rem;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
+  }
+  .thumb.blank { background: repeating-linear-gradient(45deg, #eee 0 6px, #f7f7f7 6px 12px); }
+
   .row-title {
-    margin: 0.15rem 0 0;
+    margin: 0;
     font-family: var(--pta-font-display);
     font-size: var(--text-lede);
     font-weight: var(--pta-display-weight);
     line-height: var(--leading-snug);
   }
+  .row-excerpt { margin: 0.25rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); max-width: 34rem; }
+  .row-photos { margin: 0.25rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); }
 
-  .row-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.45rem 0 0; }
+  .c-status { display: table-cell; }
+  .c-status .tag { margin: 0 0.3rem 0.3rem 0; }
+  .muted { color: var(--pta-ink-muted); font-size: var(--text-fine); }
 
   .tag {
     display: inline-block;
@@ -984,11 +1128,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
   }
-  .tag.pin { background: var(--pta-accent); color: var(--pta-ink-on-accent); border-color: var(--pta-accent); }
+  .tag.pin { background: var(--pta-accent-quiet); color: #000; border-color: var(--pta-rule); }
   .tag.draft { border-style: dashed; color: var(--pta-ink-muted); }
-  .tag.grades, .tag.photos, .tag.partial { color: var(--pta-ink-muted); }
+  .tag.grades, .tag.partial { color: var(--pta-ink-muted); }
 
-  .row-actions { display: flex; gap: 0.5rem; flex: 0 0 auto; }
+  .c-actions { display: table-cell; }
+  .c-actions .btn { margin: 0 0 0.4rem 0.4rem; }
+
+  .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
 
   .btn {
     min-height: 44px;
@@ -1007,19 +1154,33 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     display: inline-flex;
     align-items: center;
   }
+  /*
+    Primary is blue with white text, not the brand lemon.
+    A lemon button sitting on a lemon panel was invisible, and the accent is
+    also what marks a pinned post - one colour cannot mean both "press this"
+    and "this is pinned" on the same screen. Blue on white is 8.43:1 and is
+    already the site's other brand colour, so it reads as deliberate rather
+    than borrowed.
+  */
   .btn.primary {
-    background: var(--pta-cta-bg);
-    color: var(--pta-cta-ink);
-    border-color: var(--pta-cta-border);
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+    border-color: var(--pta-accent);
     box-shadow: var(--pta-shadow);
   }
-  .btn.danger { border-style: dashed; }
+  .btn.primary:hover { background: #003a89; border-color: #003a89; }
+
+  .btn.small { min-height: 38px; padding: 0.4rem 0.8rem; }
+  .btn.danger { border-style: dashed; color: #b3261e; border-color: #b3261e; }
   .btn.ghost { border-color: transparent; text-decoration: underline; }
   .btn[disabled] { opacity: 0.6; cursor: progress; }
 
   /* ----------------------------------------------------------- the dialog */
 
   .sheet {
+    /* Explicit, because the UA's centring did not survive whatever this page
+       does to it: the dialog opened flush against the top-left corner. */
+    margin: auto;
     width: min(46rem, 100vw - 2rem);
     max-height: min(90vh, 100dvh - 2rem);
     padding: 0;
@@ -1047,8 +1208,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     align-items: center;
     gap: 0.6rem;
     padding: var(--pta-gap);
-    border-block-start: var(--pta-border-width) solid var(--pta-rule);
-    background: var(--pta-surface-alt);
+    border-block-start: var(--pta-rule-width) solid var(--pta-rule);
+    background: var(--pta-surface);
   }
   .foot-hint { flex-basis: 100%; margin: 0; }
 
@@ -1087,15 +1248,18 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     padding: var(--pta-gap);
     border: 2px dashed var(--pta-rule);
     border-radius: var(--pta-radius);
-    background: var(--pta-surface-alt);
+    background: var(--pta-surface);
     cursor: pointer;
     text-align: center;
   }
-  .dropzone[data-over='true'] { border-color: var(--pta-accent); background: var(--pta-accent); color: var(--pta-ink-on-accent); }
+  .dropzone[data-over='true'] {
+    border-color: var(--pta-accent);
+    background: color-mix(in srgb, var(--pta-accent) 8%, var(--pta-surface));
+    color: var(--pta-ink);
+  }
   .dropzone:focus-visible { outline: 3px solid var(--pta-accent); outline-offset: 2px; }
   .drop-title { font-family: var(--pta-font-display); font-weight: var(--pta-display-weight); font-size: var(--text-fine); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .drop-note { font-size: var(--text-fine); color: var(--pta-ink-muted); }
-  .dropzone[data-over='true'] .drop-note { color: inherit; }
 
   .photos { margin: var(--pta-gap) 0 0.4rem; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
   .photos li {
@@ -1114,8 +1278,28 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     border-radius: var(--pta-radius);
     background: var(--pta-surface-alt);
   }
-  .photo-body { display: grid; gap: 0.4rem; flex: 1; min-width: 0; }
-  .photo-alt { display: grid; gap: 0.2rem; }
+  .photo-body { display: grid; gap: 0.6rem; flex: 1; min-width: 0; }
+  .photo-alt { display: grid; gap: 0.25rem; }
+  .photo-alt > span {
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  /* Was three controls run together with no separation, so "Cover photo" and
+     "Remove" read as one string. */
+  .photo-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding-block-start: 0.4rem;
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+  .photo-controls .check { min-height: 38px; }
 
   .checks, .grades { display: grid; gap: 0.3rem; }
   .grades { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); margin-block-start: 0.3rem; }
