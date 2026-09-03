@@ -24,6 +24,7 @@
 | U10 | ~~Rotate the pre-launch password~~ | JON | ✅ Rotated 2026-09-02 and verified: the old value now returns `e=bad`, so the secret is set and the committed one is dead. The old value remains in this repo's history ([F28](#f28)), which is why it was rotated rather than redacted |
 
 | U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
+| U14 | **Print the calendar on real paper** | JON | The layout is landscape letter, one month per sheet, and printing now hides the rest of the page. Verified in markup, never on an actual printer |
 | U12 | ~~Test `/admin` end to end~~ | JON | ✅ Proven 2026-09-03. A post written in the editor, with three photos and a chosen cover, committed to `main` and rendered on the site. I cannot do this - Access blocks me, which is the point |
 
 | U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
@@ -525,6 +526,40 @@ the guide box.
 The public site still uses lemon CTAs and is untouched - that is the design the
 board picked, and the readability problem was specific to lemon-on-lemon in the
 editor. Worth revisiting together, not unilaterally.
+
+<a name="f38"></a>
+**F38 - Naming a class after a Tailwind utility silently changes its display.**
+The month calendar is a `<table>` with `table-layout: fixed`, and every column
+came out a different width. The cause was the class name: it was `.grid`, and
+Tailwind v4 generates utilities by **scanning source files**, so writing
+`class="grid"` made Tailwind emit `.grid{display:grid}` - an unscoped rule that
+beat the component's scoped rule for the one property the component did not set.
+The table was rendering as a CSS grid container.
+
+Nothing failed. The CSS was correct in the file; the bug existed only in the
+cascade. `getComputedStyle` reporting `display: "grid"` on a `<table>` is what
+gave it away.
+
+`npm run check:classnames` now fails the build on any class named after a
+Tailwind display or position utility. `.grid`, `.block` and `.table` were all
+in use; they are now `.month-grid`, `.section-block` and `.posts`.
+
+<a name="f39"></a>
+**F39 - The brand lemon was the default panel colour, which is why yellow kept
+appearing everywhere.** `--pta-surface-alt` backs every inset panel on the site
+- hint boxes, thumbnails, table headers, dialog footers, empty states - and
+Civic Letterpress defined it as `#f0e430`. Every one of those became a lemon
+slab, in ten components, and each looked like its own separate mistake.
+
+Fixed at the token rather than per component: `--pta-surface-alt` is now a quiet
+`#f5f5f2` and the accent is still one token away as `--pta-accent-quiet`. That
+also removed the reason the admin's primary buttons had been turned blue - a
+lemon button on a lemon bar was invisible - so they are back to the brand
+colour, with the pinned badge outlined instead of filled so the accent means
+one thing per screen.
+
+The rule that came out of it: **lemon is a stripe, a button, or a badge outline.
+It is never the background of something you have to read.**
 
 ---
 

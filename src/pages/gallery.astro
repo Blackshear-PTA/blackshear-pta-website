@@ -63,7 +63,7 @@ const photos = [
 <PageLayout page={entry.data}>
   {entry.data.body.map((paragraph) => <p class="prose">{paragraph}</p>)}
 
-  <ul class="grid">
+  <ul class="photo-wall">
     {
       photos.map((photo, index) => (
         <li>
@@ -80,7 +80,7 @@ const photos = [
     }
   </ul>
 
-  <section class="block">
+  <section class="section-block">
     <div class="rule" role="presentation"></div>
     <h2>More on Instagram</h2>
     <p class="prose">
@@ -97,7 +97,7 @@ const photos = [
 
   {
     entry.data.contact && (
-      <section class="block contact">
+      <section class="section-block contact">
         <div class="rule" role="presentation" />
         <h2>Questions?</h2>
         <p class="prose">
@@ -126,7 +126,7 @@ const photos = [
     last row stretches to the full container width, which looks like a mistake.
     auto-fill keeps every cell the same size regardless of how many there are.
   */
-  .grid {
+  .photo-wall {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: var(--pta-gap);
@@ -162,7 +162,7 @@ const photos = [
     margin-block-end: var(--pta-gap);
   }
 
-  .block {
+  .section-block {
     padding-block-start: var(--pta-section-y);
   }
 

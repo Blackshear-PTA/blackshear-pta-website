@@ -211,7 +211,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   {
     months.map((month) => (
       <table
-        class="grid"
+        class="month-grid"
         data-month={month.key}
         hidden={month.key !== currentMonth}
       >
@@ -302,6 +302,49 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     document.querySelector('[data-cal-next]')!.addEventListener('click', () => show(index + 1));
     document.querySelector('[data-cal-today]')!.addEventListener('click', () => show(startIndex));
     document.querySelector('[data-cal-print]')!.addEventListener('click', () => window.print());
+
+    /**
+     * Print the calendar and nothing else.
+     *
+     * A print stylesheet can only hide what it can name, and the calendar sits
+     * several layers inside the page shell - header, main, the content column,
+     * the page's own prose. Naming all of that would break the first time
+     * somebody rearranged the layout.
+     *
+     * So instead of describing what to hide, walk up from the calendar and
+     * hide every SIBLING at each level. That leaves exactly one path from
+     * <body> to the calendar visible, whatever the surrounding structure turns
+     * into later.
+     *
+     * Wired to beforeprint rather than only to the button, so Cmd+P behaves
+     * the same as the button. Undone on afterprint, because these classes must
+     * not survive into the screen view.
+     */
+    const calendar = document.querySelector<HTMLElement>('.calendar');
+    let hidden: Element[] = [];
+
+    function isolateForPrint() {
+      hidden = [];
+      let node: HTMLElement | null = calendar;
+      while (node && node !== document.body && node.parentElement) {
+        for (const sibling of node.parentElement.children) {
+          if (sibling !== node) {
+            sibling.classList.add('print-hide');
+            hidden.push(sibling);
+          }
+        }
+        node = node.parentElement;
+      }
+    }
+
+    function restoreAfterPrint() {
+      for (const el of hidden) el.classList.remove('print-hide');
+      hidden = [];
+    }
+
+    window.addEventListener('beforeprint', isolateForPrint);
+    window.addEventListener('afterprint', restoreAfterPrint);
+
     show(index);
   }
 </script>
@@ -349,14 +392,14 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   .btn:disabled { opacity: 0.35; cursor: default; }
   .print-btn { margin-inline-start: auto; }
 
-  .grid {
+  .month-grid {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
   }
-  .grid caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .month-grid caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-  .grid th {
+  .month-grid th {
     padding: 0.3rem;
     border: var(--pta-border-width) solid var(--pta-rule);
     background: var(--pta-surface-alt);
@@ -430,15 +473,21 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       margin: 0.4in;
     }
 
+    /* Applied by the script to every sibling on the path from body to the
+       calendar, so one sheet comes out with one month on it and nothing else.
+       :global because the elements being hidden belong to other components. */
+    :global(.print-hide) { display: none !important; }
+
+    .calendar { margin: 0; }
     .controls, .empty-note { display: none !important; }
 
-    .grid { display: none; }
-    .grid.printing {
+    .month-grid { display: none; }
+    .month-grid.printing {
       display: table !important;
       page-break-inside: avoid;
       height: 6.2in;
     }
-    .grid.printing caption {
+    .month-grid.printing caption {
       position: static;
       width: auto;
       height: auto;
@@ -455,7 +504,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     .cell { height: auto; border-color: #000; }
     .cell.blank { background: none; }
     .cell.today { outline: 2px solid #000; }
-    .grid th { background: none; border-color: #000; font-size: 8pt; }
+    .month-grid th { background: none; border-color: #000; font-size: 8pt; }
     .wd-full { display: inline !important; }
 
     .art { display: block !important; width: 0.42in; height: 0.28in; }

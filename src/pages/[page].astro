@@ -59,7 +59,7 @@ const page = entry.data;
 
   {
     page.sections.map((section) => (
-      <section class="block">
+      <section class="section-block">
         <div class="rule" role="presentation" />
         <h2>{section.heading}</h2>
         {section.body.map((paragraph) => (
@@ -75,10 +75,12 @@ const page = entry.data;
                   target={isExternal(item.href) ? '_blank' : undefined}
                   rel={isExternal(item.href) ? 'noopener' : undefined}
                 >
-                  {item.label}
-                  {isExternal(item.href) && <span class="sr-only"> (opens in a new tab)</span>}
+                  <span>
+                    {item.label}
+                    {isExternal(item.href) && <span class="sr-only"> (opens in a new tab)</span>}
+                  </span>
+                  {item.note && <span class="note">{item.note}</span>}
                 </a>
-                {item.note && <span class="note">{item.note}</span>}
               </li>
             ))}
           </ul>
@@ -98,7 +100,7 @@ const page = entry.data;
 
   {
     page.contact && (
-      <section class="block contact">
+      <section class="section-block contact">
         <div class="rule" role="presentation" />
         <h2>Questions?</h2>
         <p class="prose">
@@ -131,7 +133,7 @@ const page = entry.data;
     margin-block-end: var(--pta-gap);
   }
 
-  .block {
+  .section-block {
     padding-block-start: var(--pta-section-y);
   }
 
@@ -172,31 +174,50 @@ const page = entry.data;
     list-style: none;
   }
 
-  .links li {
-    padding-block: 0.6rem;
-    border-block-start: var(--pta-border-width) solid var(--pta-rule);
-  }
-
-  .links li:first-child {
-    border-block-start: 0;
+  /*
+    Bordered tiles, the same object as the homepage's Start Here block. These
+    were underlined text on a hairline rule, which on the volunteer page meant
+    the two steps somebody actually has to complete looked like body copy - you
+    only discovered they were links by hovering.
+  */
+  .links {
+    display: grid;
+    gap: var(--pta-gap);
+    max-width: var(--pta-measure);
   }
 
   .links a {
-    /* Genuine 44px target without a visible box; padding alone lands short. */
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
     min-height: 44px;
+    padding: var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
     font-family: var(--pta-font-display);
     font-weight: var(--pta-display-weight);
     font-size: var(--text-body);
     color: var(--pta-ink);
+    text-decoration: none;
+  }
+
+  .links a:hover,
+  .links a:focus-visible {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
   }
 
   .note {
     display: block;
+    font-family: var(--pta-font-body);
+    font-weight: 400;
     font-size: var(--text-fine);
     color: var(--pta-ink-muted);
   }
+
+  .links a:hover .note,
+  .links a:focus-visible .note { color: inherit; }
 
   /* Sponsor tiers read as a list of equals, so they wrap rather than stack:
      fifteen family names in a single column is a lot of scrolling for a page

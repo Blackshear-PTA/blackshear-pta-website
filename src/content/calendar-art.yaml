@@ -14,7 +14,11 @@
 # above general ones. `art` must be one of the slugs listed in
 # src/components/CalendarGrid.astro.
 #
-# Leave an event unmatched and it simply shows as text, which is fine.
+# Leave an event unmatched and it simply shows as text, which is fine - and
+# usually better. A first pass matched "teacher", which put a photo of the
+# campus beside every staff birthday and turned a tidy month into a wall of
+# thumbnails. Match things that ARE an event, not words that happen to appear
+# in one.
 
 calendar:
   rules:
@@ -27,8 +31,6 @@ calendar:
     - match: "work day"
       art: garden
     - match: "staff appreciation"
-      art: staff-appreciation
-    - match: "teacher"
       art: staff-appreciation
     - match: "pta meeting"
       art: campus
