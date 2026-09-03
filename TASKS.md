@@ -433,6 +433,80 @@ it holds no code, but it carries `observability`, which `wrangler.jsonc` already
 sets. There is no slice of the Worker that Terraform can hold without
 overlapping something wrangler declares.
 
+<a name="f34"></a>
+**F34 - There are three Cloudflare zones, not one, and a token scoped to the
+wrong set fails silently.** `blackshearpta.org`, `.com` and `.net` are each a
+**separate zone** with its own ID. Obvious in hindsight - the `.com` and `.net`
+redirect rules have to live somewhere - but every document here, this one
+included, had been written as though there were one zone.
+
+The consequence is a bad failure mode. A read-only API token scoped to
+`blackshearpta.org` alone produces a snapshot that **looks successful and is
+quietly incomplete**:
+
+- DNS on the other two zones returns a plain `403`, which at least fails loudly.
+- `cloudflare_ruleset` does not. It emits a ruleset block for each zone with
+  **no `rules` inside it** - the container, without the redirect logic that is
+  the entire point. Listing a ruleset and reading its contents are separately
+  authorised, so the list call succeeds and the detail call returns "request is
+  not authorized", and cf-terraforming writes what it got.
+
+An empty ruleset is not an error and nothing warns you. Verified directly
+against the API before blaming the tool, which is the habit worth keeping: the
+list endpoint returned the ruleset, the detail endpoint refused it.
+
+Set **Zone Resources -> All zones from an account** when creating the token.
+`terraform/README.md` says so at the point where the mistake would be made.
+
+Related trap in the same session: `cf-terraforming` treats a
+`CLOUDFLARE_ACCOUNT_ID` in the environment as `--account`, which is mutually
+exclusive with `--zone`. Exporting it "for convenience" makes every zone-scoped
+generate fail with `--account and --zone are mutually exclusive`.
+
+<a name="f35"></a>
+**F35 - The Access policy is personal data, and this repository is public.**
+The board allowlist is three named email addresses, two of them personal Gmail
+accounts. `cf-terraforming generate` emits them inline, and committing that
+output as-is would publish the board's addresses - the same privacy question as
+[F22](#f22) and the reason `/contact` routes everything through the PTA address.
+
+The committed snapshot carries the application's **structure** - the `/admin`
+path scoping, the 24h session, instant authentication, which identity provider
+is wired in - with the addresses replaced by a placeholder pointing at the
+dashboard.
+
+That is the right side of the trade. The structure is the part that is hard to
+reconstruct under pressure; re-entering three addresses the board already knows
+is not. It does mean the snapshot is **not** a complete recovery artefact, and
+`terraform/access.tf` says so where somebody would find out.
+
+Generalises past Access: anything generated from a live account has to be read
+for personal data before it is committed, not after.
+
+<a name="f36"></a>
+**F36 - cf-terraforming's Access output does not validate, in four separate
+ways.** Every other resource generated cleanly. The Access application and its
+identity providers needed four hand fixes before `terraform validate` passed:
+
+| Defect | Why |
+|---|---|
+| `name` missing on both identity providers | Schema marks it Required. The **API returns an empty string**, so the tool had nothing to emit. Added as `name = ""` |
+| `scim_config` on the one-time PIN provider | Schema forbids it outright: "can not be set if type is one of: onetimepin" |
+| `id` **and** `include` in the same policy block | Exactly one is allowed - reference an existing policy, or define one inline. The tool emitted both |
+| `self_hosted_domains` **and** `destinations` | Mutually exclusive; the former is the legacy form of the latter |
+
+Two things worth carrying forward. The first defect is not a tool bug at all -
+the live state genuinely cannot be expressed in the v5 schema, so these
+resources **do not round-trip**, and under Option 2 that would be a permanent
+diff or an apply error rather than a cosmetic problem. And the third is the
+"one policy, two ways" ambiguity that [`docs/TERRAFORM.md`](docs/TERRAFORM.md)
+flagged as a hazard before any of this was generated - it turned out to be a
+concrete defect, not a theoretical one.
+
+**`terraform validate` earned its place here.** Four defects, none of which
+were visible by reading the output, all caught by one command that touches
+nothing. It is the check to run on generated config before trusting it.
+
 ---
 
 ## Reference

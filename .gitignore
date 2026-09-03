@@ -25,3 +25,6 @@ worker-configuration.d.ts
 # is what stops an `apply` creating a second copy of every resource. Copy
 # versions.tf.example locally when regenerating. See terraform/README.md.
 terraform/versions.tf
+# cf-terraforming downloads a ~109MB terraform binary into the working
+# directory when --terraform-binary-path is not set. It is not source.
+terraform/terraform

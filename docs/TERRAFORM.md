@@ -47,6 +47,20 @@ running the inventory, not trusting the snapshot.
 
 [appendix]: ../TASKS.md#appendix-a--dns-snapshot-2026-08-28
 
+> **Corrected 2026-09-03, once the inventory was actually run.** Both
+> predictions above held - the parking records and the `www` CNAME are gone,
+> replaced by two proxied `AAAA` records at `100::` that the Worker custom
+> domain created and owns. `terraform/dns-blackshearpta-org.tf` is now the
+> current record and supersedes Appendix A.
+>
+> One thing this document got wrong, though, and it is worth flagging where the
+> mistake was made rather than only in the finding: **there are three zones, not
+> one.** `blackshearpta.org`, `.com` and `.net` are each a separate Cloudflare
+> zone - which in hindsight is forced, since the `.com`/`.net` redirect rules
+> have to live somewhere. Everything below that says "the zone" means the `.org`
+> zone. See [F34](../TASKS.md#f34) for how a token scoped to one zone makes an
+> incomplete snapshot look like a successful one.
+
 ## The inventory
 
 Everything configured by hand, what the provider offers for it, and whether it
@@ -187,8 +201,12 @@ captured.
    Write`, `Trust and Safety Write` and `Zaraz Admin` - effectively account
    administration, sitting in a credential that has to survive board turnover.
 3. **You do not need it.** DNS records take the zone ID as an input. Put it in a
-   variable and manage all 13 records with `DNS Read` + `DNS Write` and nothing
+   variable and manage the records with `DNS Read` + `DNS Write` and nothing
    else. The zone object itself is created once and never changes.
+
+   *(The count is 16 across the three zones, not the 13 this section originally
+   assumed: 12 on `.org` and 2 each on `.com` and `.net`. Four of those 16 are
+   `100::` placeholders — see [the DNS exclusion](#option-2---adopt-the-four-that-matter).)*
 
 The same logic retires Web Analytics: it was enabled automatically when the zone
 was added (U4), it has no configuration anyone chose, and if it ever vanished the
