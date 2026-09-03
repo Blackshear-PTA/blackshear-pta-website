@@ -1,0 +1,25 @@
+# Copy to versions.tf to run cf-terraforming. Do NOT commit versions.tf -
+# .gitignore excludes it deliberately, and terraform/README.md says why.
+#
+#   cp versions.tf.example versions.tf && terraform init
+#
+# The provider version is pinned exactly, not with `~>`. A snapshot generated
+# by one provider version and read back by another is a snapshot of nothing.
+
+terraform {
+  required_version = ">= 1.5"
+
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "5.24.0"
+    }
+  }
+}
+
+provider "cloudflare" {
+  # The token comes from CLOUDFLARE_API_TOKEN in the environment.
+  #
+  # Never write it here. This repository is public, and a credential in this
+  # tree has been committed once already - see F28 in ../TASKS.md.
+}
