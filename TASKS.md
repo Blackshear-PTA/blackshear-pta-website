@@ -26,7 +26,7 @@
 | U11 | ~~Create the R2 photo bucket~~ | JON | ✅ `blackshear-pta-images` created 2026-09-02, name verified against the binding. R2 needed enabling on the account first (error 10042), and wrangler's offer to write the binding itself had to be declined - it defaults to a name nothing reads. Both noted in [docs/ADMIN.md](docs/ADMIN.md) |
 | U12 | **Test `/admin` end to end** | JON | Sign in, post with a photo, confirm it appears on `/news`, delete it. I cannot do this - Access blocks me, which is the point |
 
-| U13 | **Enable One-time PIN as an identity provider** | JON | Zero Trust → Integrations → Identity providers → Add new → One-time PIN. **Not on by default** ([F30](#f30)), so `/admin` currently asks board members to sign in with a *Cloudflare account*, which none of them have |
+| U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
 
 **Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
 
@@ -117,8 +117,8 @@
 - [~] **A21**: Cloudflare build watch paths - `JON` - **Blocked on U9.** Exact click path and the full exclude list are in [`docs/DEPLOYS.md`](docs/DEPLOYS.md), now also excluding `scripts/**` (the check gates are never read by `astro build`). Confirmed unset: PR #18 was docs-only and still triggered a build and a deploy
 - [ ] **A22**: Switch `.com`/`.net` redirects from 302 → 301 - `JON` - **At cutover only.** They are deliberately temporary today; a 301 gets cached by browsers and intermediaries and is effectively unrecallable
 - [~] **A23**: `/admin` editor behind Cloudflare Access - `CLAUDE` + `JON` - **Built. Access application and secrets configured 2026-09-02; awaiting the end-to-end test (U12).** Implements [D1](#open-decisions). Covers announcements, which is the content that actually changes week to week. A save is a git commit, so history is the audit log and `git revert` is undo. Cloudflare Access in front, and the Worker re-verifies the signed identity itself so the commit carries the editor's address. One-time PIN today, Google SSO when B4 lands - a dashboard swap, no code. Page copy and homepage YAML are still hand-edited; widening the editor is another route and another form, not a rewrite
-- [x] **A24**: Photos on announcements, stored in R2 - `CLAUDE` + `JON` - **Built; blocked on U11 for the bucket.** Shrunk in the browser before upload, which removes the EXIF GPS coordinates a phone photo carries and takes a 2.8MB photo to about 410KB. Astro's image pipeline cannot help here - the file arrives long after the build - so whatever is uploaded is what parents download. Alt text is required in three places: the form, the API, and the content schema. Content-addressed keys served through the Worker, so no public bucket and no second hostname
-- [x] **A25**: Announcements feed + RSS - `CLAUDE` - **Done.** One markdown file per post in `src/content/announcements/`, so two people cannot conflict and `/admin` can create or delete a post by writing one file. `/news` lists everything, `/rss.xml` is a real feed, and the homepage shows the most recent four. Ordering and draft filtering live in one shared function so the three surfaces cannot disagree - which matters most for the feed, where a leaked draft has already been pulled by the time anyone notices
+- [x] **A24**: Photos on announcements, stored in R2 - `CLAUDE` + `JON` - **Done.** Several photos per post with one nominated as the cover; the rest form a gallery on the post page. Drag-and-drop or click to add, and every photo goes through a crop step that shows the exact 3:2 frame before anything is uploaded - a portrait shot otherwise becomes a band across someone's middle with nobody having seen it. Shrunk in the browser first, which also removes the EXIF GPS a phone photo carries. Alt text required in three places. Crop geometry is a tested pure function ([F32](#f32))
+- [x] **A25**: Announcements, feed and post pages - `CLAUDE` - **Done.** One markdown file per post in `src/content/announcements/`, so two people cannot conflict and `/admin` can create or delete a post by writing one file. Every post has its own page at `/announcements/<slug>`; the index lists them all and `/rss.xml` is a real feed pointing at those pages. Ordering and draft filtering live in one shared function so the four surfaces cannot disagree. Renamed throughout from "news" and "What's happening" so the nav, the homepage block, the page and the feed all call one thing by one name
 - [ ] **A26**: File hosting - handbook, The Beat, forms - `CLAUDE` + `JON` - **Needs from Jon: the actual files.** Today these are tinyurls to Weebly-hosted or Drive-hosted documents ([F19](#f19))
 - [ ] **A27**: Link-out hub for SignUpGenius and the calendar - `CLAUDE` - Aggregate and link out, per [D8](#open-decisions). Replacement is a later phase evaluated on its own
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
@@ -374,7 +374,37 @@ tempting to attribute everything odd to it; two of these three symptoms were
 plain misconfiguration sitting in plain sight.
 
 <a name="f31"></a>
-**F31 - Terraform cannot capture the deploy pipeline, and the binding hazard
+**F31 - Access tells an unauthorised address that a code was sent.** Entering an
+email that is not in the Access policy produces "A code has been emailed to you"
+and no email. Cloudflare documents this as deliberate: revealing the difference
+would let anyone enumerate which addresses are configured.
+
+Correct behaviour, and worth knowing twice over. It means an accidental attempt
+with a non-listed address is a **positive test** that the allowlist is enforcing
+- which is how the policy got confirmed working. And it means the most likely
+cause of "the editor is broken" is a typo in the email, with the UI actively
+implying otherwise. Triage order is in [docs/ADMIN.md](docs/ADMIN.md).
+
+<a name="f32"></a>
+**F32 - The preview pane cannot be trusted for measurement.** Three separate
+attempts to verify the photo cropper through the browser produced numbers that
+were about the pane rather than the code: a dialog reported as 6x6 that was
+really 736x648, `getBoundingClientRect` returning stale geometry a frame behind
+the state being tested, and blank screenshots of pages that render correctly.
+
+The fix was not more retries. The crop arithmetic moved into `src/lib/crop.ts`
+as a pure function and is now tested with `npm run check:crop` - 30 checks
+covering shapes from a 4000x1 strip upward, confirming the frame can never
+include empty space, the source rectangle never leaves the image, and its aspect
+is always exactly 3:2. Negative-tested by sabotaging the clamp, swapping cover
+for contain, and widening the rectangle 5%: 12, 10 and 14 failures respectively.
+
+The general lesson is worth more than the specific one. When verification is
+flaky, the answer is usually to move the logic somewhere it can be tested
+deterministically, not to keep re-running the flaky check until it agrees.
+
+<a name="f33"></a>
+**F33 - Terraform cannot capture the deploy pipeline, and the binding hazard
 runs the opposite way from the one we were guarding against.** Two things came
 out of the Terraform investigation ([D13](#open-decisions)) that change what the
 guardrails should be. Full detail in [docs/TERRAFORM.md](docs/TERRAFORM.md).

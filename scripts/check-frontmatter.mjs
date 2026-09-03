@@ -13,7 +13,7 @@
  *
  * Run: npm run check:frontmatter
  */
-import { stringifyPost, parsePost, filenameFor } from '../src/worker/frontmatter.mjs';
+import { stringifyPost, parsePost, filenameFor, dateFromFilename, titleFromFilename } from '../src/worker/frontmatter.mjs';
 
 let failures = 0;
 const pass = (name) => console.log(`  ok   ${name}`);
@@ -25,9 +25,13 @@ function roundTrip(name, meta, body) {
   if (!back) return fail(name, 'parsePost returned null - no frontmatter block found');
   for (const [k, v] of Object.entries(meta)) {
     if (v === undefined || v === '' || v === false) continue;
+    if (Array.isArray(v) && v.length === 0) continue;
     const got = k === 'date' ? String(back.meta[k]).slice(0, 10) : back.meta[k];
     const want = k === 'date' ? String(v).slice(0, 10) : v;
-    if (got !== want) return fail(name, `${k}: wrote ${JSON.stringify(want)}, read back ${JSON.stringify(got)}`);
+    const same = Array.isArray(want)
+      ? JSON.stringify(got) === JSON.stringify(want)
+      : got === want;
+    if (!same) return fail(name, `${k}: wrote ${JSON.stringify(want)}, read back ${JSON.stringify(got)}`);
   }
   if (back.body !== String(body).trim()) {
     return fail(name, `body: wrote ${JSON.stringify(String(body).trim())}, read back ${JSON.stringify(back.body)}`);
@@ -53,6 +57,60 @@ roundTrip('all fields', {
   ...base, title: 'Everything set', href: 'https://example.org/a?b=1&c=2',
   linkLabel: 'Read: more', pinned: true, draft: true,
 }, 'Body.');
+
+console.log('\nlist fields (images, grades):');
+roundTrip('one image', { ...base, title: 'X', images: [{ key: 'abc.jpg', alt: 'A garden bed' }] }, 'b');
+roundTrip('several images', { ...base, title: 'X', images: [
+  { key: 'a.jpg', alt: 'First' }, { key: 'b.png', alt: 'Second' }, { key: 'c.webp', alt: 'Third' },
+] }, 'b');
+roundTrip('alt text with a quote', { ...base, title: 'X', images: [{ key: 'a.jpg', alt: 'The "Buzz" Bowl' }] }, 'b');
+roundTrip('alt text with a colon', { ...base, title: 'X', images: [{ key: 'a.jpg', alt: 'Note: a garden' }] }, 'b');
+roundTrip('alt with unicode', { ...base, title: 'X', images: [{ key: 'a.jpg', alt: 'Jardín 🐝' }] }, 'b');
+roundTrip('grades', { ...base, title: 'X', grades: ['kinder', '1', '5'] }, 'b');
+roundTrip('cover with images', { ...base, title: 'X',
+  images: [{ key: 'a.jpg', alt: 'One' }, { key: 'b.jpg', alt: 'Two' }], cover: 'b.jpg' }, 'b');
+roundTrip('everything at once', {
+  ...base, title: 'Full', href: 'https://example.org/', linkLabel: 'More',
+  images: [{ key: 'a.jpg', alt: 'One' }], cover: 'a.jpg', grades: ['3', '4'],
+  pinned: true, draft: true,
+}, 'Body.');
+
+// Empty lists are omitted, not written as [].
+{
+  const text = stringifyPost({ ...base, title: 'X', images: [], grades: [] }, 'b');
+  if (text.includes('images:') || text.includes('grades:')) fail('empty lists omitted', text);
+  else pass('empty lists omitted');
+}
+
+// A list field must be valid JSON on one line, so a real YAML parser reads it.
+{
+  const text = stringifyPost({ ...base, title: 'X', grades: ['kinder', '1'] }, 'b');
+  const line = text.split('\n').find((l) => l.startsWith('grades:'));
+  try {
+    const parsed = JSON.parse(line.slice('grades:'.length).trim());
+    if (JSON.stringify(parsed) === JSON.stringify(['kinder', '1'])) pass('list line is valid JSON');
+    else fail('list line is valid JSON', line);
+  } catch (e) { fail('list line is valid JSON', `${line} -> ${e.message}`); }
+}
+
+// A corrupt list must not take the whole post down.
+{
+  const broken = '---\ntitle: "X"\ndate: 2026-09-01\ngrades: [not json\n---\nBody';
+  const back = parsePost(broken);
+  if (back && back.meta.title === 'X' && back.meta.grades === undefined) pass('bad list dropped, post still readable');
+  else fail('bad list dropped', JSON.stringify(back));
+}
+
+console.log('\nfilename fallbacks (used when a fresh commit is not readable yet):');
+for (const [name, wantDate, wantTitle] of [
+  ['2026-09-02-test-post-garden.md', '2026-09-02', 'Test post garden'],
+  ['2026-01-05-bake-sale.md', '2026-01-05', 'Bake sale'],
+  ['no-date-here.md', null, 'No date here'],
+]) {
+  const d = dateFromFilename(name), t = titleFromFilename(name);
+  if (d === wantDate && t === wantTitle) pass(`${name} -> ${d} / ${t}`);
+  else fail(`fallbacks for ${name}`, `got ${d} / ${t}, want ${wantDate} / ${wantTitle}`);
+}
 
 // Booleans must be omitted when false, not written as `false`.
 {

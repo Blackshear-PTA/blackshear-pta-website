@@ -13,6 +13,7 @@
     "check": "wrangler types && astro check",
     "check:access": "node scripts/check-access.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
+    "check:crop": "node scripts/check-crop.mjs",
     "check:fonts": "node scripts/check-fonts.mjs",
     "check:frontmatter": "node scripts/check-frontmatter.mjs",
     "check:ical": "node scripts/check-ical.mjs",

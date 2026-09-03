@@ -219,9 +219,43 @@ the next deploy.
 
 Free tier is 10GB, which at the sizes below is several thousand photos.
 
+## Using the editor
+
+The list of posts is the page. Writing happens in a panel on top of it, so the
+list is never lost and there is no question of where you are.
+
+**The panel cannot be dismissed by clicking away from it.** That gesture is the
+most common way people lose a half-written post and there is no upside to
+supporting it, so only Cancel closes the panel - and Cancel asks first if there
+is anything unsaved. Escape does the same thing as Cancel rather than nothing,
+because a modal with no keyboard exit traps anyone not using a mouse.
+
+Each row shows what matters at a glance: the date, the title, and labels for
+pinned, draft, which grades it is aimed at, and how many photos it has. Editing
+is an explicit **Edit** button rather than clicking the title, which previously
+gave no clue it was clickable. **View** opens the live post in a new tab.
+
+**Grades** default to "everyone at the school", which is the common case and
+therefore costs nobody a decision. Untick it to pick specific grades; they show
+as a label on the post and are there for filtering and targeted notifications
+later.
+
 ## Photos
 
-**Every photo is shrunk in the browser before it is uploaded**, and that is
+Drag photos onto the box, or click it to choose. Several at once is fine.
+
+**Every photo is cropped before it is uploaded, and you approve the crop.**
+Photos are shown as a wide rectangle across the site, so a portrait shot of one
+child becomes a band across their middle unless somebody aims it. The crop step
+shows the exact frame, lets you drag and zoom, and asks for the description at
+the same time. Nothing is uploaded until you confirm it.
+
+A post can hold **several photos**. One is the **cover**, which is what appears
+on the homepage and in lists; the rest form a gallery on the post's own page.
+With a single photo there is nothing to choose and it becomes the cover
+automatically.
+
+**Every photo is also shrunk in the browser before it is uploaded**, and that is
 doing more work than it looks like:
 
 - **It removes the location.** A phone photo carries GPS coordinates in its EXIF
@@ -317,6 +351,37 @@ payloads are all refused.
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
 | `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
 | Login page offers only "Sign in with Cloudflare" | No identity provider is configured. Section 1, step 0. |
+| "A code has been emailed to you" and no code ever arrives | Almost always a typo, or an address that is not in the policy. See below - this is by design and gives no feedback. |
+
+## The one confusing thing a board member will hit
+
+**An address that is not in the Access policy still gets told a code was sent.**
+Cloudflare's docs are explicit about it:
+
+> By design, blocked users will not receive an email. The login page will always
+> say **A code has been emailed to you**, regardless of whether or not an email
+> was sent.
+
+That is the right behaviour - it stops anyone probing the login form to work out
+which board members' addresses are configured. But it has a support cost, and
+you will be the one answering it: **someone who mistypes their email waits
+forever for a code that was never sent, and the screen told them it was on its
+way.**
+
+When someone says the editor is broken, check in this order:
+
+1. Is the address they typed *exactly* one of the addresses in the policy?
+   Zero Trust -> Access controls -> Policies -> the board policy. A typo, or
+   signing in with a work address instead of the one on the list, produces
+   exactly this symptom.
+2. Add them to the policy if they should have access, then have them try again.
+3. Only then look at spam filters or
+   [cloudflarestatus.com](https://www.cloudflarestatus.com). PIN delivery has
+   had its own outages, twice at the end of August 2026, both involving
+   corporate email gateways rejecting the mail.
+
+A useful side effect: entering an address that is *not* on the list and getting
+no code is a positive confirmation that the allowlist is being enforced.
 
 ## Seats and billing
 

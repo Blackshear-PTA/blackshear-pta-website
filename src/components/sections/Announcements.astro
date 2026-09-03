@@ -1,78 +1,71 @@
 ---
 import { uid } from '../../uid';
-import { getAnnouncements, formatDate } from '../../lib/announcements';
-import { isExternal } from '../../lib/links';
+import PostBadges from '../PostBadges.astro';
+import {
+  getAnnouncements,
+  formatDate,
+  postPath,
+  coverImage,
+  imageUrl,
+  excerpt,
+} from '../../lib/announcements';
 import type { HomeData } from '../../types';
 
+/**
+ * The homepage announcements block. Was "What's happening"; renamed so the
+ * homepage, the nav, the index page and the feed all call this one thing by
+ * one name.
+ */
 interface Props {
-  news: HomeData['news'];
+  announcements: HomeData['announcements'];
 }
 
-const { news } = Astro.props;
+const { announcements } = Astro.props;
 
 // Unique per render: /preview puts every design on one page, so a hardcoded
 // id would ship once per design and aria-labelledby would be ambiguous.
-const headingId = uid('news-heading');
+const headingId = uid('announcements-heading');
 
-/**
- * Posts come from the announcements collection, not from home.yaml. The
- * homepage shows the most recent few; /news has all of them. Ordering and
- * draft filtering live in one place so this block, /news and the RSS feed
- * cannot disagree about what is published.
- */
-const posts = await getAnnouncements(news.limit);
+const posts = await getAnnouncements(announcements.limit);
 const total = (await getAnnouncements()).length;
 ---
 
-<section class="news" aria-labelledby={headingId}>
-  <h2 id={headingId}>{news.heading}</h2>
+<section class="announcements" aria-labelledby={headingId}>
+  <h2 id={headingId}>{announcements.heading}</h2>
   <ul>
     {
-      posts.map((post) => (
-        <li>
-          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-          <h3>
-            {
-              post.data.href ? (
-                <a
-                  href={post.data.href}
-                  target={isExternal(post.data.href) ? '_blank' : undefined}
-                  rel={isExternal(post.data.href) ? 'noopener' : undefined}
-                >
-                  {post.data.title}
-                  {isExternal(post.data.href) && (
-                    <span class="sr-only"> (opens in a new tab)</span>
-                  )}
-                </a>
-              ) : (
-                post.data.title
-              )
-            }
-          </h3>
-          {post.data.image && (
-            <img
-              class="photo"
-              src={`/images/${post.data.image}`}
-              alt={post.data.imageAlt}
-              loading="lazy"
-              decoding="async"
-            />
-          )}
-          <p>{post.body}</p>
-        </li>
-      ))
+      posts.map((post) => {
+        const cover = coverImage(post);
+        return (
+          <li>
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            <h3>
+              <a href={postPath(post)}>{post.data.title}</a>
+            </h3>
+            <PostBadges pinned={post.data.pinned} grades={post.data.grades} />
+            {cover && (
+              <a class="cover" href={postPath(post)} tabindex="-1" aria-hidden="true">
+                <img src={imageUrl(cover.key)} alt={cover.alt} loading="lazy" decoding="async" />
+              </a>
+            )}
+            <p>{excerpt(post)}</p>
+          </li>
+        );
+      })
     }
   </ul>
 
-  {total > posts.length && (
-    <p class="more">
-      <a href="/news">See all {total} announcements</a>
-    </p>
-  )}
+  {
+    total > posts.length && (
+      <p class="more">
+        <a href="/announcements">See all {total} announcements</a>
+      </p>
+    )
+  }
 </section>
 
 <style>
-  .news {
+  .announcements {
     padding-block: var(--pta-section-y);
     border-block-start: var(--pta-rule-width) solid var(--pta-rule);
   }
@@ -109,29 +102,33 @@ const total = (await getAnnouncements()).length;
   }
 
   h3 {
-    margin: 0.25rem 0 0.5rem;
+    margin: 0.25rem 0 0;
     font-family: var(--pta-font-display);
     font-size: var(--text-lede);
     font-weight: var(--pta-display-weight);
-  }
-
-  p {
-    margin: 0;
   }
 
   /* aspect-ratio rather than width/height: these come from R2, so the build
      never sees the file and cannot know its dimensions. Without a reserved box
      the text below shifts when the photo loads, which is the same layout-shift
      problem the font preloading fixed. */
-  .photo {
+  .cover {
+    display: block;
+    margin-block: var(--pta-gap) 0;
+  }
+
+  .cover img {
     display: block;
     width: 100%;
     aspect-ratio: 3 / 2;
     object-fit: cover;
-    margin-block: 0.5rem var(--pta-gap);
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
     background: var(--pta-surface-alt);
+  }
+
+  p {
+    margin: var(--pta-gap) 0 0;
   }
 
   .more {
@@ -153,16 +150,5 @@ const total = (await getAnnouncements()).length;
 
   .more a::after {
     content: ' \2192';
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 </style>

@@ -38,6 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Full history, because the push step may need to rebase onto main.
+          # A shallow clone can fail to rebase when the parent commit is absent.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -66,4 +70,35 @@ jobs:
           git add src/data/events.json
           COUNT=$(node -p "require('./src/data/events.json').events.length")
           git commit -m "Refresh calendar ($COUNT upcoming events)"
-          git push
+
+          # Retry the push, rebasing between attempts. Two quite different
+          # failures land here and a rebase is the right answer to both:
+          #
+          #  - GitHub's own transient errors. The 2026-09-02 run failed with
+          #    "remote: fatal error in commit_refs", which had nothing to do
+          #    with this repository - the next day's run pushed identical
+          #    content without complaint. One retry would have saved a day of
+          #    stale calendar.
+          #  - Somebody got there first. /admin commits announcements straight
+          #    to main, so a board member saving a post while this job runs is
+          #    a real race rather than a theoretical one, and a bare retry
+          #    would fail against it forever.
+          #
+          # Failing is still allowed. A missed day is harmless: the data is
+          # unchanged, the site keeps serving yesterday's calendar, and
+          # tomorrow's run fixes it.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then break; fi
+            echo "Push failed on attempt $attempt; rebasing and retrying."
+            sleep $((attempt * 10))
+            if ! git pull --rebase --autostash origin main; then
+              echo "::error::Could not rebase onto main. Leaving the calendar for tomorrow."
+              exit 1
+            fi
+          done
+          echo "::error::Could not push the calendar refresh after 3 attempts."
+          exit 1

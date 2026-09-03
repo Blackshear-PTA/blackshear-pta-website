@@ -1,0 +1,255 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/sections/SiteHeader.astro';
+import Footer from '../../components/sections/Footer.astro';
+import PostBadges from '../../components/PostBadges.astro';
+import { formatDate, coverImage, imageUrl, excerpt } from '../../lib/announcements';
+import { isExternal } from '../../lib/links';
+import { siteThemeId, getTheme } from '../../themes/registry';
+
+/**
+ * One page per announcement.
+ *
+ * Drafts get a page too, deliberately. Nothing links to it and it stays out of
+ * the listings and the feed, so it is not published in any meaningful sense -
+ * but it means whoever wrote it can preview the real thing before setting it
+ * live, which is the only way to catch a photo that crops badly or a paragraph
+ * that reads worse than it did in the form.
+ */
+export async function getStaticPaths() {
+  const posts = await getCollection('announcements');
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const post = entry.data;
+const { Content } = await render(entry);
+
+const [homeEntry, siteEntry] = await Promise.all([
+  getEntry('home', 'home'),
+  getEntry('site', 'site'),
+]);
+if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
+if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
+
+const theme = getTheme(siteThemeId);
+const cover = coverImage(entry);
+// The cover already appears at the top; the rest go in the gallery below.
+const gallery = post.images.filter((image) => image.key !== cover?.key);
+---
+
+<BaseLayout
+  title={`${post.title} - Blackshear PTA`}
+  description={excerpt(entry, 160)}
+  themeId={theme.id}
+>
+  <SiteHeader site={siteEntry.data} />
+  <main id="main">
+    <div class="shell">
+      <p class="back"><a href="/announcements">All announcements</a></p>
+
+      <article>
+        <header>
+          <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+          <h1>{post.title}</h1>
+          <PostBadges pinned={post.pinned} draft={post.draft} grades={post.grades} />
+        </header>
+
+        {
+          cover && (
+            <img
+              class="cover"
+              src={imageUrl(cover.key)}
+              alt={cover.alt}
+              loading="eager"
+              decoding="async"
+            />
+          )
+        }
+
+        <div class="prose">
+          <Content />
+        </div>
+
+        {
+          post.href && (
+            <p class="cta-row">
+              <a
+                class="cta"
+                href={post.href}
+                target={isExternal(post.href) ? '_blank' : undefined}
+                rel={isExternal(post.href) ? 'noopener' : undefined}
+              >
+                {post.linkLabel ?? 'Read more'}
+                {isExternal(post.href) && <span class="sr-only"> (opens in a new tab)</span>}
+              </a>
+            </p>
+          )
+        }
+
+        {
+          gallery.length > 0 && (
+            <section class="gallery" aria-label="More photos">
+              <div class="rule" role="presentation" />
+              <ul>
+                {gallery.map((image) => (
+                  <li>
+                    <img
+                      src={imageUrl(image.key)}
+                      alt={image.alt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </article>
+    </div>
+  </main>
+  <div class="shell">
+    <Footer footer={homeEntry.data.footer} social={siteEntry.data.social} />
+  </div>
+</BaseLayout>
+
+<style>
+  .shell {
+    max-width: var(--pta-container);
+    margin-inline: auto;
+    padding-inline: var(--pta-gutter);
+  }
+
+  .back {
+    margin: var(--pta-gap) 0 0;
+  }
+
+  .back a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink);
+  }
+  .back a::before {
+    content: '\2190 ';
+    margin-inline-end: 0.3em;
+  }
+
+  article {
+    padding-block-end: var(--pta-section-y);
+  }
+
+  time {
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  h1 {
+    margin: 0.35rem 0 0;
+    max-width: var(--pta-measure);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    line-height: var(--leading-snug);
+  }
+
+  /* Reserved box: the dimensions are unknown at build time because the file
+     lives in R2, not in the build. Without this the article text jumps when the
+     photo lands. */
+  .cover {
+    display: block;
+    width: 100%;
+    max-width: var(--pta-measure);
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    margin-block: var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
+  }
+
+  .prose {
+    max-width: var(--pta-measure);
+  }
+
+  .prose :global(p) {
+    margin: 0 0 var(--pta-gap);
+  }
+
+  .prose :global(a) {
+    color: var(--pta-ink);
+  }
+
+  .cta-row {
+    margin: var(--pta-gap) 0 0;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.7rem 1.2rem;
+    border: var(--pta-border-width) solid var(--pta-cta-border);
+    border-radius: var(--pta-radius);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    box-shadow: var(--pta-shadow);
+    text-decoration: none;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  .gallery {
+    margin-block-start: var(--pta-section-y);
+  }
+
+  .rule {
+    height: var(--pta-rule-width);
+    background: var(--pta-rule);
+    margin-block-end: var(--pta-gap);
+  }
+
+  .gallery ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--pta-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface-alt);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

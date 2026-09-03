@@ -1,0 +1,90 @@
+---
+import { gradeLabels } from '../lib/announcements';
+
+/**
+ * The small labels that sit under an announcement title.
+ *
+ * Shared between the homepage block, the index and the post page so the pin
+ * means the same thing in all three. The pin exists because a pinned post
+ * appears above newer ones and there was previously nothing on screen
+ * explaining why - which reads as the list being sorted wrongly.
+ */
+interface Props {
+  pinned?: boolean;
+  draft?: boolean;
+  grades?: readonly string[];
+}
+
+const { pinned = false, draft = false, grades = [] } = Astro.props;
+const labels = gradeLabels(grades);
+const show = pinned || draft || labels.length > 0;
+---
+
+{
+  show && (
+    <p class="badges">
+      {pinned && (
+        <span class="badge pin">
+          <svg viewBox="0 0 16 16" aria-hidden="true" width="11" height="11">
+            <path
+              d="M9.5 1.5 14.5 6.5 12 7 9.9 9.1a4 4 0 0 0-1 1.7l-.4 1.5-4.8-4.8 1.5-.4a4 4 0 0 0 1.7-1L9 4zM4.7 11.3 1.5 14.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Pinned
+        </span>
+      )}
+      {draft && <span class="badge draft">Draft</span>}
+      {labels.length > 0 && (
+        <span class="badge grades">
+          {labels.length === 1 ? 'Grade' : 'Grades'} {labels.join(', ')}
+        </span>
+      )}
+    </p>
+  )
+}
+
+<style>
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.4rem 0 0;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.15rem 0.5rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+
+  /* The pin is the one that has to be noticed at a glance, because it explains
+     an ordering the reader can otherwise only find surprising. */
+  .pin {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+    border-color: var(--pta-accent);
+  }
+
+  .draft {
+    border-style: dashed;
+    color: var(--pta-ink-muted);
+  }
+
+  .grades {
+    color: var(--pta-ink-muted);
+  }
+</style>

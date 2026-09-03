@@ -5,7 +5,7 @@ import SiteHeader from '../../components/sections/SiteHeader.astro';
 import VideoEmbed from '../../components/sections/VideoEmbed.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
-import News from '../../components/sections/News.astro';
+import Announcements from '../../components/sections/Announcements.astro';
 import GetInvolved from '../../components/sections/GetInvolved.astro';
 import Committees from '../../components/sections/Committees.astro';
 import Footer from '../../components/sections/Footer.astro';
@@ -65,7 +65,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
 
   <div class="shell">
     <div class="rule" role="presentation"></div>
-    <News news={home.news} />
+    <Announcements announcements={home.announcements} />
     <div class="rule" role="presentation"></div>
     <GetInvolved getInvolved={home.getInvolved} />
     <Committees committees={home.committees} />
