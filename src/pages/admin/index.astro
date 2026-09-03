@@ -120,15 +120,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <div class="field">
           <label for="f-date">Date</label>
           <input id="f-date" name="date" type="date" required />
-          <p class="hint">Controls where the post appears in the list.</p>
+          <p class="hint">Controls where the post appears in the list.  Newest posts show first.</p>
         </div>
 
         <div class="field">
           <label for="f-body">What happened</label>
           <textarea id="f-body" name="body" rows="8" required></textarea>
           <p class="hint">
-            A few short paragraphs. Leave a blank line between them. Plain words are
-            fine.
+            A few short paragraphs. Leave a blank line between them.
           </p>
         </div>
 
