@@ -16,6 +16,7 @@ before the details.
 | 5 | [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md) | The shared password in front of the site, and how to remove it at launch |
 | 6 | [CALENDAR.md](CALENDAR.md) | How Google Calendar reaches the site, and why it is baked rather than fetched |
 | 7 | [ADMIN.md](ADMIN.md) | The `/admin` announcements editor: how it works, and the Cloudflare Access and GitHub token setup it needs |
+| 8 | [TERRAFORM.md](TERRAFORM.md) | Whether the hand-clicked Cloudflare setup should move into Terraform, what can and cannot be imported, and the boundary that keeps Terraform away from the Worker |
 
 [`../TASKS.md`](../TASKS.md) is the live task board: current status, open
 decisions, and numbered findings that other documents cite as `F12`, `D3` and so

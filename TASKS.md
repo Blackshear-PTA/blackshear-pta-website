@@ -147,6 +147,7 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D10 | **What is the source of truth for events** | ✅ **Decided** 2026-09-01 | **Google Calendar stays the source, and the site stops embedding it.** Site reads the public iCal feed and renders its own list. Full reasoning below |
 | D11 | **What `/gallery` is** | ✅ **Decided** 2026-09-01 | **Real photo grid, Instagram link beside it.** No Meta app, no 60-day token to refresh. Full reasoning below |
 | D12 | **GitHub token never expires** | ✅ **Decided** 2026-09-02 | An expiring token fails months later, breaks `/admin`, and nobody remembers why - which restarts exactly the staleness [F18](#f18) describes. Exposure is narrow: Contents-write on one already-public repo, no personal data, every change revertible. Compensating control is documentation, not rotation: owner, scope and revocation steps are in [docs/ADMIN.md](docs/ADMIN.md). Owned by the PTA account, not a board member's |
+| D13 | **Does the Cloudflare setup move into Terraform** | ⏳ **Open - recommendation ready** | Investigated 2026-09-03, nothing applied. **Recommended: generate and commit the config, do not adopt state yet**, then adopt four resources only when a named trigger fires. Full analysis, inventory and the wrangler/Terraform boundary in [docs/TERRAFORM.md](docs/TERRAFORM.md). Waits on **D2** for the multi-person case; **B6** is what changes the state calculus, because a Google SSO client secret lands in state in plaintext |
 | D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ### D10 in full - the calendar
@@ -401,6 +402,36 @@ for contain, and widening the rectangle 5%: 12, 10 and 14 failures respectively.
 The general lesson is worth more than the specific one. When verification is
 flaky, the answer is usually to move the logic somewhere it can be tested
 deterministically, not to keep re-running the flaky check until it agrees.
+
+<a name="f33"></a>
+**F33 - Terraform cannot capture the deploy pipeline, and the binding hazard
+runs the opposite way from the one we were guarding against.** Two things came
+out of the Terraform investigation ([D13](#open-decisions)) that change what the
+guardrails should be. Full detail in [docs/TERRAFORM.md](docs/TERRAFORM.md).
+
+**Workers Builds is not in the provider.** v5.24.0 ships 259 resources and none
+of them connect a Worker to a Git repository; provider issue
+[#6924](https://github.com/cloudflare/terraform-provider-cloudflare/issues/6924)
+has been open since March 2026. Build watch paths (U9) are part of the same
+configuration and equally unreachable. So the single most consequential piece of
+the deploy pipeline stays a dashboard click no matter what we decide, and
+"it's in Terraform now" would be a false sense of captured.
+
+**Wrangler does not delete secrets.** The stated fear was that Workers Builds
+and Terraform would overwrite each other's secrets on alternating deploys.
+Cloudflare's configuration reference is explicit that wrangler "will not delete
+your secrets ... unless you run `wrangler secret delete`", and the secrets
+reference says unlisted secrets are preserved from the previous version. The
+real collision is the other direction: `cloudflare_workers_script.bindings` is
+authoritative for the *entire* binding set and includes `secret_text` as a
+binding type, so a Terraform apply would plan to remove every secret it did not
+know about. Same conclusion - Terraform must never own the Worker - but if a
+secret ever goes missing, wrangler is not the suspect.
+
+The quieter version of the same trap: `cloudflare_worker` looks harmless because
+it holds no code, but it carries `observability`, which `wrangler.jsonc` already
+sets. There is no slice of the Worker that Terraform can hold without
+overlapping something wrangler declares.
 
 ---
 

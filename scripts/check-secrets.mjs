@@ -119,6 +119,27 @@ if (files.includes('.dev.vars')) {
   failures.push('.dev.vars is tracked by git - it holds real secrets and must be ignored');
 }
 
+/**
+ * Terraform state and variable files, if docs/TERRAFORM.md is ever acted on.
+ *
+ * Nothing in this repo uses Terraform today, so this rule catches nothing and
+ * costs nothing. It exists now rather than later because the alternative is a
+ * rule that lives only in prose, and F28 is what that is worth: three separate
+ * documents said the password must never be committed, and it was committed.
+ *
+ * State is the dangerous one. `sensitive` in a Terraform schema means redacted
+ * in plan output, NOT encrypted in state - so a Google SSO client secret (B6)
+ * would sit in `terraform.tfstate` in plaintext. .gitignore already covers
+ * these; this is the second mechanism, for the case where somebody uses
+ * `git add -f` or writes the file somewhere the pattern does not reach.
+ */
+const TERRAFORM_STATE = /(^|\/)(.*\.tfstate(\..*)?|.*\.tfvars(\.json)?)$/;
+for (const file of files) {
+  if (TERRAFORM_STATE.test(file)) {
+    failures.push(`${file} is tracked by git - Terraform state and tfvars can hold secrets in plaintext`);
+  }
+}
+
 console.log(`Scanned ${files.length} tracked files.`);
 if (failures.length) {
   console.error(`\n${failures.length} problem(s):`);

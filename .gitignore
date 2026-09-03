@@ -9,3 +9,13 @@ worker-configuration.d.ts
 .env
 .env.*
 .DS_Store
+
+# Terraform, if docs/TERRAFORM.md is ever acted on. State can contain secrets
+# in plaintext and this repo is public; tfvars would hold the API token.
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+# .terraform.lock.hcl is deliberately NOT listed here. It pins provider
+# versions and belongs in version control.
