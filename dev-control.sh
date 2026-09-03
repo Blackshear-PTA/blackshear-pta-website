@@ -8,6 +8,14 @@
 #   shared "impres-dev" tmux session, so it lands as a NEW TAB IN THE SAME
 #   GHOSTTY WINDOW as every other app, and your launch tab stays free.
 #
+#   While the interactive menu is on screen, it also sets THIS Ghostty tab's
+#   title to a live glyph reflecting service state (🟢 up / 🟡 partial /
+#   ⚫ down) via OSC 0 - same feature as the fleet controller, ported as-is.
+#   It reverts once you leave the menu; there's no background watcher. Note:
+#   Ghostty ignores OSC titles on a tab whose title you've pinned by hand
+#   (right-click > Change Tab Title...) - clear that override first if the
+#   glyph doesn't show up.
+#
 # HOW IT DIFFERS FROM THE FLEET TEMPLATE
 #   This is a static site, not an Express + React + Postgres app. There is no
 #   backend, no database, no Prisma and no PowerShell engine, so `dev-start.ps1
@@ -314,16 +322,51 @@ do_open() {
   printf '%sNothing running - start it first.%s\n' "$YELLOW" "$RESET"
 }
 
+# ── Ghostty tab title (menu-only) ─────────────────────────────────────────────
+# See impres-architect/shared-references/bootstrap/dev-control.template.sh for
+# the full rationale (why a title glyph, not a Ghostty tab color/badge; why
+# menu-only, not a background watcher) and the bash-3.2 read -t gotcha this
+# works around. Ported as-is, just walking $SERVICES instead of fixed ports.
+TAB_TITLE_REFRESH_SECS="${TAB_TITLE_REFRESH_SECS:-3}"
+
+_tab_state_glyph() {
+  local s up=0 down=0
+  for s in $SERVICES; do
+    port_listening "$(_svc_port "$s")" && up=$((up+1)) || down=$((down+1))
+  done
+  if   [[ "$down" -eq 0 ]]; then printf '🟢'   # everything up
+  elif [[ "$up"   -eq 0 ]]; then printf '⚫'   # everything down
+  else                            printf '🟡'   # partial - usually means something crashed
+  fi
+}
+
+_set_tab_title()   { printf '\033]0;%s %s\007' "$(_tab_state_glyph)" "$APP_SHORT"; }
+_reset_tab_title() { printf '\033]0;%s\007' "$APP_SHORT"; }
+
 # ── Interactive menu ──────────────────────────────────────────────────────────
 menu() {
+  local rc
   while true; do
     print_status
+    _set_tab_title
     printf '%s│%s\n' "$CYAN" "$RESET"
     printf '%s│%s  [s] start dev   [p] preview     [w] worker\n' "$CYAN" "$RESET"
     printf '%s│%s  [x] stop all    [r] restart     [l] logs\n' "$CYAN" "$RESET"
     printf '%s│%s  [c] checks      [o] open        [q] quit\n' "$CYAN" "$RESET"
     printf '%s└%s ' "$CYAN" "$RESET"
-    read -r choice || break
+    SECONDS=0
+    read -r -t "$TAB_TITLE_REFRESH_SECS" choice
+    rc=$?
+    if [[ $rc -ne 0 ]]; then
+      if [[ $SECONDS -lt 1 ]]; then
+        # Real EOF (Ctrl-D, or stdin closed), not a refresh tick - see the
+        # fleet controller for why elapsed time, not exit code, is what
+        # actually distinguishes the two on bash 3.2.
+        _reset_tab_title
+        break
+      fi
+      continue   # timed out waiting for input - loop back and refresh the title
+    fi
     case "$(_lc "$choice")" in
       s|start)     do_start dev;     _pause ;;
       p|preview)   do_start preview; _pause ;;
@@ -333,7 +376,7 @@ menu() {
       l|logs)      do_logs;          _pause ;;
       c|check)     do_check;         _pause ;;
       o|open)      do_open;          _pause ;;
-      q|quit|exit) printf 'Leaving any running servers up. Bye.\n'; break ;;
+      q|quit|exit) _reset_tab_title; printf 'Leaving any running servers up. Bye.\n'; break ;;
       "")          ;;
       *) printf '%sUnknown option: %s%s\n' "$YELLOW" "$choice" "$RESET"; sleep 1 ;;
     esac
