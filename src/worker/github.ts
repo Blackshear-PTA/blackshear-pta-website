@@ -18,7 +18,8 @@ export interface RepoConfig {
   owner: string;
   repo: string;
   branch: string;
-  token: string;
+  /** Absent only for an unauthenticated read; see call() below. */
+  token?: string;
 }
 
 export interface RepoFile {
@@ -54,7 +55,17 @@ async function call(
   return fetch(`${API}/repos/${config.owner}/${config.repo}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${config.token}`,
+      /**
+       * Omitted entirely when there is no token, rather than sent empty.
+       *
+       * This repository is public, so reads work unauthenticated - which is
+       * what lets a local read-only run of /admin list and open real posts
+       * with nothing configured but an email address. Sending
+       * "Bearer undefined" would instead earn a 401 that reads like a
+       * permissions problem. Writes always carry a token: admin.ts refuses
+       * them before reaching here otherwise.
+       */
+      ...(config.token ? { Authorization: `Bearer ${config.token}` } : {}),
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
       // GitHub rejects requests without one. Omitting it produces a 403 that

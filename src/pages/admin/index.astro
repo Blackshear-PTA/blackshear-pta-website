@@ -43,6 +43,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <p class="who">Signed in as <b data-who>checking…</b></p>
       </header>
 
+      <!--
+        Shown only on localhost, filled in from the session response. A dev
+        server looks exactly like the real editor, but there is no local copy of
+        the content behind it - reads and saves both go to the real repository -
+        so the banner names the branch rather than leaving that to be assumed.
+      -->
+      <p class="devbar" data-devbar hidden></p>
+
       <div class="rule" role="presentation"></div>
 
       <details class="guide">
@@ -1017,8 +1025,24 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   (async () => {
     try {
-      const session = (await api('session')) as { email: string };
+      const session = (await api('session')) as {
+        email: string;
+        dev?: boolean;
+        repo?: string;
+        branch?: string;
+        canWrite?: boolean;
+      };
       $('[data-who]').textContent = session.email;
+
+      // The `dev` fields only ever come back from a localhost run.
+      if (session.dev) {
+        const bar = $<HTMLElement>('[data-devbar]');
+        bar.textContent = session.canWrite
+          ? `Local development — saving commits for real to ${session.repo} on ${session.branch}.`
+          : `Local development — read-only. Posts are read live from ${session.repo} on ${session.branch}.`;
+        bar.classList.toggle('is-live', Boolean(session.canWrite));
+        bar.hidden = false;
+      }
     } catch (error) {
       $('[data-who]').textContent = 'not signed in';
       say(statusEl, (error as Error).message, 'bad');
@@ -1059,6 +1083,28 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   }
 
   .who { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
+
+  /*
+    Same stripe idiom as .guide - a coloured edge on white, never a filled
+    panel. Read-only carries the quiet accent; .is-live means a save commits
+    for real, and borrows the delete button's red so it reads as a warning
+    rather than as decoration.
+  */
+  .devbar {
+    margin: 0 0 var(--pta-gap);
+    padding: 0.6rem 0.85rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-inline-start: 8px solid var(--pta-accent-quiet);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    font-size: var(--text-fine);
+    color: var(--pta-ink);
+  }
+
+  .devbar.is-live {
+    border-inline-start-color: #b3261e;
+    font-weight: 600;
+  }
 
   .rule {
     height: var(--pta-rule-width);

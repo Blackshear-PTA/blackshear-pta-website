@@ -561,6 +561,45 @@ one thing per screen.
 The rule that came out of it: **lemon is a stripe, a button, or a badge outline.
 It is never the background of something you have to read.**
 
+<a name="f40"></a>
+**F40 - The two features hardest to get right were the two that could not be
+tested without deploying.** `/admin` and announcement photos both depend on
+Cloudflare edge infrastructure, and neither has a local equivalent: Access
+attaches no token to a localhost request, so every `/admin/api/*` call answered
+`401 Not signed in.`, and `wrangler dev` binds a *local* R2 bucket that starts
+empty, so every photo 404'd. Both looked like intermittent breakage and were
+reported as such. Neither was - they were structural, and had been since the day
+each shipped. The editor is the most behaviour-dense part of the site and it was
+the only part with no feedback loop shorter than a deploy.
+
+Closed with three changes, in `src/worker/access.ts`, `admin.ts` and
+`scripts/seed-images.mjs`:
+
+- `DEV_ADMIN_EMAIL` in `.dev.vars` signs you in locally. Honoured **only** on a
+  loopback hostname, which is what makes it safe: the names that route to this
+  Worker are `blackshearpta.org` and its `workers.dev` subdomain, so the branch
+  is unreachable in production even if the variable were set there by mistake.
+  The variable is the second lock, not the first.
+- Local runs are **read-only** unless `DEV_ALLOW_WRITES=true`. There is no local
+  copy of the content - a save is a real commit - so browsing the editor must
+  not be able to publish by accident. A banner names the repository and branch.
+- `npm run dev:images` copies the current posts' photos into the local bucket
+  over plain HTTPS, needing no credentials because `/images/*` is already routed
+  ahead of the gate.
+
+A read-only local session also needs **no GitHub token at all**: the repository
+is public, so `call()` now omits the `Authorization` header when there is no
+token rather than sending `Bearer undefined`. Local setup is one line.
+
+Two things worth keeping from this. The hostname test is written as a pure
+function so `check:access` can assert it directly, and the eleven new cases
+there include the lookalikes a loose check would wrongly accept
+(`localhost.example.com`, `notlocalhost`, `127.0.0.1.example.com`) - the same
+"move the logic somewhere deterministically testable" lesson as [F38](#f38) and
+`src/lib/crop.ts`. And the `check:secrets` gate caught a `GITHUB_TOKEN=<...>`
+placeholder in the documentation written *for this finding*, which is the third
+time that gate has paid for itself.
+
 ---
 
 ## Reference

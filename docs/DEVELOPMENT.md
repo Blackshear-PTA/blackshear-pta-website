@@ -117,6 +117,54 @@ If you are testing the password gate, copy `.dev.vars.example` to `.dev.vars`
 and put the real password in it first, or the gate fails closed and lets nobody
 through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
 
+### Testing `/admin` and photos locally
+
+Two parts of the site are edge infrastructure, so on 4321 and 4322 they do not
+exist at all, and on 8787 they start out empty. Neither is broken when that
+happens; both need one setup step.
+
+**Sign-in.** Cloudflare Access runs at Cloudflare's edge, so no Access token is
+ever attached to a localhost request and `/admin/api/*` answers `401 Not signed
+in.` Put one line in `.dev.vars`:
+
+```
+DEV_ADMIN_EMAIL=you@example.com
+```
+
+That is honoured **only** when the request arrives on `localhost`, `127.0.0.1`
+or `[::1]`, so it cannot open anything in production even if it were set there
+by mistake — the hostname is the lock, not the variable. See `devIdentity()` in
+`src/worker/access.ts`, and `npm run check:access` for the tests holding it to
+that.
+
+You do **not** need a GitHub token for this. The repository is public, so a
+read-only local session lists and opens the real posts unauthenticated. If you
+have a stale `GITHUB_TOKEN` line in `.dev.vars`, delete it — an invalid token is
+worse than none, and the editor will tell you so.
+
+**Local runs are read-only.** There is no local copy of the content: `/admin`
+reads and writes through the GitHub API, so a save from localhost is a real
+commit to the real repository. Writing therefore needs saying twice:
+
+- a real fine-grained `GITHUB_TOKEN` with **Contents: write**
+- `GITHUB_BRANCH` pointed at a scratch branch, so a test post lands somewhere
+  harmless rather than on the live site
+- `DEV_ALLOW_WRITES=true`
+
+The editor shows a banner naming the repository and branch a save would land
+on — quiet accent for read-only, red for live.
+
+**Photos.** `wrangler dev` binds a *local* R2 bucket, not the production one, so
+it starts empty and every photo 404s. Fill it:
+
+```bash
+npm run dev:images
+```
+
+That copies the photos the current posts reference from the live site. It needs
+no credentials — `/images/*` is routed ahead of the gate — and the local bucket
+persists in `.wrangler/`, so this is once per checkout, not once per run.
+
 ## Layout
 
 ```
@@ -144,7 +192,7 @@ src/pages/[page].astro     renders anything in pages.yaml
 src/worker.ts              TEMPORARY - the pre-launch password gate
 
 wrangler.jsonc             Cloudflare config. Three lines marked TEMPORARY
-scripts/                   the gates, plus the calendar refresh
+scripts/                   the gates, the calendar refresh, the image seeder
 ```
 
 ## Two rules that will bite you

@@ -35,6 +35,12 @@
 #   touching them, verify on :8787 - and copy .dev.vars.example to .dev.vars
 #   first, or the gate will fail closed and let nobody through.
 #
+#   /admin needs two more steps, because Cloudflare Access and the production R2
+#   bucket are edge infrastructure and neither exists here: set DEV_ADMIN_EMAIL
+#   in .dev.vars to sign in locally, and run `npm run dev:images` once to fill
+#   the local photo bucket. Without those, /admin answers 401 and photos 404 -
+#   both expected, neither a fault. See docs/DEVELOPMENT.md.
+#
 #   preview and worker build first, so they show you the real thing rather than
 #   whatever was in dist/ from last time.
 #

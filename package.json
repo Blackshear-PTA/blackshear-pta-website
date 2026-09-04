@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:images": "node scripts/seed-images.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "wrangler types && astro check",

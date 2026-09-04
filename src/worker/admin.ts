@@ -8,7 +8,7 @@
  * Deliberately not a REST framework. Six routes with a switch is less code than
  * a router, and this file is meant to stay readable to whoever inherits it.
  */
-import { verifyAccessJwt } from './access';
+import { devIdentity, verifyAccessJwt } from './access';
 import {
   listDirectory,
   readFile,
@@ -40,6 +40,14 @@ export interface AdminEnv extends ImageEnv {
   GITHUB_BRANCH?: string;
   CF_ACCESS_TEAM_DOMAIN?: string;
   CF_ACCESS_AUD?: string;
+  /**
+   * Local development only. Lives in .dev.vars, which is gitignored and never
+   * deployed - and see devIdentity() in ./access for why setting it in
+   * production would still change nothing.
+   */
+  DEV_ADMIN_EMAIL?: string;
+  /** Local development only. "true" lets a local run commit for real. */
+  DEV_ALLOW_WRITES?: string;
 }
 
 const json = (data: unknown, status = 200): Response =>
@@ -53,17 +61,29 @@ const json = (data: unknown, status = 200): Response =>
  * which value is missing. The alternative is a 500 that sends whoever set this
  * up hunting through Worker logs for a typo in a secret name.
  */
-function readConfig(env: AdminEnv): { config: RepoConfig } | { error: string } {
-  const missing = (['GITHUB_TOKEN', 'CF_ACCESS_TEAM_DOMAIN', 'CF_ACCESS_AUD'] as const).filter(
-    (k) => !env[k],
-  );
+function readConfig(env: AdminEnv, dev: boolean, canWrite: boolean): { config: RepoConfig } | { error: string } {
+  /**
+   * Which values a request actually needs, rather than the full set.
+   *
+   * A local run signing in through devIdentity() never reaches verifyAccessJwt,
+   * so demanding the two Access secrets there would invent a configuration
+   * error for a code path that does not run. And a local run that cannot write
+   * needs no GitHub token either: the repository is public, so listing and
+   * reading posts works unauthenticated. That combination is what reduces local
+   * setup to a single line in .dev.vars.
+   */
+  const required: (keyof AdminEnv)[] = [];
+  if (!dev) required.push('GITHUB_TOKEN', 'CF_ACCESS_TEAM_DOMAIN', 'CF_ACCESS_AUD');
+  else if (canWrite) required.push('GITHUB_TOKEN');
+
+  const missing = required.filter((k) => !env[k]);
   if (missing.length) {
     return { error: `Not configured yet. Missing Worker secret(s): ${missing.join(', ')}.` };
   }
   const [owner, repo] = (env.GITHUB_REPO ?? 'Blackshear-PTA/blackshear-pta-website').split('/');
   if (!owner || !repo) return { error: 'GITHUB_REPO must look like owner/repo.' };
   return {
-    config: { owner, repo, branch: env.GITHUB_BRANCH ?? 'main', token: env.GITHUB_TOKEN! },
+    config: { owner, repo, branch: env.GITHUB_BRANCH ?? 'main', token: env.GITHUB_TOKEN },
   };
 }
 
@@ -169,22 +189,64 @@ export async function handleAdminApi(
   env: AdminEnv,
   url: URL,
 ): Promise<Response> {
-  const configResult = readConfig(env);
+  /**
+   * Checked first, so a local run needs neither the Access secrets nor a
+   * reachable certs endpoint. Returns null anywhere but localhost.
+   */
+  const dev = devIdentity(url, env.DEV_ADMIN_EMAIL);
+
+  /**
+   * A local run is read-only unless you ask for otherwise.
+   *
+   * There is no local copy of the content to practise on: /admin reads and
+   * writes through the GitHub Contents API, so a save from localhost is a real
+   * commit to the real repository, landing on whatever GITHUB_BRANCH says -
+   * `main` unless it was changed. Someone clicking around a dev server to see
+   * how the editor behaves should not be able to publish an announcement by
+   * accident. Reading is the common case and stays open; writing is one line in
+   * .dev.vars away.
+   */
+  const canWrite = !dev || env.DEV_ALLOW_WRITES === 'true';
+
+  const configResult = readConfig(env, Boolean(dev), canWrite);
   if ('error' in configResult) return json({ error: configResult.error }, 503);
   const { config } = configResult;
 
-  let identity;
-  try {
-    identity = await verifyAccessJwt(request, env.CF_ACCESS_TEAM_DOMAIN!, env.CF_ACCESS_AUD!);
-  } catch (error) {
-    return json({ error: `Could not verify sign-in: ${(error as Error).message}` }, 503);
+  let identity = dev;
+  if (!identity) {
+    try {
+      identity = await verifyAccessJwt(request, env.CF_ACCESS_TEAM_DOMAIN!, env.CF_ACCESS_AUD!);
+    } catch (error) {
+      return json({ error: `Could not verify sign-in: ${(error as Error).message}` }, 503);
+    }
   }
   if (!identity) return json({ error: 'Not signed in.' }, 401);
+
+  if (!canWrite && request.method !== 'GET') {
+    return json(
+      {
+        error:
+          'Local development is read-only. Saving from here would commit to the real ' +
+          'repository, so it is off unless you ask: set DEV_ALLOW_WRITES=true in .dev.vars.',
+      },
+      403,
+    );
+  }
 
   const route = url.pathname.replace(/^\/admin\/api\/?/, '');
 
   try {
-    if (route === 'session') return json({ email: identity.email });
+    if (route === 'session') {
+      return json({
+        email: identity.email,
+        // Only ever present on localhost. The editor uses it to say out loud
+        // which repository and branch a save would land on, because from a dev
+        // server that is the one thing you cannot tell by looking.
+        ...(dev
+          ? { dev: true, repo: `${config.owner}/${config.repo}`, branch: config.branch, canWrite }
+          : {}),
+      });
+    }
 
     if (route === 'posts' && request.method === 'GET') {
       const files = await listDirectory(config, DIR);
@@ -315,7 +377,25 @@ export async function handleAdminApi(
     return json({ error: 'Unknown endpoint.' }, 404);
   } catch (error) {
     if (error instanceof ConflictError) return json({ error: error.message }, 409);
-    return json({ error: (error as Error).message }, 500);
+    const message = (error as Error).message;
+    /**
+     * A rejected token is the one local failure whose message does not point at
+     * its own fix. Reads here need no token at all - the repository is public -
+     * so a leftover or expired GITHUB_TOKEN in .dev.vars turns a session that
+     * would have worked into a bare "Bad credentials" from GitHub.
+     */
+    if (dev && /\b401\b/.test(message)) {
+      return json(
+        {
+          error:
+            'GitHub rejected the token in .dev.vars. For read-only local work you do not need ' +
+            'one at all - remove the GITHUB_TOKEN line and reload. ' +
+            `(GitHub said: ${message})`,
+        },
+        500,
+      );
+    }
+    return json({ error: message }, 500);
   }
 }
 
