@@ -161,7 +161,7 @@ function validate(payload: PostPayload): { ok: true } | { ok: false; error: stri
 }
 
 /**
- * Normalises the images array off the wire. Returns null when the shape is
+ * Normalizes the images array off the wire. Returns null when the shape is
  * wrong, so a malformed payload is a clear message rather than a crash.
  */
 function readImages(value: unknown): Array<{ key: string; alt: string }> | null {
@@ -270,7 +270,7 @@ export async function handleAdminApi(
               sha: file.sha,
               title: parsed?.meta.title ?? titleFromFilename(file.name),
               date: parsed?.meta.date ?? dateFromFilename(file.name) ?? '',
-              /** First line of the body, so a row is recognisable unopened. */
+              /** First line of the body, so a row is recognizable unopened. */
               excerpt: (parsed?.body ?? '').trim().split(/\n\s*\n/)[0]?.slice(0, 120) ?? '',
               images: parsed?.meta.images ?? [],
               cover: parsed?.meta.cover ?? '',

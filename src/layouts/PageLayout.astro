@@ -78,11 +78,21 @@ const backdropImg = await getImage({
 <BaseLayout title={page.meta.title} description={page.meta.description} themeId={theme.id}>
   <SiteHeader site={siteEntry.data} />
 
-  <main id="main">
-    <div
-      class="topband"
-      style={`--topband-img: url(${backdropImg.src}); --topband-pos: ${backdrop.position}`}
-    >
+  <main
+    id="main"
+    class="page"
+    style={`--topband-img: url(${backdropImg.src}); --topband-pos: ${backdrop.position}`}
+  >
+    {/*
+      The photo is its own layer rather than the band's background, so it can
+      run on past the title into the first stretch of the page. Purely
+      decorative, hence aria-hidden and an empty element rather than a wrapper:
+      wrapping would mean deciding here how much of <slot /> to enclose, and the
+      slot is opaque to this file.
+    */}
+    <div class="backdrop" aria-hidden="true"></div>
+
+    <div class="topband">
       <div class="shell">
         <div class="band-inner" aria-labelledby={titleId}>
           <h1 id={titleId}>{page.title}</h1>
@@ -114,25 +124,67 @@ const backdropImg = await getImage({
     screen edges without `calc(50% - 50vw)`, which is off by the scrollbar width
     and put the page into horizontal scroll the last time it was used.
   */
-  .topband {
+  .page {
     position: relative;
     isolation: isolate;
+  }
+
+  /*
+    The photo runs past the title and behind the first stretch of the page.
+
+    It used to be the background of the band alone, which on the homepage wraps
+    the hero AND the quick actions and so reads as a photograph, but on every
+    other page wraps only a heading and one line - a stripe that stopped dead
+    where the content began. Same picture, opposite impression.
+
+    Two things make the taller version work rather than just bigger. The height
+    is viewport-relative so it fills most of the first screen on a desktop
+    without becoming a wall on a laptop, and the bottom is masked to
+    transparent, so the photo ends by running out rather than by being cut.
+
+    Contrast is safe past the fade, and safer than the band itself: the mask
+    takes the white scrim down with the photo, so the composite only ever moves
+    toward the page's own white ground. The scrim alpha is a gate-checked value,
+    not a taste setting - see scripts/check-contrast.mjs.
+  */
+  .backdrop {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: -1;
+    height: clamp(24rem, 74vh, 46rem);
+    /* Never past the end of the page on a short one, where the photo would
+       otherwise carry on under the footer. */
+    max-height: 100%;
     background-image: var(--topband-img);
     background-size: cover;
     background-position: var(--topband-pos, center);
     /* Not `fixed`: iOS Safari renders that at the wrong scale and stutters. */
     background-attachment: scroll;
+    -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
   }
 
-  /* Scrim as a pseudo-element, not a translucent background on the band, so the
+  /* Scrim as a pseudo-element, not a translucent background on the photo, so the
      alpha stays one tunable number and the text above it is fully opaque. */
-  .topband::before {
+  .backdrop::before {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
     background: var(--pta-topband-scrim);
     opacity: var(--pta-topband-alpha);
+  }
+
+  /*
+    Shorter and less of the viewport on a phone. 74vh of photo on a 375x812
+    screen is the whole first screen and then some, which pushes the actual
+    content of the page below the fold - the same mistake the mobile header
+    already had to be rescued from.
+  */
+  @media (max-width: 47.99rem) {
+    .backdrop {
+      height: clamp(18rem, 52vh, 26rem);
+    }
   }
 
   .band-inner {

@@ -402,7 +402,7 @@ export CLOUDFLARE_ACCOUNT_ID="<from the dashboard sidebar>"
 export CLOUDFLARE_ZONE_ID="<from the zone overview>"
 ```
 
-`cf-terraforming` needs an initialised Terraform directory with the provider
+`cf-terraforming` needs an initialized Terraform directory with the provider
 installed before it can generate anything:
 
 ```sh

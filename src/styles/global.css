@@ -140,7 +140,7 @@
   --pta-rule: var(--color-brand-black);
   --pta-focus: var(--color-brand-blue);
 
-  /* header - a theme that leaves these alone still gets colour at the top,
+  /* header - a theme that leaves these alone still gets color at the top,
      which is the point: the header is the first thing on every page and a
      black-and-white one reads as unfinished. */
   --pta-header-bg: var(--color-brand-blue);
@@ -158,7 +158,7 @@
   --pta-cta-border: var(--color-brand-black);
 
   /* The disc behind the mascot; see src/components/BuzzMascot.astro. The
-     mascot's own colours are fixed (it is a real logo), so only the disc is
+     mascot's own colors are fixed (it is a real logo), so only the disc is
      themeable. White on black is what lets the same mark sit on a lemon header
      band and a near-black one without the yellow body vanishing into either. */
   --pta-mark-ground: var(--color-brand-white);

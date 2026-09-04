@@ -34,7 +34,7 @@ npm run check:access    # Access token verification refuses every forgery
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
 npm run check:crop      # what you see in the crop frame is what gets stored
 npm run check:images    # only real images reach the bucket, on their bytes
-npm run check:secrets   # no recognisable credential committed to a public repo
+npm run check:secrets   # no recognizable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
 ```
 
@@ -71,9 +71,9 @@ than the code.
 `check:secrets` exists because this repo is public, three documents already
 said the password must never be committed, and it was committed anyway (F28) -
 in the note explaining how to clean up a different mistake involving it. Prose
-did not hold. It is honest about its limits: it cannot recognise a secret that
+did not hold. It is honest about its limits: it cannot recognize a secret that
 looks like an ordinary English word, which is exactly what leaked. A green run
-means "no *recognisable* secret", not "no secret".
+means "no *recognizable* secret", not "no secret".
 
 `check:ical` runs in CI before the calendar refresh, so a parser regression
 keeps yesterday's good snapshot instead of committing a broken one.
@@ -247,13 +247,13 @@ they will not error, the utility simply is not generated. Use the tokens in
 short version is that a design system you can bypass by accident is not one.
 
 **Yellow is never text on white.** Lemon on white is 1.33:1 and fails WCAG AA
-outright. It is a background and accent colour only; yellow text needs a black
+outright. It is a background and accent color only; yellow text needs a black
 or blue ground. Full table in [`../assets/brand/README.md`](../assets/brand/README.md).
 
 ## Themes
 
 A theme is a **token set and a structure**, paired in `src/themes/registry.ts`.
-Pairing them is deliberate: it makes a token-only recolour impossible to ship by
+Pairing them is deliberate: it makes a token-only recolor impossible to ship by
 accident, which is the failure mode where several "different designs" turn out
 to be one template in several palettes.
 

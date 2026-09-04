@@ -29,7 +29,7 @@
 
 | U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
 
-**Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labelled so a reserve is not mistaken for a live option.
+**Now that a design is chosen**, `/` serves the real Civic Letterpress A homepage. `/preview` stays up as a reference and still shows all three, labeled so a reserve is not mistaken for a live option.
 
 *Going forward, code changes land via branch → PR rather than direct pushes to `main`.*
 
@@ -91,7 +91,7 @@
 - [x] **A8**: ~~"Coming soon" page at `/`~~ - `CLAUDE` - **Superseded.** `/` now serves the real Civic Letterpress A homepage ([A19](#phase-2---real-site)). The whole zone is still `noindex` ([A6](#phase-0---accounts--scaffold)) and Weebly is still canonical until cutover, so nothing is prematurely public - but a placeholder no longer buys anything
 - [~] **A9**: Extract copy from Weebly into `src/content/home.yaml` - `CLAUDE` - In [PR #1](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/1). Real copy and real links, no placeholders left. Meeting dates taken from the 2026-2027 calendar, not the Weebly homepage, which is a year stale ([F18](#f18))
 - [x] **A10**: Salvage the four usable photos from Weebly - `CLAUDE` - In `assets/from-weebly/`
-- [~] **A11**: Brand marks - `CLAUDE` + `JON` - Header now carries an **SVG yellow jacket drawn as geometry** (`src/components/BuzzMark.astro`), themed via four CSS tokens so it can be full-colour, one-ink, or silhouette per theme. A raster crop could not do that. **Still open: whether the PTA fronts with school marks or its own lockup** ([F11](#f11))
+- [~] **A11**: Brand marks - `CLAUDE` + `JON` - Header now carries an **SVG yellow jacket drawn as geometry** (`src/components/BuzzMark.astro`), themed via four CSS tokens so it can be full-color, one-ink, or silhouette per theme. A raster crop could not do that. **Still open: whether the PTA fronts with school marks or its own lockup** ([F11](#f11))
 - [x] **A12**: Theme token architecture - `CLAUDE` - Registry pairs each theme with a structure so a token-only recolor cannot ship by accident. 4 structures, ~40 `--pta-*` tokens, sections read tokens only
 - [x] **A13**: ~~Six themes~~ → **three** - `CLAUDE` - Built six, each with its own self-hosted typeface pairing. The board cut to two, then Civic split into A and B. The four that lost are out of the working tree but still in git history
 - [x] **A14**: Instant switcher at `/preview` - `CLAUDE` - Now a **reference page**, not a ballot: it no longer asks for a vote, and the chosen design is tagged as such. All three render, two `display:none`. Choice persists, `?theme=` is shareable, and `?theme=civic-letterpress` still resolves to A so links shared before the split keep working. Only the visible theme's fonts download
@@ -106,7 +106,7 @@
 
 - [x] **A19**: Promote Civic Letterpress A to `/` - `CLAUDE` - Homepage renders the chosen design; the `/ → /preview/` vote redirect is deleted. `siteThemeId` (the live site's design) is now a separate export from `defaultThemeId` (which panel `/preview` opens on), so pointing the preview at a reserve cannot silently re-skin the homepage. B and Print Shop still build and still pass the contrast gate
 - [x] **A20**: **Build the page set** - `CLAUDE` + `JON` - Page list confirmed 2026-08-31. Pages are content, not code: a top-level key in `src/content/pages.yaml` publishes a URL, so adding one needs no code change. Copy is **lifted from Weebly to match current state**, with a rewrite pass deferred.
-  - [x] `/little-east` - year-by-year archive. Four broken or mislabelled links corrected or dropped ([F21](#f21))
+  - [x] `/little-east` - year-by-year archive. Four broken or mislabeled links corrected or dropped ([F21](#f21))
   - [x] `/sponsors` - Fundraising committee lands here. Full tier list; see [F22](#f22) for the Family Buzz question
   - [x] `/staff-appreciation` - **no Weebly page existed**; built from the homepage blurb and a Drive PDF ([F23](#f23))
   - [x] `/campus-beautification` - **no Weebly page existed**, and it was called "Garden"; renamed throughout ([F23](#f23))
@@ -125,6 +125,7 @@
 - [ ] **A28**: **Photo library** - `JON` - Only four real photographs exist ([F6](#findings)); the rest of the Weebly library is flyers and sponsor logos. **Needs 15-20 real photos** from Instagram and the board. This gates how good the page set can look more than any code does
 - [x] **A30**: **Pre-launch gate** - `CLAUDE` + `JON` - **Live and verified 2026-09-01.** One shared password for the e-board, so anyone who wanders onto the domain early gets "under construction, here is our current site" rather than a half-built PTA site they take for real. A small Worker (`src/worker.ts`) in front of the static assets; cookie lasts 30 days. **The password is deliberately not in this repo** - the repo is public, so a committed password is no password. Not a security boundary and not meant to be: treat everything behind it as public
 - [x] **A31**: **Split the documentation** - `CLAUDE` - The root `README.md` was a developer document sitting where a board member would look first, and it still described the repo as an empty scaffold with placeholder themes. It is now written for a non-technical reader: what the site is, how it works in plain terms, which file holds which words, and who to ask. Everything technical moved to `docs/`, split by concern, with an index at [`docs/README.md`](docs/README.md). Point of the exercise is bringing more people in - somebody arriving cold should not have to read about `run_worker_first` to find out what this is
+- [ ] **A32**: **Email notifications for new announcements** - `JON` decides, `CLAUDE` builds - Replaces RSS as the visible option on `/announcements`. RSS stays (it costs nothing and a reader user would otherwise have no way in), but it is not the answer for most parents. **Blocked on a platform decision**, because the shape of the work differs completely between the options and all of them involve holding parents' email addresses. See [D12](#open-decisions)
 - [ ] **A29**: **Cutover** - `JON` + `CLAUDE` - Retire Weebly, remove `noindex` in both places ([A6](#phase-0---accounts--scaffold)), flip A22 to 301, remove the pre-launch gate ([A30](#phase-2---real-site): delete `src/worker.ts` plus the three lines marked TEMPORARY in `wrangler.jsonc`), submit a sitemap. **Do not remove `noindex` before Weebly is actually retired** - two indexed copies of the same content is a ranking mess to unwind
 
 ### Phase 3 - Member accounts *(not started, only if still wanted)*
@@ -146,10 +147,11 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D7 | Registrar transfer timing | ✅ **Decided** | Defer to October. Renewal is 6 days out; a failed transfer near expiry risks losing the domain to save ~$20 |
 | D8 | Replace SignUpGenius / ClassDojo / WhatsApp | ✅ **Decided** | Phase 2 aggregates and links out. Replacement is a later phase, evaluated on its own |
 | D10 | **What is the source of truth for events** | ✅ **Decided** 2026-09-01 | **Google Calendar stays the source, and the site stops embedding it.** Site reads the public iCal feed and renders its own list. Full reasoning below |
-| D11 | **What `/gallery` is** | ✅ **Decided** 2026-09-01 | **Real photo grid, Instagram link beside it.** No Meta app, no 60-day token to refresh. Full reasoning below |
+| D11 | **What `/gallery` is** | ♻️ **Revised** 2026-09-04 | Was: photo grid plus a link, no Meta app. Now **both** - the grid stays, and the twelve most recent posts are embedded above it, refreshed nightly by [`refresh-instagram.yml`](.github/workflows/refresh-instagram.yml). What changed is that the 60-day token is refreshed by the job rather than by a person, so the failure the original decision avoided only happens if the job stops. And it fails loudly instead of blanking the gallery. Needs Meta-side setup from `JON`: [docs/INSTAGRAM.md](docs/INSTAGRAM.md) |
+| D12 | **How parents subscribe to announcements** | ❓ **Open** | RSS is on the page and is not the answer for most people. An email list is, but every option holds parents' addresses somewhere and they differ enough that the build is a different job for each: a self-hosted list on D1 plus a free sending tier, an off-the-shelf newsletter service, or a Google Group. Blocks [A32](#phase-2---real-site) |
 | D12 | **GitHub token never expires** | ✅ **Decided** 2026-09-02 | An expiring token fails months later, breaks `/admin`, and nobody remembers why - which restarts exactly the staleness [F18](#f18) describes. Exposure is narrow: Contents-write on one already-public repo, no personal data, every change revertible. Compensating control is documentation, not rotation: owner, scope and revocation steps are in [docs/ADMIN.md](docs/ADMIN.md). Owned by the PTA account, not a board member's |
 | D13 | **Does the Cloudflare setup move into Terraform** | ⏳ **Open - recommendation ready** | Investigated 2026-09-03, nothing applied. **Recommended: generate and commit the config, do not adopt state yet**, then adopt four resources only when a named trigger fires. Full analysis, inventory and the wrangler/Terraform boundary in [docs/TERRAFORM.md](docs/TERRAFORM.md). Waits on **D2** for the multi-person case; **B6** is what changes the state calculus, because a Google SSO client secret lands in state in plaintext |
-| D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labelled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
+| D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labeled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ### D10 in full - the calendar
 
@@ -226,7 +228,7 @@ A wall of photos pulled live from Instagram is genuinely harder than it looks no
 **F20 - Two layout bugs the automated checks caught that screenshots did not.** (1) The `editorial` structure's full-bleed band used the common `margin-inline: calc(50% - 50vw)` trick, which is off by the scrollbar width - `50vw` counts it, `50%` does not - putting the page into horizontal scroll on any desktop with a classic scrollbar. Fixed by making the band a DOM sibling of the container so it is naturally full width, with no arithmetic. (2) Header nav links measured ~37px tall against the 44px touch minimum, because padding alone at `--text-fine` does not reach it. Both were invisible at a glance and only showed up under measurement - worth remembering that the visual pass is not the QA pass.
 
 <a name="f21"></a>
-**F21 - Four of the Little EAST links on the current site are broken or mislabelled.** Found by actually following every one of them while lifting the copy, rather than assuming. (1) The 2023 auction link is written `tinyurl.com10thLittleEAST` - **no slash** - so it has never worked; the corrected URL resolves fine and is what the new page uses. (2) `tinyurl.com/11thLittleEAST`, labelled "2024 Silent Auction", actually goes to **a YouTube video**; relabelled. (3) `tinyurl.com/BlackshearLEPics`, labelled "photos", **downloads a Dropbox zip** rather than opening a gallery; the new page says so. (4) `biddingowl.com/blackshearlittleeast` (2022 auction) now redirects to BiddingOwl's own homepage - the auction is gone - so it is **dropped rather than carried over**. Shipping a link already known to be dead is worse than not shipping it. Reinforces [F19](#f19): opaque redirects nobody can audit without clicking.
+**F21 - Four of the Little EAST links on the current site are broken or mislabeled.** Found by actually following every one of them while lifting the copy, rather than assuming. (1) The 2023 auction link is written `tinyurl.com10thLittleEAST` - **no slash** - so it has never worked; the corrected URL resolves fine and is what the new page uses. (2) `tinyurl.com/11thLittleEAST`, labeled "2024 Silent Auction", actually goes to **a YouTube video**; relabeled. (3) `tinyurl.com/BlackshearLEPics`, labeled "photos", **downloads a Dropbox zip** rather than opening a gallery; the new page says so. (4) `biddingowl.com/blackshearlittleeast` (2022 auction) now redirects to BiddingOwl's own homepage - the auction is gone - so it is **dropped rather than carried over**. Shipping a link already known to be dead is worse than not shipping it. Reinforces [F19](#f19): opaque redirects nobody can audit without clicking.
 
 <a name="f25"></a>
 **F25 - The calendar is baked, not fetched, and the numbers are why.** The Google feed is ~300KB and carries every event back to 2020; parsing it costs about 8ms against a **10ms CPU ceiling per request** on the Cloudflare Workers free plan. Caching makes an overrun rare rather than impossible, and "the calendar occasionally 500s" is a bad failure for the page a parent checks on the way out of the door. So `scripts/refresh-events.mjs` parses it into `src/data/events.json`, a GitHub Action reruns that daily and commits any change, and the commit is what triggers the rebuild. The site stays fully static and the calendar has no runtime failure mode at all. **The unplanned benefit: calendar changes are now reviewable diffs** - "who moved the PTA meeting" is answerable from `git log`. Cost is up to a day of staleness, which is well inside tolerance for events scheduled weeks out, and `/calendar` prints the snapshot date so nobody has to guess.
@@ -371,7 +373,7 @@ method and there were zero. Only the vanishing application was the outage.
 
 Two lessons. Setup guidance written from memory about a vendor dashboard is
 worth roughly nothing - this file asserted the opposite of the documented
-behaviour and cost a round trip. And when a real outage is in progress it is
+behavior and cost a round trip. And when a real outage is in progress it is
 tempting to attribute everything odd to it; two of these three symptoms were
 plain misconfiguration sitting in plain sight.
 
@@ -381,7 +383,7 @@ email that is not in the Access policy produces "A code has been emailed to you"
 and no email. Cloudflare documents this as deliberate: revealing the difference
 would let anyone enumerate which addresses are configured.
 
-Correct behaviour, and worth knowing twice over. It means an accidental attempt
+Correct behavior, and worth knowing twice over. It means an accidental attempt
 with a non-listed address is a **positive test** that the allowlist is enforcing
 - which is how the policy got confirmed working. And it means the most likely
 cause of "the editor is broken" is a typo in the email, with the UI actively
@@ -518,7 +520,7 @@ primary button sitting on a lemon footer bar was effectively invisible.
 
 Two conclusions. **Lemon is a stripe, a fill behind three words, or a pinned
 badge - not a background for body copy.** And **a primary action cannot share a
-colour with a status marker**: lemon was simultaneously "press this" and "this
+color with a status marker**: lemon was simultaneously "press this" and "this
 post is pinned" on the same screen. Admin primaries are now blue on white
 (8.43:1, already a defined brand pair) and the lemon survives as an 8px edge on
 the guide box.
@@ -545,7 +547,7 @@ Tailwind display or position utility. `.grid`, `.block` and `.table` were all
 in use; they are now `.month-grid`, `.section-block` and `.posts`.
 
 <a name="f39"></a>
-**F39 - The brand lemon was the default panel colour, which is why yellow kept
+**F39 - The brand lemon was the default panel color, which is why yellow kept
 appearing everywhere.** `--pta-surface-alt` backs every inset panel on the site
 - hint boxes, thumbnails, table headers, dialog footers, empty states - and
 Civic Letterpress defined it as `#f0e430`. Every one of those became a lemon
@@ -555,7 +557,7 @@ Fixed at the token rather than per component: `--pta-surface-alt` is now a quiet
 `#f5f5f2` and the accent is still one token away as `--pta-accent-quiet`. That
 also removed the reason the admin's primary buttons had been turned blue - a
 lemon button on a lemon bar was invisible - so they are back to the brand
-colour, with the pinned badge outlined instead of filled so the accent means
+color, with the pinned badge outlined instead of filled so the accent means
 one thing per screen.
 
 The rule that came out of it: **lemon is a stripe, a button, or a badge outline.
@@ -569,7 +571,7 @@ attaches no token to a localhost request, so every `/admin/api/*` call answered
 `401 Not signed in.`, and `wrangler dev` binds a *local* R2 bucket that starts
 empty, so every photo 404'd. Both looked like intermittent breakage and were
 reported as such. Neither was - they were structural, and had been since the day
-each shipped. The editor is the most behaviour-dense part of the site and it was
+each shipped. The editor is the most behavior-dense part of the site and it was
 the only part with no feedback loop shorter than a deploy.
 
 Closed with three changes, in `src/worker/access.ts`, `admin.ts` and

@@ -326,7 +326,7 @@ than trusting that Access did its job. Two reasons:
 1. It is the only trustworthy source of *who* is editing, which is what lands in
    the commit author.
 2. An Access policy is dashboard configuration, and dashboard configuration gets
-   edited, mis-scoped, or deleted by someone who does not realise it is the only
+   edited, mis-scoped, or deleted by someone who does not realize it is the only
    thing in front of a write endpoint. If that happens, this fails closed.
 
 `scripts/check-access.mjs` mints real RS256 tokens against a throwaway keypair
@@ -406,7 +406,7 @@ Cloudflare's docs are explicit about it:
 > say **A code has been emailed to you**, regardless of whether or not an email
 > was sent.
 
-That is the right behaviour - it stops anyone probing the login form to work out
+That is the right behavior - it stops anyone probing the login form to work out
 which board members' addresses are configured. But it has a support cost, and
 you will be the one answering it: **someone who mistypes their email waits
 forever for a code that was never sent, and the screen told them it was on its

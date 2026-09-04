@@ -317,7 +317,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 </BaseLayout>
 
 <script>
-  import { baseScale, clampView, centreView, sourceRect, type CropView } from '../../lib/crop';
+  import { baseScale, clampView, centerView, sourceRect, type CropView } from '../../lib/crop';
 
   const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
 
@@ -495,7 +495,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           add(photoCell, blank);
         }
 
-        // Post: title plus the opening line, so a row is recognisable without
+        // Post: title plus the opening line, so a row is recognizable without
         // opening it.
         const postCell = cell('c-post');
         const title = document.createElement('p');
@@ -700,9 +700,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     cropImg.style.transform = `translate(${view.x}px, ${view.y}px)`;
   }
 
-  function centre() {
+  function center() {
     if (!bitmap) return;
-    view = centreView({ ...geometry(), zoom: view.zoom });
+    view = centerView({ ...geometry(), zoom: view.zoom });
     paint();
   }
 
@@ -749,7 +749,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     view = { zoom: 1, x: 0, y: 0 };
     if (!cropDialog.open) cropDialog.showModal();
     // Wait for layout so the stage has a measurable size.
-    requestAnimationFrame(() => centre());
+    requestAnimationFrame(() => center());
   }
 
   $('[data-crop-skip]').addEventListener('click', () => {
@@ -1085,7 +1085,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   .who { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
 
   /*
-    Same stripe idiom as .guide - a coloured edge on white, never a filled
+    Same stripe idiom as .guide - a colored edge on white, never a filled
     panel. Read-only carries the quiet accent; .is-live means a save commits
     for real, and borrows the delete button's red so it reads as a warning
     rather than as decoration.
@@ -1118,7 +1118,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     Black on white with a lemon edge, not a lemon panel. --pta-surface-alt is
     the brand lemon, and a paragraph of body copy on it is unpleasant to read
     even where it technically clears AA - the accent works as a bar or a fill
-    behind three words, not behind a list of instructions. The colour stays as
+    behind three words, not behind a list of instructions. The color stays as
     a stripe so the box still belongs to the site.
   */
   .guide {
@@ -1327,7 +1327,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     Lemon on white, matching the rest of the site.
     It was briefly blue, because a lemon button on the then-lemon footer bar
     was invisible. Fixing --pta-surface-alt removed that collision at the
-    source, so the primary can go back to the brand colour. The pinned badge
+    source, so the primary can go back to the brand color. The pinned badge
     is outlined rather than filled now, so lemon means one thing here.
   */
   .btn.primary {
@@ -1345,7 +1345,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   /* ----------------------------------------------------------- the dialog */
 
   .sheet {
-    /* Explicit, because the UA's centring did not survive whatever this page
+    /* Explicit, because the UA's centering did not survive whatever this page
        does to it: the dialog opened flush against the top-left corner. */
     margin: auto;
     width: min(46rem, 100vw - 2rem);

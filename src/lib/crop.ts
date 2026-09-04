@@ -51,8 +51,8 @@ export function clampView(input: CropInput): CropView {
   };
 }
 
-/** Centres the image in the stage at the current zoom. */
-export function centreView(input: Omit<CropInput, 'view'> & { zoom: number }): CropView {
+/** Centers the image in the stage at the current zoom. */
+export function centerView(input: Omit<CropInput, 'view'> & { zoom: number }): CropView {
   const scale = baseScale(input) * input.zoom;
   return clampView({
     ...input,

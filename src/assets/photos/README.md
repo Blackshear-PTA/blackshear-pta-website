@@ -14,13 +14,13 @@ reference material nothing imports (brand originals, the Weebly salvage).
 | `campus-flagpole.jpg` | Staff Appreciation committee | Flagpole, building and the "Best School" banner. The flagpole is vertical, so it reads better squared off than stretched wide. |
 | `campus-frontage.jpg` | unused | Was a decorative strip in the top-right of the header. Both themes dropped it: the crop was not liked on Civic, and Print Shop followed. The whole feature came out rather than being switched off, because an `<img>` inside a `display:none` container is still downloaded. |
 | `bake-sale.jpg` | Fundraising committee | A monthly snack sale table. No faces. Replaced a drawn icon, which never sat right next to three photographs. |
-| `campus-front-walk.jpg` | Top-band backdrop, **both** themes | Front walkway and entrance. Landscape and centre-weighted, which is why it survives the narrow crop a phone gives a full-bleed band. Sits under a scrim; see below. |
+| `campus-front-walk.jpg` | Top-band backdrop, **both** themes | Front walkway and entrance. Landscape and center-weighted, which is why it survives the narrow crop a phone gives a full-bleed band. Sits under a scrim; see below. |
 | `campus-side-entrance.jpg` | unused | Was Civic's backdrop. Portrait, so on a phone `cover` scaled it to height and the visible strip was mostly sky. Replaced by `campus-front-walk.jpg` on both themes. |
 | `little-east-alt.jpg` | unused | Second Little EAST option. |
 | `garden-alt.jpg` | unused | Second garden option. |
 
 Committee thumbnails pass a square `width`/`height` against non-square sources.
-Astro centre-crops rather than squashing when you do that, which is what a
+Astro center-crops rather than squashing when you do that, which is what a
 thumbnail grid wants.
 
 Files are named for what they show rather than where they are used, so moving

@@ -1,0 +1,101 @@
+# Keeps the Instagram posts on /gallery current.
+#
+# Same shape and same reasoning as refresh-events.yml: the site is static, so
+# the feed has to be fetched somewhere other than the browser and committed.
+# scripts/refresh-instagram.mjs explains why a live fetch is not an option
+# (it would mean publishing the access token to every visitor).
+#
+# DAILY, NOT HOURLY, unlike the calendar. Instagram is a nice-to-have rather
+# than something a parent is relying on for a date, the account posts every few
+# days, and each run is a real API call against a rate-limited third party.
+#
+# IT COMMITS DIRECTLY TO main. Only ever src/content/instagram.yaml, and only
+# when the posts actually changed.
+#
+# IF THE TOKEN EXPIRES THIS GOES RED, on purpose. The alternative - carrying on
+# with an empty list - would silently blank the gallery, and nobody would notice
+# for a month. A failed workflow emails whoever owns the repository.
+#
+# TO TURN IT OFF: delete this file, or comment out the `schedule:` block to
+# leave it runnable by hand from the Actions tab.
+
+name: Refresh Instagram
+
+on:
+  schedule:
+    # 09:40 UTC, roughly 4:40am Central - after the account's likely posting
+    # hours and well before anyone looks at the site. Off the hour and off the
+    # half hour, because GitHub queues scheduled jobs and :00 is a crowd.
+    - cron: '40 9 * * *'
+  workflow_dispatch: # so it can be run by hand from the Actions tab
+
+# Only what it needs: push one content file.
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-instagram
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    # Skips every fork and every clone automatically, rather than failing on a
+    # missing secret in somebody else's repository.
+    if: github.repository_owner == 'Blackshear-PTA'
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Full history, because the push step may need to rebase onto main.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch the latest posts
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: npm run refresh:instagram
+
+      # The generated file goes through the same schema as a hand-written one,
+      # so a malformed permalink fails HERE rather than breaking the next build
+      # for whoever pushes after us.
+      - run: npm run build
+
+      - name: Commit if the posts changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- src/content/instagram.yaml; then
+            echo "No new Instagram posts today."
+            exit 0
+          fi
+          git config user.name  "blackshear-pta-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/instagram.yaml
+          COUNT=$(grep -c '^    - url:' src/content/instagram.yaml)
+          git commit -m "Refresh Instagram ($COUNT posts)"
+
+          # Retry with a rebase between attempts, for the same two reasons as
+          # the calendar job: GitHub's own transient push failures, and /admin
+          # committing an announcement to main while this runs.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then break; fi
+            echo "Push failed on attempt $attempt; rebasing and retrying."
+            sleep $((attempt * 10))
+            if ! git pull --rebase --autostash origin main; then
+              echo "::error::Could not rebase onto main. Leaving it for tomorrow."
+              exit 1
+            fi
+          done
+          echo "::error::Could not push the Instagram refresh after 3 attempts."
+          exit 1

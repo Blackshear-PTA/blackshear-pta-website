@@ -9,7 +9,7 @@
  *      commits to a public repo, and those commits should carry the editor's
  *      address, not a shared bot identity.
  *   2. An Access policy is dashboard configuration, and dashboard configuration
- *      can be edited, scoped wrong, or deleted by someone who does not realise
+ *      can be edited, scoped wrong, or deleted by someone who does not realize
  *      it is the only thing standing in front of a write endpoint. If that
  *      happens, this fails closed instead of handing the repo to the internet.
  *
@@ -89,7 +89,7 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
  * Access is enforced at Cloudflare's edge, so on localhost it does not exist:
  * no Cf-Access-Jwt-Assertion header is ever attached, verifyAccessJwt correctly
  * returns null, and every /admin/api call answers 401. The effect is that the
- * editor - the part of the site with the most behaviour and the most need for a
+ * editor - the part of the site with the most behavior and the most need for a
  * fast feedback loop - is the one part that cannot be exercised without
  * deploying. This closes that gap.
  *

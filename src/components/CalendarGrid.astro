@@ -1,11 +1,4 @@
 ---
-import { Image } from 'astro:assets';
-import { getEntry } from 'astro:content';
-import bakeSale from '../assets/photos/bake-sale.jpg';
-import littleEast from '../assets/photos/little-east.jpg';
-import garden from '../assets/photos/garden.jpg';
-import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
-import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
 
 /**
  * A month-at-a-time calendar, built to be read on a phone and printed on one
@@ -35,6 +28,8 @@ interface CalendarEvent {
   end?: string;
   allDay?: boolean;
   location?: string;
+  /** Google Calendar's own notes field, shown in the details dialog. */
+  description?: string;
 }
 
 interface Props {
@@ -47,37 +42,31 @@ const { events, monthsBack = 1 } = Astro.props;
 
 const TZ = 'America/Chicago';
 
-/** Art each rule can point at. Slugs match the enum in content.config.ts. */
-const ART = {
-  'bake-sale': { src: bakeSale, alt: '' },
-  'little-east': { src: littleEast, alt: '' },
-  garden: { src: garden, alt: '' },
-  'staff-appreciation': { src: campusFlagpole, alt: '' },
-  campus: { src: campusFrontWalk, alt: '' },
-} as const;
-
-const artEntry = await getEntry('calendarArt', 'calendar');
-const rules = artEntry?.data.rules ?? [];
-
-function artFor(title: string): keyof typeof ART | null {
-  const haystack = title.toLowerCase();
-  for (const rule of rules) {
-    if (haystack.includes(rule.match.toLowerCase())) return rule.art;
-  }
-  return null;
-}
-
 /**
  * The calendar date an instant falls on, in school time, as YYYY-MM-DD.
  * en-CA gives ISO order directly, which avoids reassembling parts by hand.
  */
-const dayKeyFmt = new Intl.DateTimeFormat('en-CA', {
-  timeZone: TZ,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
-const dayKey = (date: Date) => dayKeyFmt.format(date);
+const dayKeyParts = { year: 'numeric', month: '2-digit', day: '2-digit' } as const;
+const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, ...dayKeyParts });
+
+/**
+ * All-day events carry a CALENDAR DATE, not an instant, and must not be
+ * converted to a zone.
+ *
+ * ical.ts builds one as `Date.UTC(y, m-1, d)` - midnight UTC standing in for
+ * "September 15", with no time of day meant by it. Chicago is five hours behind
+ * UTC, so formatting that instant in school time gives 7pm on September 14, and
+ * the event was placed on the 14th AND the 15th. Every staff birthday and every
+ * school holiday appeared twice, on two adjacent squares, which read as the
+ * feed containing duplicates rather than as a timezone bug.
+ *
+ * So: UTC for all-day, school time for anything with a real clock time. The
+ * warning at the top of this file was about exactly this class of mistake, in
+ * the opposite direction.
+ */
+const dayKeyUtcFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', ...dayKeyParts });
+const dayKey = (date: Date, allDay = false) =>
+  (allDay ? dayKeyUtcFmt : dayKeyFmt).format(date);
 
 const timeFmt = new Intl.DateTimeFormat('en-US', {
   timeZone: TZ,
@@ -85,13 +74,64 @@ const timeFmt = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
+/** "Friday, September 11, 2026" - for the details dialog, not the squares. */
+const longDateParts = {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+} as const;
+const longDateFmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, ...longDateParts });
+/** Same UTC-vs-school-time split as dayKey; see the note there. */
+const longDateUtcFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...longDateParts });
+const longDate = (date: Date, allDay = false) =>
+  (allDay ? longDateUtcFmt : longDateFmt).format(date);
+
+/**
+ * How many pill tints there are. See the `--tone-*` custom properties in the
+ * stylesheet; this only has to agree with that count.
+ */
+const TONES = 5;
+
+/**
+ * Which tint an event gets.
+ *
+ * Hashed from the title rather than taken from its position in the day, so a
+ * recurring event keeps the same color every month and two events that sit
+ * together in one square are almost always different. Position would give the
+ * first event in every square the same color, which is the one arrangement
+ * that carries no information at all.
+ *
+ * Not a checksum - just enough mixing that similar titles ("PTA Meeting",
+ * "PTO Meeting") do not collide.
+ */
+function toneFor(title: string): number {
+  let hash = 0;
+  for (let i = 0; i < title.length; i += 1) {
+    hash = (hash * 31 + title.charCodeAt(i)) >>> 0;
+  }
+  return hash % TONES;
+}
+
 interface Placed {
   key: string;
+  id: string;
   title: string;
   time: string | null;
-  art: keyof typeof ART | null;
-  location?: string;
+  tone: number;
 }
+
+/** Everything the details dialog shows, one entry per event rather than per day. */
+interface Detail {
+  title: string;
+  /** "Friday, September 11, 2026", or a range for a multi-day event. */
+  when: string;
+  /** "3:10 PM – 4:30 PM", "3:10 PM", or "All day". */
+  time: string;
+  location?: string;
+  description?: string;
+}
+const details: Record<string, Detail> = {};
 
 /** Events keyed by the day they land on, multi-day events on every day they cover. */
 const byDay = new Map<string, Placed[]>();
@@ -110,21 +150,45 @@ for (const event of events) {
 
   const placed: Placed = {
     key: event.id,
+    id: event.id,
     title: event.title,
     time: event.allDay ? null : timeFmt.format(start),
-    art: artFor(event.title),
-    location: event.location,
+    tone: toneFor(event.title),
   };
 
-  // Walk day by day in school time. Cap the span so one malformed event with a
-  // runaway end date cannot generate an unbounded loop.
+  /**
+   * The dialog's copy, built once per event rather than once per day it covers.
+   * A week-long holiday would otherwise carry seven identical copies of its
+   * description into the page.
+   *
+   * `end` is exclusive for an all-day event, so the inclusive last day computed
+   * above is what a reader should be shown - "Sept 7-11", not "Sept 7-12".
+   */
+  const startDay = longDate(start, event.allDay);
+  const endDay = longDate(end, event.allDay);
+  details[event.id] = {
+    title: event.title,
+    when: startDay === endDay ? startDay : `${startDay} – ${endDay}`,
+    time: event.allDay
+      ? 'All day'
+      : event.end && rawEnd.getTime() > start.getTime()
+        ? `${timeFmt.format(start)} – ${timeFmt.format(rawEnd)}`
+        : timeFmt.format(start),
+    ...(event.location ? { location: event.location } : {}),
+    ...(event.description ? { description: event.description } : {}),
+  };
+
+  // Walk day by day, in whichever calendar this event's dates belong to - see
+  // the note on dayKey. Cap the span so one malformed event with a runaway end
+  // date cannot generate an unbounded loop.
+  const lastKey = dayKey(end, event.allDay);
   let cursor = new Date(start);
   for (let guard = 0; guard < 60; guard += 1) {
-    const key = dayKey(cursor);
+    const key = dayKey(cursor, event.allDay);
     const list = byDay.get(key) ?? [];
     list.push(placed);
     byDay.set(key, list);
-    if (key >= dayKey(end)) break;
+    if (key >= lastKey) break;
     cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
   }
 }
@@ -242,21 +306,23 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
                         <ul class="events">
                           {cell.events.map((event) => (
                             <li>
-                              {event.art && (
-                                <Image
-                                  class="art"
-                                  src={ART[event.art].src}
-                                  alt=""
-                                  width={48}
-                                  height={32}
-                                  densities={[1, 2]}
-                                  loading="lazy"
-                                />
-                              )}
-                              <span class="ev-text">
+                              {/*
+                                A button, not a div with a click handler: this is
+                                the only way the pill is reachable by keyboard and
+                                announced as something you can press. The accessible
+                                name repeats the date because a screen reader
+                                reaching it out of table context would otherwise
+                                hear only "Bake Sale, button".
+                              */}
+                              <button
+                                type="button"
+                                class="pill"
+                                data-tone={event.tone}
+                                data-ev={event.id}
+                              >
                                 {event.time && <b class="ev-time">{event.time}</b>}
                                 <span class="ev-title">{event.title}</span>
-                              </span>
+                              </button>
                             </li>
                           ))}
                         </ul>
@@ -273,6 +339,43 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   }
 
   <p class="empty-note" data-cal-empty hidden>Nothing on the calendar this month.</p>
+
+  {/*
+    Details for every event, once each, as data rather than as markup repeated
+    into every square a multi-day event touches. set:html on a JSON script is
+    safe here in a way it would not be in HTML: JSON.stringify escapes the one
+    sequence that could close the tag early, and the browser never parses this
+    as markup.
+  */}
+  <script
+    type="application/json"
+    data-cal-details
+    set:html={JSON.stringify(details).replace(/</g, '\\u003c')}
+  />
+
+  {/*
+    Native <dialog>: showModal() gives the focus trap, the inert background and
+    Escape-to-close for free, all of which a div would have to reimplement
+    badly. Same choice as /admin.
+  */}
+  <dialog class="ev-dialog" data-cal-dialog aria-labelledby="ev-dialog-title">
+    <div class="ev-dialog-inner">
+      <h2 id="ev-dialog-title" data-ev-title></h2>
+      <p class="ev-when">
+        <span data-ev-when></span>
+        <span class="ev-sep" aria-hidden="true">·</span>
+        <span data-ev-time></span>
+      </p>
+      <p class="ev-where" data-ev-where hidden></p>
+      <div class="ev-desc" data-ev-desc hidden></div>
+      <p class="ev-none" data-ev-none hidden>
+        No further details were added to this event in Google Calendar.
+      </p>
+      <div class="ev-actions">
+        <button type="button" class="btn" data-ev-close>Close</button>
+      </div>
+    </div>
+  </dialog>
 </section>
 
 <script>
@@ -347,6 +450,90 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     window.addEventListener('afterprint', restoreAfterPrint);
 
     show(index);
+  }
+
+  /**
+   * Event details.
+   *
+   * One delegated listener on the document rather than one per pill: a busy
+   * month renders a few hundred of them across every month in the snapshot, and
+   * they are spread over thirteen tables that get shown and hidden.
+   */
+  {
+    interface Detail {
+      title: string;
+      when: string;
+      time: string;
+      location?: string;
+      description?: string;
+    }
+
+    const dialog = document.querySelector<HTMLDialogElement>('[data-cal-dialog]');
+    const source = document.querySelector<HTMLScriptElement>('[data-cal-details]');
+
+    if (dialog && source) {
+      let details: Record<string, Detail> = {};
+      try {
+        details = JSON.parse(source.textContent ?? '{}');
+      } catch {
+        /* A malformed island should cost the dialog, not the whole calendar. */
+      }
+
+      const $ = <T extends HTMLElement>(sel: string) => dialog.querySelector<T>(sel)!;
+      const titleEl = $('[data-ev-title]');
+      const whenEl = $('[data-ev-when]');
+      const timeEl = $('[data-ev-time]');
+      const whereEl = $('[data-ev-where]');
+      const descEl = $('[data-ev-desc]');
+      const noneEl = $('[data-ev-none]');
+
+      function open(id: string) {
+        const detail = details[id];
+        if (!detail) return;
+
+        titleEl.textContent = detail.title;
+        whenEl.textContent = detail.when;
+        timeEl.textContent = detail.time;
+
+        whereEl.textContent = detail.location ?? '';
+        whereEl.hidden = !detail.location;
+
+        /**
+         * textContent, never innerHTML. Google Calendar descriptions can and do
+         * contain markup, and this is third-party text arriving through an iCal
+         * feed - rendering it as HTML would make whoever can add an event to
+         * that calendar able to inject script into this page.
+         *
+         * Paragraph splitting is done by hand for the same reason: a blank line
+         * becomes a real <p>, and everything inside it stays text.
+         */
+        descEl.textContent = '';
+        if (detail.description) {
+          for (const para of detail.description.split(/\n\s*\n/)) {
+            const p = document.createElement('p');
+            p.textContent = para.trim();
+            if (p.textContent) descEl.appendChild(p);
+          }
+        }
+        descEl.hidden = !descEl.childElementCount;
+        noneEl.hidden = Boolean(detail.location || descEl.childElementCount);
+
+        dialog!.showModal();
+      }
+
+      document.addEventListener('click', (event) => {
+        const pill = (event.target as HTMLElement).closest<HTMLElement>('.pill[data-ev]');
+        if (pill) {
+          open(pill.dataset.ev!);
+          return;
+        }
+        // Clicking the backdrop closes this one. Unlike /admin's editor there is
+        // nothing here to lose: the dialog is read-only.
+        if (event.target === dialog) dialog.close();
+      });
+
+      dialog.querySelector('[data-ev-close]')?.addEventListener('click', () => dialog.close());
+    }
   }
 </script>
 
@@ -432,21 +619,100 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   }
   .cell.today .daynum { color: var(--pta-accent); }
 
-  .events { margin: 0.15rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.15rem; }
-  .events li { display: flex; gap: 0.25rem; align-items: flex-start; min-width: 0; }
+  .events { margin: 0.15rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.2rem; }
+  .events li { min-width: 0; }
 
-  .art {
-    flex: none;
-    width: 1.5rem;
-    height: 1rem;
-    object-fit: cover;
-    border-radius: 2px;
-    margin-block-start: 0.1rem;
+  /*
+    Five tints, assigned by hashing the title (see toneFor).
+
+    All of them are a wash rather than a color: near-white, so the near-black
+    text on top clears AA everywhere by a wide margin and nothing has to be
+    re-checked when a tint changes. What separates one pill from the next is
+    mostly the edge, not the fill - the left border is the same hue two steps
+    darker, which reads at a glance without turning the month into a paintbox.
+
+    Deliberately not the brand lemon. That is the accent, and using it here
+    would mean a pill looked like the Donate button (see TASKS.md F39).
+  */
+  .pill {
+    --tone-bg: var(--pta-surface-alt);
+    --tone-edge: #cfcfc8;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.18rem 0.3rem;
+    border: 0;
+    border-inline-start: 3px solid var(--tone-edge);
+    border-radius: 3px;
+    background: var(--tone-bg);
+    color: var(--pta-ink);
+    font: inherit;
+    font-size: 0.68rem;
+    line-height: 1.25;
+    text-align: start;
+    cursor: pointer;
   }
 
-  .ev-text { min-width: 0; font-size: 0.68rem; line-height: 1.25; }
+  .pill[data-tone='1'] { --tone-bg: #eaf0f7; --tone-edge: #a9c1dc; }
+  .pill[data-tone='2'] { --tone-bg: #eef3ea; --tone-edge: #b0c9a6; }
+  .pill[data-tone='3'] { --tone-bg: #f6efe6; --tone-edge: #d9bf9c; }
+  .pill[data-tone='4'] { --tone-bg: #f2eef5; --tone-edge: #c0aecd; }
+
+  .pill:hover { filter: brightness(0.96); }
+  .pill:focus-visible { outline: 2px solid var(--pta-focus); outline-offset: 1px; }
+
   .ev-time { display: block; color: var(--pta-ink-muted); font-size: 0.62rem; }
   .ev-title { display: block; overflow-wrap: anywhere; }
+
+  /* ── Event details dialog ─────────────────────────────────────────────── */
+  .ev-dialog {
+    width: min(34rem, calc(100vw - 2rem));
+    padding: 0;
+    border: var(--pta-border-width) solid var(--pta-ink);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+  }
+
+  .ev-dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+
+  .ev-dialog-inner { padding: var(--pta-gap); }
+
+  .ev-dialog h2 {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    font-size: var(--text-title);
+    line-height: var(--leading-flat);
+  }
+
+  .ev-when {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .ev-sep { padding-inline: 0.35rem; }
+
+  .ev-where { margin: 0.35rem 0 0; font-size: var(--text-fine); }
+
+  .ev-desc { margin-block-start: var(--pta-gap); max-width: var(--pta-measure); }
+  .ev-desc :global(p) { margin: 0 0 0.75rem; }
+  .ev-desc :global(p:last-child) { margin-block-end: 0; }
+
+  .ev-none {
+    margin-block-start: var(--pta-gap);
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .ev-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: var(--pta-gap);
+  }
 
   .empty-note { margin-block-start: var(--pta-gap); color: var(--pta-ink-muted); }
 
@@ -454,8 +720,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
      but the cells are short, so the day number stays and titles clip. */
   @media (max-width: 36rem) {
     .cell { height: 4.5rem; padding: 0.15rem; }
-    .art { display: none; }
-    .ev-text { font-size: 0.6rem; }
+    .pill { font-size: 0.6rem; padding: 0.12rem 0.22rem; }
   }
 
   /*
@@ -527,8 +792,19 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     .month-grid th { background: none; border-color: #000; font-size: 8pt; }
     .wd-full { display: inline !important; }
 
-    .art { display: block !important; width: 0.42in; height: 0.28in; }
-    .ev-text { font-size: 6.5pt; }
+    /*
+      Pills print as plain text. The tints are near-white washes that most
+      printers render as faint grey mush, and the left edges become hairlines
+      that read as noise at this size - the paper copy is better off with the
+      whitespace. The dialog is a screen affordance and never prints.
+    */
+    .pill {
+      padding: 0;
+      border: 0;
+      background: none !important;
+      font-size: 6.5pt;
+    }
     .ev-time { font-size: 6pt; }
+    .ev-dialog { display: none !important; }
   }
 </style>

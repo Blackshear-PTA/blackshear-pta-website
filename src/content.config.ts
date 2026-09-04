@@ -237,37 +237,6 @@ const announcements = defineCollection({
     }),
 });
 
-/**
- * Calendar art rules - src/content/calendar-art.yaml.
- *
- * Maps words in a Google Calendar event title to a picture. See that file for
- * why the match is on the title rather than on the event itself.
- */
-const calendarArt = defineCollection({
-  loader: file('src/content/calendar-art.yaml'),
-  schema: z.object({
-    rules: z
-      .array(
-        z.object({
-          /** Case-insensitive, matched anywhere in the title. */
-          match: z.string(),
-          /** Must be a key of the ART map in CalendarGrid.astro. */
-          art: z.enum(['bake-sale', 'little-east', 'garden', 'staff-appreciation', 'campus']),
-        }),
-      )
-      .default([]),
-  }),
-});
-
-/**
- * Instagram post embeds - src/content/instagram.yaml.
- *
- * A hand-picked list rather than a live feed; that file explains why. The URL
- * is checked here rather than trusted, because a wrong paste - a profile link,
- * a share link with tracking parameters, a story - renders as an empty white
- * box on the live page and gives no clue what went wrong. Failing the build
- * with a sentence is cheaper than diagnosing that later.
- */
 const instagram = defineCollection({
   loader: file('src/content/instagram.yaml'),
   schema: z.object({
@@ -352,4 +321,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { announcements, calendarArt, home, instagram, pages, site };
+export const collections = { announcements, home, instagram, pages, site };

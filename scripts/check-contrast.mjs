@@ -5,7 +5,7 @@
  * good it looks." This makes that a build step rather than an intention.
  *
  * Parses each [data-theme="..."] block in src/themes/*.css, resolves the
- * --pta-* colour tokens, and checks the pairings that actually carry text.
+ * --pta-* color tokens, and checks the pairings that actually carry text.
  * Exits non-zero on any failure.
  *
  *   node scripts/check-contrast.mjs      (or: npm run check:contrast)
@@ -67,7 +67,7 @@ function parseThemes(css) {
       const v = value.trim();
       const hex = v.match(/^#[0-9a-fA-F]{3,8}$/);
       if (hex) out[id][prop] = hex[0];
-      // The band alpha is a bare number, not a colour, but the gate needs it.
+      // The band alpha is a bare number, not a color, but the gate needs it.
       else if (prop === '--pta-topband-alpha' && /^[\d.]+$/.test(v)) out[id][prop] = v;
     }
   }
@@ -99,7 +99,7 @@ function parseBaseTokens(css) {
       const value = raw.trim();
       const direct = value.match(/^#[0-9a-fA-F]{3,8}$/);
       if (direct) { base[prop] = direct[0]; continue; }
-      // Bare number, not a colour. Without this the band checks silently skip
+      // Bare number, not a color. Without this the band checks silently skip
       // any theme that inherits the default alpha rather than setting its own,
       // which is the common case and reads as a pass in the summary.
       if (/^[\d.]+$/.test(value)) { base[prop] = value; continue; }
@@ -139,7 +139,7 @@ for (const [id, tokens] of Object.entries(themes)) {
     );
   }
   // ── The photographic top band ──────────────────────────────────────────
-  // Text there sits on a scrim over a photograph, not on a flat colour, so the
+  // Text there sits on a scrim over a photograph, not on a flat color, so the
   // pairs above say nothing about it. Both source photos contain true black,
   // so the worst case is a text run landing over a pure-black pixel: composite
   // the scrim over black at the theme's alpha and check against that. Anything

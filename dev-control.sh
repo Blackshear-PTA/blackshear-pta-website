@@ -268,7 +268,7 @@ _pause() { printf '\n%sPress Enter to continue…%s' "$DIM" "$RESET"; read -r _ 
 
 # ── tmux + Ghostty ────────────────────────────────────────────────────────────
 # Lifted from the fleet controller on purpose. The whole point is that this repo
-# lands in the same shared window as every other app, so the behaviour has to
+# lands in the same shared window as every other app, so the behavior has to
 # match rather than merely resemble it.
 _fleet_tmux_conf() {
   local c

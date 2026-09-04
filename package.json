@@ -26,7 +26,8 @@
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
     "types": "wrangler types",
-    "refresh:events": "node scripts/refresh-events.mjs"
+    "refresh:events": "node scripts/refresh-events.mjs",
+    "refresh:instagram": "node scripts/refresh-instagram.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
