@@ -187,6 +187,16 @@ const backdropImg = await getImage({
     }
   }
 
+  /*
+    This padding is the ONLY gap between the lede and the first line of the
+    page. Every page under this layout used to add `margin-block-start:
+    var(--pta-section-y)` to its own first paragraph as well, three separate
+    copies of the same decision, and the two stacked into 104px of nothing
+    between a heading and the sentence under it.
+
+    Removed there rather than halved here, so there is one place that decides
+    it. A page that wants more space owns that choice explicitly.
+  */
   .band-inner {
     padding-block: var(--pta-section-y);
     /* Keeps the band from collapsing to nothing on a short title, so the photo

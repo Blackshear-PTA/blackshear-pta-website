@@ -1,39 +1,19 @@
 # Instagram posts embedded on /gallery.
 #
-# WHY A HAND-PICKED LIST RATHER THAN THE WHOLE FEED. Instagram's Basic Display
-# API - the one that pulled a live feed - was shut down in December 2024. What
-# replaced it needs a Meta app, a Business account linked to a Facebook Page,
-# and an access token refreshed every 60 days. A token that expires every two
-# months, on an account that changes hands at board turnover, is a gallery that
-# breaks silently over a summer with nobody watching.
+# MANAGED FROM /admin. Open the site's editor and use "Instagram posts" - it
+# checks each address, keeps the order, and saves the file for you.
 #
-# Individual post embeds need no app, no account link, and no token, and they
-# keep working forever. The cost is that somebody chooses which posts appear.
-# For a page updated a few times a year that is the better trade.
+# Editing by hand still works and is not discouraged; this is an ordinary
+# content file. Keep the shape below exactly: a list of `- url:` entries under
+# `gallery: posts:`, each a public post permalink in double quotes.
 #
-# TO ADD A POST:
-#   1. Open the post on instagram.com (it must be PUBLIC - a private or
-#      followers-only post renders as an empty box for everyone else).
-#   2. Copy the address from the browser bar. It looks like
-#      https://www.instagram.com/p/ABC123xyz/ or .../reel/ABC123xyz/
-#   3. Add a `- url:` line below.
+# WHY A CHOSEN LIST AND NOT THE WHOLE FEED. Reading an account's recent posts
+# needs a Meta app, a Business account and an access token that expires every 60
+# days. Displaying a post needs none of that - Instagram renders any public post
+# from its address. So the site does the part that is free forever and a person
+# picks which 6 posts are worth showing, which is a better page anyway.
 #
-# The build checks the shape of each address and fails with a plain-English
-# message if one is not a post permalink, so a wrong paste cannot reach the
-# site as a silently broken embed.
-#
-# Three to six is about right. Each one loads an iframe from instagram.com, so
-# a long list is slow on a phone - and the grid of our own photos above is
-# already doing the job of showing the place.
-#
-# WHAT VISITORS SEE IF INSTAGRAM IS BLOCKED: a plain link to the post. The
-# embed degrades to its own fallback, which is why each blockquote ships with
-# one inside it.
+# A private post renders as an empty box for everyone but its followers.
 
 gallery:
   posts: []
-  # Delete the line above and uncomment these once you have real post links:
-  #
-  # posts:
-  #   - url: "https://www.instagram.com/p/REPLACE-WITH-A-REAL-POST-ID/"
-  #   - url: "https://www.instagram.com/p/ANOTHER-REAL-POST-ID/"

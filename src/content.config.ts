@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { file, glob } from 'astro/loaders';
+import { POST_URL, MAX_POSTS } from './worker/instagram.mjs';
 
 /**
  * Blackshear PTA - content schema.
@@ -237,6 +238,18 @@ const announcements = defineCollection({
     }),
 });
 
+/**
+ * Instagram post embeds - src/content/instagram.yaml.
+ *
+ * Managed from /admin; that file explains why it is a chosen list rather than a
+ * live feed. The URL shape and the maximum both come from
+ * src/worker/instagram.mjs, so the editor and the build agree by construction -
+ * a second copy of the pattern here would be a rule free to drift from the one
+ * actually enforced at the point somebody pastes an address.
+ *
+ * Checked at build as well as at save, because the file can still be edited by
+ * hand and a wrong address renders as an empty white box with no clue why.
+ */
 const instagram = defineCollection({
   loader: file('src/content/instagram.yaml'),
   schema: z.object({
@@ -246,12 +259,13 @@ const instagram = defineCollection({
           url: z
             .string()
             .regex(
-              /^https:\/\/www\.instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/?$/,
+              POST_URL,
               'Must be a public post permalink like https://www.instagram.com/p/ABC123/ ' +
                 '- copy it from the browser bar with the post open, and drop anything after the "?".',
             ),
         }),
       )
+      .max(MAX_POSTS, `At most ${MAX_POSTS} Instagram posts - each one is an iframe.`)
       .default([]),
   }),
 });

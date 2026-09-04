@@ -19,13 +19,11 @@ import campusSideEntrance from '../assets/photos/campus-side-entrance.jpg';
  * explicit routes priority, so the URL is unchanged and the page's text still
  * lives in pages.yaml and edits like every other page.
  *
- * NOT an Instagram feed, deliberately (TASKS.md D11). Instagram's Basic Display
- * API - the one that did exactly this - was shut down in December 2024. What
- * replaced it needs a Meta app, a Business account linked to a Facebook Page,
- * and a token refreshed every 60 days. A token that expires every two months,
- * on an account that changes hands at board turnover, is a gallery that breaks
- * silently. So: a real grid that works forever, and a link to Instagram beside
- * it for anyone who wants the live feed.
+ * NOT an automatic Instagram feed, deliberately (TASKS.md D11). Displaying a
+ * post needs nothing; discovering which posts are recent needs a Meta app and a
+ * token that expires every 60 days, and nobody inherits that at board turnover.
+ * So: a real photo grid that works forever, up to six posts chosen in /admin,
+ * and a link to the account for anyone who wants the live feed.
  *
  * This is thin - nine photos, most of them the campus. It is a frame waiting
  * for the photo library (A28), not a finished gallery.
@@ -37,11 +35,12 @@ if (!entry) throw new Error('Missing `gallery:` entry in src/content/pages.yaml.
 const INSTAGRAM = 'https://www.instagram.com/blackshearpta/';
 
 /**
- * Embedded posts, chosen by hand in src/content/instagram.yaml.
+ * Embedded posts, chosen in /admin and stored in src/content/instagram.yaml.
  *
- * Empty by default, and the section below simply omits the grid when it is -
- * so the page never shows a row of empty boxes, and nothing loads from
- * instagram.com until somebody has actually picked a post.
+ * Empty by default, and the section below omits the grid entirely when it is -
+ * so the page never shows a row of empty boxes, and nothing is loaded from
+ * instagram.com until somebody has actually picked a post. See
+ * docs/INSTAGRAM.md for why this is a chosen list rather than a live feed.
  */
 const instagram = await getEntry('instagram', 'gallery');
 const igPosts = instagram?.data.posts ?? [];
@@ -165,10 +164,6 @@ const photos = [
   .prose {
     margin: 0 0 var(--pta-gap);
     max-width: var(--pta-measure);
-  }
-
-  .prose:first-child {
-    margin-block-start: var(--pta-section-y);
   }
 
   /*

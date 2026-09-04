@@ -130,6 +130,41 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           </tbody>
         </table>
       </div>
+
+      {/*
+        Instagram lives below the posts table, not above it: posting
+        announcements is why anyone opens this page, and this is a thing you
+        touch a few times a year.
+
+        It edits src/content/instagram.yaml through the same commit-per-save
+        path as everything else here, so there is no second kind of storage and
+        no second thing to back up.
+      */}
+      <section class="ig-block">
+        <div class="list-head">
+          <h2>Instagram posts</h2>
+        </div>
+        <p class="ig-hint">
+          The posts shown on the <a href="/gallery">photos page</a>. Open a post on
+          Instagram, copy the address from the browser bar, and paste it below.
+          Up to <b data-ig-max>6</b>; they appear in the order listed.
+        </p>
+        <div class="ig-add">
+          <label class="sr-only" for="ig-url">Instagram post address</label>
+          <input
+            id="ig-url"
+            type="url"
+            data-ig-input
+            placeholder="https://www.instagram.com/p/..."
+            autocomplete="off"
+          />
+          <button type="button" class="btn" data-ig-add>Add</button>
+        </div>
+        <p class="status" data-ig-status hidden role="status"></p>
+        <ul class="ig-list" data-ig-list>
+          <li class="ig-empty">Loading…</li>
+        </ul>
+      </section>
     </div>
   </main>
 
@@ -1016,6 +1051,165 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   $('[data-new]').addEventListener('click', () => { clear(statusEl); openEditor(null); });
 
+  /**
+   * Instagram posts.
+   *
+   * Held in memory and written whole on every change, because the list is at
+   * most six strings. Add, remove and reorder are therefore all the same
+   * operation - mutate the array, save, redraw - rather than three endpoints.
+   *
+   * Every change saves immediately. There is no Save button on purpose: a
+   * separate one invites half-finished state and someone navigating away
+   * believing they were done, and undoing a wrong paste is one click of Remove.
+   */
+  {
+    const igList = $<HTMLUListElement>('[data-ig-list]');
+    const igStatus = $<HTMLElement>('[data-ig-status]');
+    const igAdd = $<HTMLButtonElement>('[data-ig-add]');
+    const igMax = $<HTMLElement>('[data-ig-max]');
+    const igInput = $<HTMLInputElement>('[data-ig-input]');
+
+    let urls: string[] = [];
+    let sha: string | null = null;
+    let max = 6;
+
+    function drawIg() {
+      igList.textContent = '';
+      igAdd.disabled = urls.length >= max;
+      igInput.disabled = urls.length >= max;
+
+      if (urls.length === 0) {
+        const empty = document.createElement('li');
+        empty.className = 'ig-empty';
+        empty.textContent = 'No posts yet. The photos page shows just the photo grid.';
+        add(igList, empty);
+        return;
+      }
+
+      urls.forEach((url, index) => {
+        const row = document.createElement('li');
+        row.className = 'ig-row';
+
+        const position = document.createElement('span');
+        position.className = 'ig-num';
+        position.textContent = String(index + 1);
+
+        // A link, so it can be checked before anyone trusts the list.
+        const link = document.createElement('a');
+        link.className = 'ig-url';
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = url;
+
+        const tools = document.createElement('div');
+        tools.className = 'ig-tools';
+
+        const up = document.createElement('button');
+        up.type = 'button';
+        up.className = 'icon-btn';
+        up.title = 'Move up';
+        up.setAttribute('aria-label', `Move post ${index + 1} up`);
+        up.textContent = '↑';
+        up.disabled = index === 0;
+        up.addEventListener('click', () => {
+          [urls[index - 1], urls[index]] = [urls[index]!, urls[index - 1]!];
+          void saveIg('Moved.');
+        });
+
+        const down = document.createElement('button');
+        down.type = 'button';
+        down.className = 'icon-btn';
+        down.title = 'Move down';
+        down.setAttribute('aria-label', `Move post ${index + 1} down`);
+        down.textContent = '↓';
+        down.disabled = index === urls.length - 1;
+        down.addEventListener('click', () => {
+          [urls[index + 1], urls[index]] = [urls[index]!, urls[index + 1]!];
+          void saveIg('Moved.');
+        });
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'icon-btn danger';
+        remove.title = 'Remove';
+        remove.setAttribute('aria-label', `Remove post ${index + 1}`);
+        remove.textContent = '✕';
+        remove.addEventListener('click', async () => {
+          // Reuses the same in-page confirm the delete button uses, rather
+          // than window.confirm.
+          if (!(await ask('Remove this post from the photos page?', 'Remove'))) return;
+          urls.splice(index, 1);
+          void saveIg('Removed.');
+        });
+
+        add(tools, up); add(tools, down); add(tools, remove);
+        add(row, position); add(row, link); add(row, tools);
+        add(igList, row);
+      });
+    }
+
+    async function saveIg(done: string) {
+      clear(igStatus);
+      try {
+        const result = (await api('instagram', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls, sha }),
+        })) as { urls: string[]; sha: string };
+        urls = result.urls;
+        sha = result.sha;
+        drawIg();
+        say(igStatus, `${done} The photos page updates in about a minute.`, 'ok');
+      } catch (error) {
+        // Reload rather than leave the screen showing a change that did not
+        // happen - the most likely cause is somebody else having saved.
+        say(igStatus, (error as Error).message, 'bad');
+        await loadIg();
+      }
+    }
+
+    async function loadIg() {
+      try {
+        const result = (await api('instagram')) as {
+          urls: string[];
+          sha: string | null;
+          max: number;
+        };
+        urls = result.urls ?? [];
+        sha = result.sha;
+        max = result.max ?? 6;
+        igMax.textContent = String(max);
+        drawIg();
+      } catch (error) {
+        igList.textContent = '';
+        const failed = document.createElement('li');
+        failed.className = 'ig-empty';
+        failed.textContent = (error as Error).message;
+        add(igList, failed);
+      }
+    }
+
+    async function addIg() {
+      const url = igInput.value.trim();
+      if (!url) return;
+      urls.push(url);
+      // Cleared only after the save succeeds, so a rejected address is still
+      // in the box to be corrected rather than lost.
+      const before = urls.length;
+      await saveIg('Added.');
+      if (urls.length === before) igInput.value = '';
+    }
+
+    igAdd.addEventListener('click', () => void addIg());
+    igInput.addEventListener('keydown', (event) => {
+      // Enter is what anyone pasting into a single box will press.
+      if (event.key === 'Enter') { event.preventDefault(); void addIg(); }
+    });
+
+    void loadIg();
+  }
+
   // The chevron rotates, but a word is unambiguous in a way an icon is not.
   const guide = $<HTMLDetailsElement>('.guide');
   const guideHint = $<HTMLElement>('[data-guide-hint]');
@@ -1303,6 +1497,79 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   }
   .icon-btn:first-child { margin-inline-start: 0; }
   .icon-btn:hover { background: var(--pta-ink); color: var(--pta-surface); }
+  .icon-btn:disabled { opacity: 0.35; cursor: default; }
+  .icon-btn:disabled:hover { background: var(--pta-surface); color: var(--pta-ink); }
+  .icon-btn.danger:hover { background: #b3261e; border-color: #b3261e; color: #fff; }
+
+  /* ── Instagram posts ──────────────────────────────────────────────────── */
+  .ig-block { margin-block-start: var(--pta-section-y); }
+
+  .ig-hint {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .ig-add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-end: var(--pta-gap);
+  }
+
+  .ig-add input {
+    flex: 1 1 22rem;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.5rem 0.65rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+  }
+
+  .ig-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+
+  .ig-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.5rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+  }
+
+  .ig-num {
+    flex: none;
+    width: 1.4rem;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    color: var(--pta-ink-muted);
+    font-size: var(--text-fine);
+  }
+
+  /* The address is long and uninteresting past the post id, so it truncates
+     rather than wrapping a row to three lines. The link still opens the post. */
+  .ig-url {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-fine);
+    color: var(--pta-ink);
+  }
+
+  .ig-tools { flex: none; display: flex; }
+
+  .ig-empty {
+    padding: 0.6rem 0;
+    color: var(--pta-ink-muted);
+    font-size: var(--text-fine);
+  }
 
   .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
 

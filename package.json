@@ -20,14 +20,14 @@
     "check:frontmatter": "node scripts/check-frontmatter.mjs",
     "check:ical": "node scripts/check-ical.mjs",
     "check:images": "node scripts/check-images.mjs",
+    "check:instagram": "node scripts/check-instagram.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:domain": "node scripts/check-domain.mjs",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
     "types": "wrangler types",
-    "refresh:events": "node scripts/refresh-events.mjs",
-    "refresh:instagram": "node scripts/refresh-instagram.mjs"
+    "refresh:events": "node scripts/refresh-events.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

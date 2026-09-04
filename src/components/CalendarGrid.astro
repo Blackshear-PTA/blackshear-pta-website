@@ -88,37 +88,63 @@ const longDate = (date: Date, allDay = false) =>
   (allDay ? longDateUtcFmt : longDateFmt).format(date);
 
 /**
- * How many pill tints there are. See the `--tone-*` custom properties in the
- * stylesheet; this only has to agree with that count.
- */
-const TONES = 5;
-
-/**
- * Which tint an event gets.
+ * Pill color is (kind, position within that kind on that day).
  *
- * Hashed from the title rather than taken from its position in the day, so a
- * recurring event keeps the same color every month and two events that sit
- * together in one square are almost always different. Position would give the
- * first event in every square the same color, which is the one arrangement
- * that carries no information at all.
+ * Two different questions are being answered at once. WHAT KIND of thing is
+ * this - a holiday that runs all day, or something with a time you have to be
+ * somewhere for - is carried by the palette: warm neutrals for all-day, cool
+ * tints for timed. HOW MANY are on this square is carried by the step within
+ * that palette, so two all-day events never share a color and they can be
+ * counted without being read.
  *
- * Not a checksum - just enough mixing that similar titles ("PTA Meeting",
- * "PTO Meeting") do not collide.
+ * Positional rather than hashed from the title. A hash gives a recurring event
+ * the same color every month, which sounds better and is not: the colors then
+ * mean nothing, because two unrelated events collide exactly as readily as two
+ * related ones. This way the first all-day event on any square is always the
+ * same color, and that is a rule a reader can learn.
+ *
+ * Four steps each. The current feed peaks at three of either kind on one day,
+ * so a fourth is headroom; beyond that the last one repeats, and at that
+ * density the square is full anyway.
  */
-function toneFor(title: string): number {
-  let hash = 0;
-  for (let i = 0; i < title.length; i += 1) {
-    hash = (hash * 31 + title.charCodeAt(i)) >>> 0;
-  }
-  return hash % TONES;
-}
+const TONE_STEPS = 4;
 
 interface Placed {
   key: string;
   id: string;
   title: string;
   time: string | null;
-  tone: number;
+  allDay: boolean;
+  /** Sort key, so a day's events are ordered before they are colored. */
+  startMs: number;
+}
+
+/** A Placed with its square's color decided. */
+type Toned = Placed & { tone: string };
+
+/**
+ * Orders one square's events and gives each a tone.
+ *
+ * Done per square rather than on Placed, because a multi-day event is the SAME
+ * object on every day it covers - it can be the first all-day event on Monday
+ * and the second on Tuesday. The color belongs to the square, not the event.
+ *
+ * All-day first, then timed in clock order: the order a person reads a day in,
+ * and it makes position stable rather than a consequence of whatever order the
+ * feed happened to list things in.
+ */
+function toned(events: Placed[]): Toned[] {
+  const ordered = [...events].sort((a, b) => {
+    if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
+    return a.startMs - b.startMs || a.title.localeCompare(b.title);
+  });
+
+  let allDayStep = 0;
+  let timedStep = 0;
+  return ordered.map((event) => {
+    const step = event.allDay ? allDayStep++ : timedStep++;
+    return { ...event, tone: `${event.allDay ? 'a' : 't'}${Math.min(step, TONE_STEPS - 1)}` };
+  });
 }
 
 /** Everything the details dialog shows, one entry per event rather than per day. */
@@ -153,7 +179,8 @@ for (const event of events) {
     id: event.id,
     title: event.title,
     time: event.allDay ? null : timeFmt.format(start),
-    tone: toneFor(event.title),
+    allDay: Boolean(event.allDay),
+    startMs: start.getTime(),
   };
 
   /**
@@ -221,7 +248,7 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 interface Cell {
   key: string | null;
   day: number | null;
-  events: Placed[];
+  events: Toned[];
 }
 
 /**
@@ -240,7 +267,7 @@ function buildMonth(monthKey: string): { label: string; weeks: Cell[][] } {
   for (let i = 0; i < leading; i += 1) cells.push({ key: null, day: null, events: [] });
   for (let day = 1; day <= daysInMonth; day += 1) {
     const key = `${monthKey}-${String(day).padStart(2, '0')}`;
-    cells.push({ key, day, events: byDay.get(key) ?? [] });
+    cells.push({ key, day, events: toned(byDay.get(key) ?? []) });
   }
   while (cells.length % 7 !== 0) cells.push({ key: null, day: null, events: [] });
 
@@ -361,16 +388,36 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   <dialog class="ev-dialog" data-cal-dialog aria-labelledby="ev-dialog-title">
     <div class="ev-dialog-inner">
       <h2 id="ev-dialog-title" data-ev-title></h2>
-      <p class="ev-when">
-        <span data-ev-when></span>
-        <span class="ev-sep" aria-hidden="true">·</span>
-        <span data-ev-time></span>
-      </p>
-      <p class="ev-where" data-ev-where hidden></p>
-      <div class="ev-desc" data-ev-desc hidden></div>
-      <p class="ev-none" data-ev-none hidden>
-        No further details were added to this event in Google Calendar.
-      </p>
+
+      {/*
+        A description list, so each value is announced with its own label rather
+        than as a run of unlabelled lines. The label sits on its own line above
+        the value - side by side, a long address wraps under the label and the
+        two read as one paragraph, which is the exact "field titles merge into
+        the text" problem this is here to avoid.
+
+        Rows are hidden individually. An event with nothing but a date shows a
+        date and stops, rather than explaining what it does not have.
+      */}
+      <dl class="ev-fields">
+        <div class="ev-row">
+          <dt>Date</dt>
+          <dd data-ev-when></dd>
+        </div>
+        <div class="ev-row">
+          <dt>Time</dt>
+          <dd data-ev-time></dd>
+        </div>
+        <div class="ev-row" data-ev-where-row hidden>
+          <dt>Location</dt>
+          <dd data-ev-where></dd>
+        </div>
+        <div class="ev-row" data-ev-desc-row hidden>
+          <dt>Details</dt>
+          <dd class="ev-desc" data-ev-desc></dd>
+        </div>
+      </dl>
+
       <div class="ev-actions">
         <button type="button" class="btn" data-ev-close>Close</button>
       </div>
@@ -484,8 +531,9 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       const whenEl = $('[data-ev-when]');
       const timeEl = $('[data-ev-time]');
       const whereEl = $('[data-ev-where]');
+      const whereRow = $('[data-ev-where-row]');
       const descEl = $('[data-ev-desc]');
-      const noneEl = $('[data-ev-none]');
+      const descRow = $('[data-ev-desc-row]');
 
       function open(id: string) {
         const detail = details[id];
@@ -496,7 +544,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
         timeEl.textContent = detail.time;
 
         whereEl.textContent = detail.location ?? '';
-        whereEl.hidden = !detail.location;
+        whereRow.hidden = !detail.location;
 
         /**
          * textContent, never innerHTML. Google Calendar descriptions can and do
@@ -515,8 +563,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
             if (p.textContent) descEl.appendChild(p);
           }
         }
-        descEl.hidden = !descEl.childElementCount;
-        noneEl.hidden = Boolean(detail.location || descEl.childElementCount);
+        descRow.hidden = !descEl.childElementCount;
 
         dialog!.showModal();
       }
@@ -653,10 +700,26 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     cursor: pointer;
   }
 
-  .pill[data-tone='1'] { --tone-bg: #eaf0f7; --tone-edge: #a9c1dc; }
-  .pill[data-tone='2'] { --tone-bg: #eef3ea; --tone-edge: #b0c9a6; }
-  .pill[data-tone='3'] { --tone-bg: #f6efe6; --tone-edge: #d9bf9c; }
-  .pill[data-tone='4'] { --tone-bg: #f2eef5; --tone-edge: #c0aecd; }
+  /*
+    Two palettes, four steps each. `a` is all-day, `t` is timed; the digit is
+    which one it is on that square. See the note on TONE_STEPS for why the
+    colour means (kind, position) rather than (which event).
+
+    Warm neutrals for all-day, cool tints for timed - a difference in
+    temperature rather than in loudness, so the two groups separate at a glance
+    without either shouting. Every fill is near-white, so the near-black text
+    clears AA on all eight by a wide margin and none of them has to be
+    re-checked when one is adjusted. The left edge does most of the work.
+  */
+  .pill[data-tone='a0'] { --tone-bg: #f2efe8; --tone-edge: #c9bfa8; }
+  .pill[data-tone='a1'] { --tone-bg: #efe9df; --tone-edge: #c0b096; }
+  .pill[data-tone='a2'] { --tone-bg: #ece5d8; --tone-edge: #b7a488; }
+  .pill[data-tone='a3'] { --tone-bg: #e8e0d1; --tone-edge: #ad987a; }
+
+  .pill[data-tone='t0'] { --tone-bg: #e9eff7; --tone-edge: #a3bcd9; }
+  .pill[data-tone='t1'] { --tone-bg: #e6f0ec; --tone-edge: #9dc2b1; }
+  .pill[data-tone='t2'] { --tone-bg: #eeeaf5; --tone-edge: #b3a5c9; }
+  .pill[data-tone='t3'] { --tone-bg: #e7eef0; --tone-edge: #9dbac1; }
 
   .pill:hover { filter: brightness(0.96); }
   .pill:focus-visible { outline: 2px solid var(--pta-focus); outline-offset: 1px; }
@@ -665,18 +728,29 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   .ev-title { display: block; overflow-wrap: anywhere; }
 
   /* ── Event details dialog ─────────────────────────────────────────────── */
+  /*
+    Sized to its contents, not to a fixed width. Most of these events are a
+    title and two dates, and a 34rem box around six words is mostly empty. The
+    max keeps a long description to a readable measure.
+
+    Centring comes from the site-wide `dialog:modal` rule in global.css - see
+    the note there, it is not optional and it is not this component's business.
+  */
   .ev-dialog {
-    width: min(34rem, calc(100vw - 2rem));
+    width: max-content;
+    min-width: min(19rem, calc(100vw - 2rem));
+    max-width: min(30rem, calc(100vw - 2rem));
     padding: 0;
     border: var(--pta-border-width) solid var(--pta-ink);
     border-radius: var(--pta-radius);
     background: var(--pta-surface);
     color: var(--pta-ink);
+    overflow: auto;
   }
 
   .ev-dialog::backdrop { background: rgb(0 0 0 / 0.45); }
 
-  .ev-dialog-inner { padding: var(--pta-gap); }
+  .ev-dialog-inner { padding: 1.1rem 1.2rem; }
 
   .ev-dialog h2 {
     margin: 0;
@@ -688,30 +762,39 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     line-height: var(--leading-flat);
   }
 
-  .ev-when {
-    margin: 0.5rem 0 0;
-    font-size: var(--text-fine);
+  .ev-fields { margin: 0.85rem 0 0; }
+
+  .ev-row + .ev-row { margin-block-start: 0.7rem; }
+
+  /*
+    Label above value, never beside it. Side by side, a wrapping address runs
+    under its own label and the pair reads as one sentence - the failure mode
+    to avoid here. Small caps and muted colour do the separating, so the label
+    is legible as a label without a colon or a bold run competing with the
+    value underneath.
+  */
+  .ev-row dt {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: 0.66rem;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
     color: var(--pta-ink-muted);
   }
 
-  .ev-sep { padding-inline: 0.35rem; }
+  .ev-row dd {
+    margin: 0.15rem 0 0;
+    max-width: var(--pta-measure);
+  }
 
-  .ev-where { margin: 0.35rem 0 0; font-size: var(--text-fine); }
-
-  .ev-desc { margin-block-start: var(--pta-gap); max-width: var(--pta-measure); }
-  .ev-desc :global(p) { margin: 0 0 0.75rem; }
+  .ev-desc :global(p) { margin: 0 0 0.6rem; }
   .ev-desc :global(p:last-child) { margin-block-end: 0; }
-
-  .ev-none {
-    margin-block-start: var(--pta-gap);
-    font-size: var(--text-fine);
-    color: var(--pta-ink-muted);
-  }
 
   .ev-actions {
     display: flex;
     justify-content: flex-end;
-    margin-block-start: var(--pta-gap);
+    margin-block-start: 1.1rem;
   }
 
   .empty-note { margin-block-start: var(--pta-gap); color: var(--pta-ink-muted); }
@@ -793,17 +876,28 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     .wd-full { display: inline !important; }
 
     /*
-      Pills print as plain text. The tints are near-white washes that most
-      printers render as faint grey mush, and the left edges become hairlines
-      that read as noise at this size - the paper copy is better off with the
-      whitespace. The dialog is a screen affordance and never prints.
+      Pills keep their colors on paper.
+
+      print-color-adjust is what makes that happen: browsers drop background
+      colors when printing unless a page says otherwise, which is a sensible
+      default for a page of text and exactly wrong here - the fill and the left
+      edge ARE the information, telling all-day apart from timed and one event
+      apart from the next. Without it the printout came out as undifferentiated
+      lines of grey text, which is what it looked like before this rule.
+
+      The dialog is a screen affordance and never prints.
     */
     .pill {
-      padding: 0;
+      padding: 0.06in 0.05in;
       border: 0;
-      background: none !important;
+      border-inline-start: 2.5pt solid var(--tone-edge);
+      border-radius: 1.5pt;
+      background: var(--tone-bg);
       font-size: 6.5pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
+    .events { gap: 0.035in; }
     .ev-time { font-size: 6pt; }
     .ev-dialog { display: none !important; }
   }

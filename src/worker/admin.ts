@@ -25,8 +25,17 @@ import {
   titleFromFilename,
 } from './frontmatter.mjs';
 import { storeImage, type ImageEnv } from './images';
+import {
+  parsePosts,
+  stringifyPosts,
+  validatePosts,
+  MAX_POSTS,
+} from './instagram.mjs';
 
 const DIR = 'src/content/announcements';
+
+/** The Instagram post list /gallery renders. Managed from the editor. */
+const INSTAGRAM_FILE = 'src/content/instagram.yaml';
 
 /** Must match `gradeSlugs` in src/content.config.ts. */
 const GRADES = new Set(['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5']);
@@ -353,6 +362,40 @@ export async function handleAdminApi(
         existing,
       );
       return json({ ok: true, slug, sha });
+    }
+
+    /**
+     * Instagram posts on /gallery.
+     *
+     * The whole file is read and written every time. It holds at most six
+     * lines, so there is nothing to gain from patching it, and a
+     * read-modify-write of the complete document means the editor sends a list
+     * and gets a list back with no partial state to reconcile. The sha is
+     * carried through for the same optimistic-concurrency reason posts use it.
+     */
+    if (route === 'instagram' && request.method === 'GET') {
+      const found = await readFile(config, INSTAGRAM_FILE);
+      return json({
+        urls: found ? parsePosts(found.text) : [],
+        sha: found?.sha ?? null,
+        max: MAX_POSTS,
+      });
+    }
+
+    if (route === 'instagram' && request.method === 'PUT') {
+      const payload = (await request.json()) as { urls?: unknown; sha?: unknown };
+      const check = validatePosts(payload.urls);
+      if (!check.ok) return json({ error: check.error }, 400);
+
+      const written = await writeFile(
+        config,
+        INSTAGRAM_FILE,
+        stringifyPosts(check.urls),
+        `Update Instagram posts (${check.urls.length})`,
+        identity.email,
+        typeof payload.sha === 'string' ? payload.sha : undefined,
+      );
+      return json({ urls: check.urls, sha: written.sha });
     }
 
     if (route === 'images' && request.method === 'POST') {
