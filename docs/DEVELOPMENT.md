@@ -87,10 +87,23 @@ opens as a new tab in the same shared Ghostty/tmux window as the other apps.
 dev              # interactive controller (status + menu)
 dev start        # astro dev on :4321, hot reload
 dev worker       # wrangler dev on :8787 - checks .dev.vars, seeds photos first
+dev all          # dev + worker together
+dev restart      # restarts whatever is currently up
 dev images       # refill the local photo bucket (--force to re-fetch)
 dev stop         # stops every mode and closes its tabs
 dev check        # every gate in the repo, in the foreground
 ```
+
+The three modes are independent: `dev start` brings up `astro dev` and nothing
+else, which is why `dev status` normally shows the other two stopped. `dev all`
+is the pair worth having open together — hot reload for iterating, the Workers
+runtime for the gate, `/admin` and photos.
+
+`dev stop` takes down all three, and `dev restart` therefore restarts **whatever
+was up** rather than dropping back to `dev` alone. Losing the worker silently is
+the failure worth avoiding: the site still loads on 4321, so nothing looks
+wrong, but it is ungated with no `/admin` and no photos — which reads as those
+features breaking rather than as a server not running.
 
 `dev` finds the controller by walking up from your current directory, so it
 works from anywhere inside the repo. `dev blackshear-web` from outside does

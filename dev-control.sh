@@ -49,7 +49,14 @@
 # USAGE
 #   ./dev-control.sh              interactive controller
 #   ./dev-control.sh start        one-shot actions (scriptable)
-#   ./dev-control.sh preview | worker | stop | restart | status | logs | check | open
+#   ./dev-control.sh all | preview | worker | stop | restart | status | logs
+#   ./dev-control.sh check | open | images
+#
+#   The three modes are independent - `start` brings up dev and nothing else.
+#   `all` starts dev + worker, the pair worth having open together. `restart`
+#   with no argument restarts whatever is currently up rather than dropping
+#   back to dev, because `stop` takes down all three and quietly losing the
+#   worker looks like /admin and photos breaking rather than stopping.
 #
 #   The global `dev` command finds this by walking up from $PWD, so `dev` and
 #   `dev start` work from anywhere inside the repo. `dev blackshear-web` from
@@ -216,7 +223,7 @@ print_status() {
     case "$s" in
       dev)     note="hot reload" ;;
       preview) note="built output" ;;
-      worker)  note="real Workers runtime - _headers / _redirects" ;;
+      worker)  note="the gate, /admin, photos, _headers" ;;
     esac
     _row "$(_svc_label "$s")" "$p" "$up" "$note"
   done
@@ -371,7 +378,38 @@ do_stop() {
   printf '%s✓ Stopped.%s The shared session stays up if other apps are using it.\n' "$GREEN" "$RESET"
 }
 
-do_restart() { do_stop; sleep 1; do_start "${1:-dev}"; }
+# Restart whatever is actually up, rather than a hardcoded default.
+#
+# This used to be `do_stop; do_start dev`, and do_stop kills all three - so a
+# restart with the worker running stopped it and brought back only :4321. That
+# is the worst mode to drop silently: the site still loads, so nothing looks
+# wrong, but it is ungated with no /admin and no photos, which reads as those
+# features being broken rather than absent.
+#
+# An explicit argument still wins, and restarting from nothing starts dev.
+do_restart() {
+  local want="${1:-}" s
+  if [[ -z "$want" ]]; then
+    for s in $SERVICES; do
+      port_listening "$(_svc_port "$s")" && want="$want $s"
+    done
+    want="${want# }"
+    [[ -z "$want" ]] && want="dev"
+  fi
+  do_stop
+  sleep 1
+  for s in $want; do do_start "$s"; done
+}
+
+# The pair worth running together: hot reload for iterating, the real runtime
+# for the gate, /admin and photos. Preview is deliberately not included - it
+# serves the same built output as worker with less of the runtime around it, so
+# running both only competes for the same build.
+do_all() {
+  do_start dev
+  printf '\n'
+  do_start worker
+}
 
 # `dev worker` seeds automatically; this is for re-fetching after someone adds a
 # photo through the real /admin, or with --force after clearing local state.
@@ -476,9 +514,9 @@ menu() {
     _set_tab_title
     printf '%s│%s\n' "$CYAN" "$RESET"
     printf '%s│%s  [s] start dev   [p] preview     [w] worker\n' "$CYAN" "$RESET"
-    printf '%s│%s  [x] stop all    [r] restart     [l] logs\n' "$CYAN" "$RESET"
+    printf '%s│%s  [a] dev+worker  [x] stop all    [r] restart\n' "$CYAN" "$RESET"
     printf '%s│%s  [c] checks      [o] open        [i] photos\n' "$CYAN" "$RESET"
-    printf '%s│%s  [q] quit\n' "$CYAN" "$RESET"
+    printf '%s│%s  [l] logs        [q] quit\n' "$CYAN" "$RESET"
     printf '%s└%s ' "$CYAN" "$RESET"
     SECONDS=0
     read -r -t "$TAB_TITLE_REFRESH_SECS" choice
@@ -498,7 +536,8 @@ menu() {
       p|preview)   do_start preview; _pause ;;
       w|worker)    do_start worker;  _pause ;;
       x|stop)      do_stop;          _pause ;;
-      r|restart)   do_restart dev;   _pause ;;
+      r|restart)   do_restart;       _pause ;;
+      a|all)       do_all;           _pause ;;
       l|logs)      do_logs;          _pause ;;
       c|check)     do_check;         _pause ;;
       o|open)      do_open;          _pause ;;
@@ -517,18 +556,21 @@ case "$(_lc "${1:-}")" in
   preview)        do_start preview ;;
   worker)         do_start worker ;;
   stop)           do_stop ;;
-  restart)        do_restart "${2:-dev}" ;;
+  restart)        do_restart "${2:-}" ;;
+  all)            do_all ;;
   status)         print_status ;;
   logs)           do_logs ;;
   check|checks)   do_check ;;
   open)           do_open ;;
   images|photos)  shift; do_images "$@" ;;
   -h|--help|help)
-    printf 'Usage: dev [start|dev|preview|worker|stop|restart|status|logs|check|open|images]\n\n'
+    printf 'Usage: dev [start|all|dev|preview|worker|stop|restart|status|logs|check|open|images]\n\n'
     printf '  dev       astro dev      :%s  hot reload\n' "$DEV_PORT"
     printf '  preview   astro preview  :%s  built output\n' "$PREVIEW_PORT"
     printf '  worker    wrangler dev   :%s  real Workers runtime, the gate, /admin, photos\n' "$WORKER_PORT"
     printf '  check                        every gate in the repo (nothing else runs them)\n'
+    printf '  all                          dev + worker together\n'
+    printf '  restart                      restarts whatever is currently up\n'
     printf '  images                       refill the local photo bucket (--force to re-fetch)\n\n'
     printf '  `worker` checks .dev.vars and seeds photos before it starts, so /admin\n'
     printf '  and announcement images work. See docs/DEVELOPMENT.md.\n'
