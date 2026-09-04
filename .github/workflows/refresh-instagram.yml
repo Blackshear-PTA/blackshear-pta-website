@@ -16,6 +16,12 @@
 # with an empty list - would silently blank the gallery, and nobody would notice
 # for a month. A failed workflow emails whoever owns the repository.
 #
+# IF THE TOKEN WAS NEVER SET, this does nothing and passes. Automatic mode is
+# opt-in: the gallery works without it, from posts listed by hand in
+# src/content/instagram.yaml, and that needs no Meta app. Going red nightly
+# because somebody chose the simpler option would train them to ignore the
+# notification that matters when a real token expires.
+#
 # TO TURN IT OFF: delete this file, or comment out the `schedule:` block to
 # leave it runnable by hand from the Actions tab.
 

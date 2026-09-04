@@ -44,10 +44,22 @@ const LIMIT = 12;
 /** Fail the run when a token has less than this long to live. */
 const RENEW_WARNING_DAYS = 14;
 
+/**
+ * No token means the automatic mode was never set up, which is a legitimate
+ * choice rather than a fault - the gallery works perfectly well with posts
+ * listed by hand, and that path needs no Meta app at all.
+ *
+ * So this exits 0 and does nothing. Failing here would turn "we decided not to
+ * bother" into a red workflow and an email every single night, which trains
+ * whoever owns the repository to ignore exactly the notification that matters
+ * when a real token expires.
+ */
 const token = process.env.IG_ACCESS_TOKEN;
 if (!token) {
-  console.error('IG_ACCESS_TOKEN is not set. See docs/INSTAGRAM.md.');
-  process.exit(1);
+  console.log('IG_ACCESS_TOKEN is not set, so automatic mode is off. Nothing to do.');
+  console.log('The gallery renders whatever is listed in src/content/instagram.yaml.');
+  console.log('To turn automatic updates on, see docs/INSTAGRAM.md.');
+  process.exit(0);
 }
 
 async function getJson(url) {
