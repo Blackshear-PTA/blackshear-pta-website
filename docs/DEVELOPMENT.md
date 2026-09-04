@@ -86,9 +86,10 @@ opens as a new tab in the same shared Ghostty/tmux window as the other apps.
 ```bash
 dev              # interactive controller (status + menu)
 dev start        # astro dev on :4321, hot reload
-dev worker       # wrangler dev on :8787
+dev worker       # wrangler dev on :8787 - checks .dev.vars, seeds photos first
+dev images       # refill the local photo bucket (--force to re-fetch)
 dev stop         # stops every mode and closes its tabs
-dev check        # build + astro check + contrast gate, in the foreground
+dev check        # every gate in the repo, in the foreground
 ```
 
 `dev` finds the controller by walking up from your current directory, so it
@@ -121,7 +122,12 @@ through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
 
 Two parts of the site are edge infrastructure, so on 4321 and 4322 they do not
 exist at all, and on 8787 they start out empty. Neither is broken when that
-happens; both need one setup step.
+happens.
+
+`dev worker` handles most of it: before launching it reads `.dev.vars`, tells
+you which of the gate and `/admin` will not work and why, and seeds the local
+photo bucket. `dev status` shows the same thing without starting anything. The
+one thing it cannot invent is which address to sign you in as.
 
 **Sign-in.** Cloudflare Access runs at Cloudflare's edge, so no Access token is
 ever attached to a localhost request and `/admin/api/*` answers `401 Not signed
@@ -155,15 +161,29 @@ The editor shows a banner naming the repository and branch a save would land
 on — quiet accent for read-only, red for live.
 
 **Photos.** `wrangler dev` binds a *local* R2 bucket, not the production one, so
-it starts empty and every photo 404s. Fill it:
+it starts empty and every photo 404s. `dev worker` fills it automatically; the
+manual form is `dev images`, or:
 
 ```bash
 npm run dev:images
 ```
 
 That copies the photos the current posts reference from the live site. It needs
-no credentials — `/images/*` is routed ahead of the gate — and the local bucket
-persists in `.wrangler/`, so this is once per checkout, not once per run.
+no credentials — `/images/*` is routed ahead of the gate — and it records what
+it has already fetched, so running it again does nothing. Add `--force` after
+someone uploads a photo through the real `/admin`, or to re-fetch after clearing
+`.wrangler/`.
+
+### Running the gates
+
+```bash
+dev check
+```
+
+Twelve of them: build, `astro check`, and the ten `check:*` scripts. **Nothing
+else runs these** — there is no CI workflow for them, and Cloudflare Workers
+Builds only runs `npm run build` — so a gate missing from `do_check` in
+`dev-control.sh` is a gate that never runs. Add new ones there.
 
 ## Layout
 

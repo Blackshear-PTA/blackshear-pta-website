@@ -14,13 +14,23 @@
  * means seeding needs no R2 token, no bucket permissions, and no account
  * access at all. Anyone who can clone the repo can run it.
  *
- * The local bucket persists in .wrangler/ between runs, so this is a
- * once-per-checkout thing rather than something to run before each dev server.
+ * Safe to run before every dev server: it records what it has already put in
+ * the bucket and does nothing on a second run. The record lives INSIDE
+ * .wrangler/ deliberately, next to the bucket it describes, so deleting the
+ * local state resets both together and cannot leave the two disagreeing.
  *
- * Run: npm run dev:images
+ * Run: npm run dev:images         (--force to re-fetch, --quiet for scripts)
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +39,33 @@ import { parsePost } from '../src/worker/frontmatter.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/announcements');
+
+const FORCE = process.argv.includes('--force');
+/** Say nothing when there is nothing to do, so a preflight can call this every time. */
+const QUIET = process.argv.includes('--quiet');
+
+/** Beside the bucket it describes - see the header. */
+const STATE_DIR = join(ROOT, '.wrangler/state');
+const MANIFEST = join(STATE_DIR, 'pta-seeded-images.json');
+
+function alreadySeeded() {
+  if (FORCE) return new Set();
+  try {
+    const saved = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+    // The bucket is only still populated if wrangler's own state survived. If
+    // someone deleted .wrangler/state/v3 but left the manifest, believing it
+    // would mean silently serving 404s for photos we think are present.
+    if (!existsSync(join(STATE_DIR, 'v3'))) return new Set();
+    return new Set(Array.isArray(saved.keys) ? saved.keys : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function recordSeeded(keys) {
+  mkdirSync(STATE_DIR, { recursive: true });
+  writeFileSync(MANIFEST, `${JSON.stringify({ keys: [...keys].sort() }, null, 2)}\n`);
+}
 
 /** Where the photos are fetched from. Override for a staging origin. */
 const ORIGIN = process.env.SITE_ORIGIN ?? 'https://blackshearpta.org';
@@ -73,10 +110,21 @@ function referencedKeys() {
 
 const wrangler = join(ROOT, 'node_modules/.bin/wrangler');
 const bucket = bucketName();
-const keys = [...referencedKeys()].filter((k) => /^[0-9a-f]{32}\.(jpg|png|webp)$/.test(k));
+const referenced = [...referencedKeys()].filter((k) => /^[0-9a-f]{32}\.(jpg|png|webp)$/.test(k));
+
+if (referenced.length === 0) {
+  if (!QUIET) console.log('No announcement photos to seed. Nothing to do.');
+  process.exit(0);
+}
+
+const have = alreadySeeded();
+const keys = referenced.filter((k) => !have.has(k));
 
 if (keys.length === 0) {
-  console.log('No announcement photos to seed. Nothing to do.');
+  if (!QUIET) {
+    console.log(`All ${referenced.length} announcement photos are already in the local bucket.`);
+    console.log('Use --force to fetch them again.');
+  }
   process.exit(0);
 }
 
@@ -84,6 +132,7 @@ console.log(`Seeding ${keys.length} photo${keys.length === 1 ? '' : 's'} from ${
 console.log(`into the local "${bucket}" bucket.\n`);
 
 const scratch = mkdtempSync(join(tmpdir(), 'pta-images-'));
+const done = new Set(have);
 let seeded = 0;
 let failed = 0;
 
@@ -113,6 +162,7 @@ try {
       );
 
       console.log(`  ok   ${key}  ${(bytes.length / 1024).toFixed(0)}KB`);
+      done.add(key);
       seeded += 1;
     } catch (error) {
       console.error(`  FAIL ${key} - ${error.message.trim().split('\n')[0]}`);
@@ -121,6 +171,9 @@ try {
   }
 } finally {
   rmSync(scratch, { recursive: true, force: true });
+  // Written even on a partial run, so a retry only fetches what is still
+  // missing rather than starting over.
+  if (seeded) recordSeeded(done);
 }
 
 console.log(`\n${seeded} seeded, ${failed} failed.`);

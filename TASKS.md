@@ -596,9 +596,33 @@ function so `check:access` can assert it directly, and the eleven new cases
 there include the lookalikes a loose check would wrongly accept
 (`localhost.example.com`, `notlocalhost`, `127.0.0.1.example.com`) - the same
 "move the logic somewhere deterministically testable" lesson as [F38](#f38) and
-`src/lib/crop.ts`. And the `check:secrets` gate caught a `GITHUB_TOKEN=<...>`
-placeholder in the documentation written *for this finding*, which is the third
-time that gate has paid for itself.
+`src/lib/crop.ts`. And `check:secrets` caught a token placeholder in the
+documentation written *for this finding* — then caught a second one in this
+paragraph describing the first. A gate that fires on prose about itself is a
+gate with no special cases, which is the only kind worth having.
+
+**A follow-on near-miss worth its own note.** Backing up `.dev.vars` to
+`.dev.vars.bak` before editing it produced an untracked file holding every local
+secret and matching no ignore rule — the rule was the exact string `.dev.vars`.
+`check:secrets` scans *tracked* files, so it would not have said a word until
+the file was already staged. Fixed at the rule: `.dev.vars*` with
+`!.dev.vars.example`, which also covers the `.dev.vars.<environment>` names
+wrangler reads natively. The general shape: an ignore rule written for one exact
+filename is a rule that stops working the first time anyone makes a copy.
+
+**`dev worker` now sets the environment up rather than assuming it.** It reads
+`.dev.vars` and names whatever is missing (no `SITE_PASSWORD` — the gate locks
+everyone out; no `DEV_ADMIN_EMAIL` — `/admin` 401s; a too-short `GITHUB_TOKEN` —
+reads fail with "Bad credentials"), then seeds the photo bucket, which is silent
+when there is nothing to do. `dev status` reports the same without starting
+anything.
+
+While wiring that up: **`dev check` was running nine of the twelve gates**, and
+nothing else runs any of them — there is no CI workflow, and Workers Builds only
+runs `npm run build`. `check:classnames`, `check:ical` and `check:domain` had
+therefore never run outside a session where someone invoked them by hand. All
+twelve now run, and `do_check` in `dev-control.sh` is where a new gate has to be
+registered or it does not exist.
 
 ---
 

@@ -368,18 +368,22 @@ server neither is present. That is not a fault to debug:
   `/admin/api/*` call answers `401 Not signed in.`
 - **R2** is bound to a *local*, empty bucket, so every photo 404s.
 
-Both are one step each, in `.dev.vars`:
+Add one line to `.dev.vars` — the address you want to be signed in as, which
+should be the one you use in production so the editor behaves the same way:
 
 ```
 DEV_ADMIN_EMAIL=you@example.com
 ```
 
+Then:
+
 ```bash
-npm run dev:images     # copies the current posts' photos into the local bucket
-npm run build && npx wrangler dev     # or: dev worker
+dev worker
 ```
 
-Then `http://localhost:8787/admin` opens the real editor against the real
+That checks `.dev.vars`, says which pieces will not work and why, seeds the
+local photo bucket, and starts the Workers runtime on :8787.
+`http://localhost:8787/admin` then opens the real editor against the real
 posts. No GitHub token is needed — the repository is public and reads work
 unauthenticated. A stale `GITHUB_TOKEN` line is worse than none; delete it.
 

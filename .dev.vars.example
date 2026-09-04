@@ -49,12 +49,13 @@ GITHUB_TOKEN=replace-me
 
 # ------------------------------------------------------- photos on :8787 -----
 # `wrangler dev` binds a LOCAL, empty R2 bucket, so announcement photos 404
-# until you copy some in:
+# until something copies them in. `dev worker` does that for you before it
+# starts. The manual form, if you are not using the controller:
 #
 #   npm run dev:images
 #
-# That pulls the photos the current posts reference from the live site. It needs
-# no credentials and only has to be run once per checkout.
+# It pulls the photos the current posts reference from the live site, needs no
+# credentials, and does nothing on a second run.
 
 
 # ------------------------------------------------- not needed for dev -------
