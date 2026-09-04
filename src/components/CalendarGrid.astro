@@ -214,6 +214,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
         class="month-grid"
         data-month={month.key}
         hidden={month.key !== currentMonth}
+        style={`--week-rows:${month.weeks.length}`}
       >
         <caption>{month.label}</caption>
         <thead>
@@ -486,6 +487,25 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       display: table !important;
       page-break-inside: avoid;
       height: 6.2in;
+    }
+
+    /*
+      Every week the same height on paper.
+
+      A table given a total height hands the surplus out in proportion to what
+      each row already needs, so busy weeks grew and quiet ones - nearly always
+      the first and last, which are part-weeks - stayed squat. On screen it
+      never showed: there the cells have a min-height and no total to divide.
+
+      Dividing the height explicitly is what makes them equal, and the row count
+      has to come from the markup because CSS cannot count rows - a month spans
+      four to six weeks depending on the day it starts on. `height` on a row is
+      a minimum, so a week with more events than fits still grows rather than
+      clipping somebody's event off the page; at 6.5pt that takes about a dozen
+      lines in a single cell.
+    */
+    .month-grid.printing tbody tr {
+      height: calc(6.2in / var(--week-rows, 6));
     }
     .month-grid.printing caption {
       position: static;

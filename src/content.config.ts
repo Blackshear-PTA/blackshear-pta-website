@@ -259,6 +259,34 @@ const calendarArt = defineCollection({
   }),
 });
 
+/**
+ * Instagram post embeds - src/content/instagram.yaml.
+ *
+ * A hand-picked list rather than a live feed; that file explains why. The URL
+ * is checked here rather than trusted, because a wrong paste - a profile link,
+ * a share link with tracking parameters, a story - renders as an empty white
+ * box on the live page and gives no clue what went wrong. Failing the build
+ * with a sentence is cheaper than diagnosing that later.
+ */
+const instagram = defineCollection({
+  loader: file('src/content/instagram.yaml'),
+  schema: z.object({
+    posts: z
+      .array(
+        z.object({
+          url: z
+            .string()
+            .regex(
+              /^https:\/\/www\.instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/?$/,
+              'Must be a public post permalink like https://www.instagram.com/p/ABC123/ ' +
+                '- copy it from the browser bar with the post open, and drop anything after the "?".',
+            ),
+        }),
+      )
+      .default([]),
+  }),
+});
+
 const site = defineCollection({
   loader: file('src/content/site.yaml'),
   schema: z.object({
@@ -324,4 +352,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { announcements, calendarArt, home, pages, site };
+export const collections = { announcements, calendarArt, home, instagram, pages, site };

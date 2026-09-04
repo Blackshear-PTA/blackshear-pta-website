@@ -346,8 +346,13 @@ do_start() {
   [[ "$svc" == "worker" ]] && _worker_preflight
   # Said once here rather than left to be rediscovered: on 4321 and 4322 the
   # site is ungated and the editor's API is simply absent.
-  [[ "$svc" == "dev" || "$svc" == "preview" ]] && \
-    printf '%s  The gate, /admin and photos are Workers-only - use `dev worker` for those.%s\n' "$DIM" "$RESET"
+  # astro dev proxies /admin/api and /images to :8787, so 4321 is complete only
+  # while the worker is also up. Preview has no such proxy.
+  if [[ "$svc" == "dev" ]] && ! port_listening "$WORKER_PORT"; then
+    printf '%s  Note: /admin and photos need the worker too - `dev all` starts both.%s\n' "$DIM" "$RESET"
+  elif [[ "$svc" == "preview" ]]; then
+    printf '%s  Note: the gate, /admin and photos are Workers-only - use `dev worker`.%s\n' "$DIM" "$RESET"
+  fi
 
   printf '%s▶ Launching %s into the "%s" window, tab "%s"…%s\n' \
     "$BOLD" "$(_svc_label "$svc")" "$TMUX_SESSION" "$win" "$RESET"

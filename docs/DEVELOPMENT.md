@@ -133,9 +133,19 @@ through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
 
 ### Testing `/admin` and photos locally
 
-Two parts of the site are edge infrastructure, so on 4321 and 4322 they do not
-exist at all, and on 8787 they start out empty. Neither is broken when that
-happens.
+Two parts of the site are edge infrastructure: `/admin/api/*` and `/images/*`
+live in the Worker, so `astro dev` cannot serve either and both 404 on their
+own. `astro dev` therefore **proxies those two paths to the worker on 8787**
+(see `astro.config.mjs`), which means 4321 does everything — hot reload plus a
+working editor and real photos — as long as `dev worker` is also up. `dev all`
+starts both. With the worker down, those paths answer with a sentence saying so
+rather than a generic 500.
+
+That proxy is dev-only; a build never sees it. On the deployed site the Worker
+handles both paths itself.
+
+What the worker still needs set up, because the edge services behind it have no
+local equivalent:
 
 `dev worker` handles most of it: before launching it reads `.dev.vars`, tells
 you which of the gate and `/admin` will not work and why, and seeds the local
