@@ -18,10 +18,11 @@
 /**
  * A public post permalink and nothing else.
  *
- * Deliberately strict. A profile link, a share URL with tracking parameters, a
- * story, or a `/p/` with a trailing query all render as an empty white box on
- * the live page and give no clue what went wrong - so they are refused at the
- * point somebody pastes them, where there is a person to tell.
+ * Deliberately strict, and applied AFTER normalizeUrl - so tracking parameters
+ * are stripped rather than refused, but a profile link, a story or some other
+ * host still cannot get through. Each of those renders as an empty white box on
+ * the live page with no clue what went wrong, so they are caught at the point
+ * somebody pastes one, where there is a person to tell.
  */
 export const POST_URL = /^https:\/\/www\.instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/?$/;
 
@@ -90,6 +91,26 @@ export function stringifyPosts(urls) {
 }
 
 /**
+ * Trims an address down to the permalink.
+ *
+ * Instagram's own "Copy link" button produces
+ * `.../p/ABC123/?utm_source=ig_web_copy_link&igsi=...`, so refusing anything
+ * with a query string means refusing the exact thing the app hands people. That
+ * was the first address pasted at this and it bounced, which is the whole
+ * argument for normalizing rather than validating harder.
+ *
+ * Everything after `?` or `#` is tracking; the permalink identifies the post on
+ * its own. A trailing slash is added back so stored addresses look alike.
+ */
+export function normalizeUrl(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  const stripped = raw.split(/[?#]/)[0] ?? '';
+  const match = /^(https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]+)\/?$/.exec(stripped);
+  return match ? `${match[1]}/` : stripped;
+}
+
+/**
  * Checks a list the editor sent. Returns the cleaned list or a message meant to
  * be read by whoever is standing at the form.
  *
@@ -110,15 +131,15 @@ export function validatePosts(value) {
 
   const urls = [];
   for (const item of value) {
-    const url = typeof item === 'string' ? item.trim() : '';
+    const url = normalizeUrl(item);
     if (!url) continue;
     if (!POST_URL.test(url)) {
       return {
         ok: false,
         error:
-          `"${url}" is not a post address. Open the post on instagram.com and copy ` +
-          'the address from the browser bar - it looks like ' +
-          'https://www.instagram.com/p/ABC123/ - and remove anything after a "?".',
+          `"${url}" is not a post address. Open the post itself on Instagram and use ` +
+          'Copy link, or copy the address from the browser bar - it looks like ' +
+          'https://www.instagram.com/p/ABC123/. A profile page or a story will not work.',
       };
     }
     // Same post twice is two identical embeds, which always reads as a bug.

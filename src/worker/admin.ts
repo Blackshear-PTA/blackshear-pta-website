@@ -427,6 +427,23 @@ export async function handleAdminApi(
      * so a leftover or expired GITHUB_TOKEN in .dev.vars turns a session that
      * would have worked into a bare "Bad credentials" from GitHub.
      */
+    /**
+     * The cost of making the token optional for read-only local work, arriving
+     * in practice: unauthenticated GitHub allows 60 requests an hour per IP, and
+     * one load of this page spends seven of them. An afternoon of reloads runs
+     * it out, and GitHub's own text does not say that in a way anyone reads.
+     */
+    if (/rate limit/i.test(message)) {
+      return json(
+        {
+          error: dev
+            ? 'GitHub\'s hourly limit for requests without a token is used up. It resets ' +
+              'within the hour - or add a GITHUB_TOKEN to .dev.vars to raise it.'
+            : 'GitHub is rate limiting us. Wait a few minutes and reload.',
+        },
+        429,
+      );
+    }
     if (dev && /\b401\b/.test(message)) {
       return json(
         {

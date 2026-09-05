@@ -16,4 +16,5 @@
 # A private post renders as an empty box for everyone but its followers.
 
 gallery:
-  posts: []
+  posts:
+    - url: "https://www.instagram.com/p/DU_h7inEsyQ/"

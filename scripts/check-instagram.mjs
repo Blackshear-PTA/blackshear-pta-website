@@ -10,7 +10,14 @@
  *
  * Run: npm run check:instagram
  */
-import { parsePosts, stringifyPosts, validatePosts, POST_URL, MAX_POSTS } from '../src/worker/instagram.mjs';
+import {
+  parsePosts,
+  stringifyPosts,
+  validatePosts,
+  normalizeUrl,
+  POST_URL,
+  MAX_POSTS,
+} from '../src/worker/instagram.mjs';
 
 let failures = 0;
 function check(name, actual, expected) {
@@ -39,20 +46,43 @@ check('comments and blanks ignored', parsePosts(`# a comment\n\ngallery:\n  post
 check('empty file', parsePosts(''), []);
 check('missing file', parsePosts(undefined), []);
 
-console.log('\naccepts:');
-for (const [name, url] of [
-  ['a /p/ permalink', A],
-  ['a /reel/ permalink', B],
-  ['no trailing slash', 'https://www.instagram.com/p/ABC123'],
+console.log('\naccepts (stored form on the right - normalizing may add a trailing slash):');
+for (const [name, url, stored] of [
+  ['a /p/ permalink', A, A],
+  ['a /reel/ permalink', B, B],
+  ['no trailing slash', 'https://www.instagram.com/p/ABC123', 'https://www.instagram.com/p/ABC123/'],
 ]) {
   const result = validatePosts([url]);
-  check(name, result.ok === true && result.urls, [url]);
+  check(name, result.ok === true && result.urls, [stored]);
 }
+
+console.log('\nnormalizes what the Copy link button actually produces:');
+check(
+  'strips utm parameters',
+  normalizeUrl('https://www.instagram.com/p/DU_h7inEsyQ/?utm_source=ig_web_copy_link&igsi=MzRlODBiNWFlZA=='),
+  'https://www.instagram.com/p/DU_h7inEsyQ/',
+);
+check('strips a fragment', normalizeUrl(`${A}#comments`), A);
+check('adds the trailing slash back', normalizeUrl('https://www.instagram.com/p/ABC123xyz'), A);
+check('leaves a clean permalink alone', normalizeUrl(A), A);
+check('normalizes a reel too', normalizeUrl(`${B}?igsh=x`), B);
+check('surrounding whitespace', normalizeUrl(`  ${A}  `), A);
+check(
+  'a pasted Copy link is accepted end to end',
+  validatePosts(['https://www.instagram.com/p/DU_h7inEsyQ/?utm_source=ig_web_copy_link']).urls,
+  ['https://www.instagram.com/p/DU_h7inEsyQ/'],
+);
+check(
+  'the same post twice, one with parameters, is still a duplicate',
+  validatePosts([A, `${A}?utm_source=x`]).ok,
+  false,
+);
+// Normalizing must not become a way to smuggle a different host through.
+check('a lookalike host is not rescued', normalizeUrl('https://www.instagram.com.evil.test/p/A1/?x=1'), 'https://www.instagram.com.evil.test/p/A1/');
 
 console.log('\nrejects (each renders as an empty box if it gets through):');
 for (const [name, url] of [
   ['a profile link', 'https://www.instagram.com/blackshearpta/'],
-  ['tracking parameters', `${A}?igsh=abc123`],
   ['a story', 'https://www.instagram.com/stories/blackshearpta/123/'],
   ['http, not https', 'http://www.instagram.com/p/ABC123/'],
   ['a lookalike host', 'https://www.instagram.com.evil.test/p/ABC123/'],

@@ -1,4 +1,5 @@
 ---
+import BuzzMascot from './BuzzMascot.astro';
 
 /**
  * A month-at-a-time calendar, built to be read on a phone and printed on one
@@ -307,7 +308,19 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
         hidden={month.key !== currentMonth}
         style={`--week-rows:${month.weeks.length}`}
       >
-        <caption>{month.label}</caption>
+        <caption>
+          {/*
+            The masthead, but only on paper. On screen the caption is visually
+            hidden (it exists for screen readers, which is why the month is not
+            just a heading), and a printed month leaving the school with no
+            name on it is a sheet nobody can place a week later.
+          */}
+          <span class="print-brand" aria-hidden="true">
+            <BuzzMascot size={30} class="print-mark" />
+            <span class="print-school">Blackshear Elementary</span>
+          </span>
+          <span class="print-month">{month.label}</span>
+        </caption>
         <thead>
           <tr>
             {WEEKDAYS.map((day) => (
@@ -325,6 +338,7 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
               {week.map((cell) => (
                 <td
                   class:list={['cell', { blank: cell.day === null, today: cell.key === todayKey }]}
+                  data-day={cell.key ?? undefined}
                 >
                   {cell.day !== null && (
                     <>
@@ -385,6 +399,22 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     Escape-to-close for free, all of which a div would have to reimplement
     badly. Same choice as /admin.
   */}
+  {/*
+    Everything on one day, opened from a "+N more" pill. Separate from the event
+    dialog rather than nested inside it: opening a second modal from inside the
+    first is a stack a person then has to unwind, and the two answer different
+    questions - "what else is on" versus "what is this".
+  */}
+  <dialog class="day-dialog" data-day-dialog aria-labelledby="day-dialog-title">
+    <div class="day-dialog-inner">
+      <h2 id="day-dialog-title" data-day-title></h2>
+      <ul class="day-list" data-day-list></ul>
+      <div class="ev-actions">
+        <button type="button" class="btn" data-day-close>Close</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="ev-dialog" data-cal-dialog aria-labelledby="ev-dialog-title">
     <div class="ev-dialog-inner">
       <h2 id="ev-dialog-title" data-ev-title></h2>
@@ -438,7 +468,10 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       index = Math.min(keys.length - 1, Math.max(0, to));
       grids.forEach((grid, i) => { grid.hidden = i !== index; });
       const active = grids[index]!;
-      label!.textContent = active.querySelector('caption')?.textContent ?? '';
+      // .print-month, not the whole caption: the caption also carries the
+      // printed masthead, and reading all of it put "Blackshear Elementary"
+      // in front of the month on screen.
+      label!.textContent = active.querySelector('.print-month')?.textContent ?? '';
       // Only the visible month prints, so the print stylesheet needs to know
       // which one that is without re-querying.
       grids.forEach((grid) => grid.classList.toggle('printing', grid === active));
@@ -447,6 +480,10 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       const atEnd = index === keys.length - 1;
       document.querySelector<HTMLButtonElement>('[data-cal-prev]')!.disabled = atStart;
       document.querySelector<HTMLButtonElement>('[data-cal-next]')!.disabled = atEnd;
+      // Announced rather than called directly: the clamp lives in the block
+      // below with the dialogs, and a hidden month measures zero, so only the
+      // month actually on screen can be measured.
+      document.dispatchEvent(new CustomEvent('pta:month-shown', { detail: active }));
     }
 
     document.querySelector('[data-cal-prev]')!.addEventListener('click', () => show(index - 1));
@@ -568,12 +605,147 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
         dialog!.showModal();
       }
 
+      /**
+       * Clamps each square to the height its CSS allows and adds a "+N more".
+       *
+       * Measured rather than counted. How many lines an event takes depends on
+       * the column width and the length of its title, so three events can be
+       * three lines or seven; only the browser knows which. Counting events
+       * instead was the version that let one busy day stretch its whole week
+       * taller than the others.
+       *
+       * Runs after a month is shown and again on resize, because the answer
+       * changes with the width.
+       */
+      function clampSquares(grid: HTMLElement) {
+        for (const cell of grid.querySelectorAll<HTMLElement>('td.cell[data-day]')) {
+          const list = cell.querySelector<HTMLElement>('.events');
+          if (!list) continue;
+
+          // Start from everything visible, or the measurement compounds.
+          for (const item of list.querySelectorAll<HTMLElement>('li')) item.classList.remove('clipped');
+          list.querySelector('.more-row')?.remove();
+
+          const budget = parseFloat(getComputedStyle(list).maxHeight);
+          if (!Number.isFinite(budget) || list.scrollHeight <= budget) continue;
+
+          const items = [...list.querySelectorAll<HTMLElement>('li')];
+
+          // The "+N more" pill has to fit inside the same budget, so it goes in
+          // before the hiding starts rather than after.
+          const more = document.createElement('li');
+          more.className = 'more-row';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'more-pill';
+          button.dataset.more = cell.dataset.day!;
+          more.appendChild(button);
+          list.appendChild(more);
+
+          let hidden = 0;
+          // Hide from the end until it fits. At most a handful of events per
+          // square, so the repeated reflow costs nothing measurable.
+          for (let i = items.length - 1; i >= 0 && list.scrollHeight > budget; i -= 1) {
+            items[i]!.classList.add('clipped');
+            hidden += 1;
+            button.textContent = `+${hidden} more`;
+          }
+
+          // Everything hidden means the budget cannot fit even one event; a
+          // count with nothing visible is worse than just showing the first.
+          if (hidden === items.length) {
+            items[0]!.classList.remove('clipped');
+            hidden -= 1;
+            if (hidden === 0) more.remove();
+            else button.textContent = `+${hidden} more`;
+          }
+        }
+      }
+
+      const dayDialog = document.querySelector<HTMLDialogElement>('[data-day-dialog]');
+      const dayTitle = dayDialog?.querySelector<HTMLElement>('[data-day-title]');
+      const dayList = dayDialog?.querySelector<HTMLElement>('[data-day-list]');
+
+      const dayLabelFmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'UTC',
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+
+      function openDay(key: string) {
+        if (!dayDialog || !dayTitle || !dayList) return;
+        const cell = document.querySelector<HTMLElement>(`td.cell[data-day="${key}"]`);
+        if (!cell) return;
+
+        // The key is a plain calendar date, so it is read in UTC - the same
+        // rule the grid itself uses for all-day events.
+        const [y, m, d] = key.split('-').map(Number) as [number, number, number];
+        dayTitle.textContent = dayLabelFmt.format(new Date(Date.UTC(y, m - 1, d)));
+
+        dayList.textContent = '';
+        for (const pill of cell.querySelectorAll<HTMLElement>('.pill[data-ev]')) {
+          const item = document.createElement('li');
+          // A clone keeps the tint and the markup without rebuilding either.
+          const copy = pill.cloneNode(true) as HTMLElement;
+          copy.removeAttribute('style');
+          item.appendChild(copy);
+          dayList.appendChild(item);
+        }
+        dayDialog.showModal();
+      }
+
+      dayDialog?.querySelector('[data-day-close]')?.addEventListener('click', () => dayDialog.close());
+
+      let shown: HTMLElement | null = null;
+      document.addEventListener('pta:month-shown', (event) => {
+        shown = (event as CustomEvent<HTMLElement>).detail;
+        clampSquares(shown);
+      });
+
+      // Column width decides how many lines a title takes, so the answer
+      // changes with the window. Debounced because resize fires continuously.
+      let resizeTimer = 0;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => { if (shown) clampSquares(shown); }, 150);
+      });
+
+      /**
+       * Paper shows everything.
+       *
+       * A printed square is wider and taller than one on screen, so the four
+       * lines that fit here are not the limit there - and a "+N more" you
+       * cannot click is worse than the events themselves. The clamp is undone
+       * before printing and redone after, since the screen still needs it.
+       */
+      window.addEventListener('beforeprint', () => {
+        for (const item of document.querySelectorAll('.events li.clipped')) {
+          item.classList.remove('clipped');
+        }
+      });
+      window.addEventListener('afterprint', () => { if (shown) clampSquares(shown); });
+
       document.addEventListener('click', (event) => {
-        const pill = (event.target as HTMLElement).closest<HTMLElement>('.pill[data-ev]');
+        const target = event.target as HTMLElement;
+
+        const more = target.closest<HTMLElement>('.more-pill[data-more]');
+        if (more) {
+          openDay(more.dataset.more!);
+          return;
+        }
+
+        const pill = target.closest<HTMLElement>('.pill[data-ev]');
         if (pill) {
+          // A pill inside the day dialog closes it first, so the two modals are
+          // sequential rather than stacked.
+          if (dayDialog?.open && dayDialog.contains(pill)) dayDialog.close();
           open(pill.dataset.ev!);
           return;
         }
+
+        if (dayDialog && event.target === dayDialog) { dayDialog.close(); return; }
         // Clicking the backdrop closes this one. Unlike /admin's editor there is
         // nothing here to lose: the dialog is read-only.
         if (event.target === dialog) dialog.close();
@@ -666,8 +838,81 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   }
   .cell.today .daynum { color: var(--pta-accent); }
 
-  .events { margin: 0.15rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.2rem; }
+  /*
+    A square holds about four lines of event text before the week it is in has
+    to grow taller than its neighbours, which is the thing that made the rows
+    uneven again after they were fixed for print. Anything past that is hidden
+    and replaced by a "+N more" pill.
+
+    The budget is a HEIGHT, not a count of events, because a long title wraps:
+    one event can be three lines and three events can be three lines. The
+    clamping is done in script against this value, since only the browser knows
+    how many lines a title takes at the current column width.
+  */
+  .events {
+    --events-max: 4.15rem;
+    margin: 0.15rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.2rem;
+    max-height: var(--events-max);
+    overflow: hidden;
+  }
   .events li { min-width: 0; }
+
+  /* Set by the clamp; not the hidden attribute, so print can put them back. */
+  .events li.clipped { display: none; }
+
+  /*
+    Outlined rather than filled, so it reads as a control rather than as another
+    event. It is the one pill that is not a thing happening that day.
+  */
+  .more-pill {
+    display: block;
+    width: 100%;
+    padding: 0.1rem 0.3rem;
+    border: 1px dashed var(--pta-rule);
+    border-radius: 3px;
+    background: none;
+    color: var(--pta-ink-muted);
+    font: inherit;
+    font-size: 0.64rem;
+    line-height: 1.25;
+    text-align: start;
+    cursor: pointer;
+  }
+  .more-pill:hover { color: var(--pta-ink); border-color: var(--pta-ink); }
+  .more-pill:focus-visible { outline: 2px solid var(--pta-focus); outline-offset: 1px; }
+
+  /* ── The day dialog, behind "+N more" ─────────────────────────────────── */
+  .day-dialog {
+    width: min(28rem, calc(100vw - 2rem));
+    padding: 0;
+    border: var(--pta-border-width) solid var(--pta-ink);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    overflow: auto;
+  }
+  .day-dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+  .day-dialog-inner { padding: 1.1rem 1.2rem; }
+
+  .day-dialog h2 {
+    margin: 0 0 0.85rem;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    font-size: var(--text-title);
+    line-height: var(--leading-flat);
+  }
+
+  .day-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+
+  /* Same tints as the squares, so a day opened from "+N more" looks like the
+     day it came from rather than like a different feature. */
+  .day-list .pill { font-size: 0.8rem; padding: 0.4rem 0.55rem; }
 
   /*
     Five tints, assigned by hashing the title (see toneFor).
@@ -855,18 +1100,54 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     .month-grid.printing tbody tr {
       height: calc(6.2in / var(--week-rows, 6));
     }
+    /*
+      Masthead left, month centred. `caption` is display: table-caption by
+      default and will not lay out as a flex row, so it becomes a block with the
+      brand taken out of flow to the left - which is also what lets the month
+      centre on the PAGE rather than on the space left over beside the logo.
+    */
     .month-grid.printing caption {
-      position: static;
+      position: relative;
       width: auto;
       height: auto;
       clip-path: none;
       overflow: visible;
-      padding-block-end: 0.15in;
+      display: block;
+      min-height: 0.42in;
+      padding-block-end: 0.16in;
+      text-align: center;
+    }
+
+    .print-brand {
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.08in;
+      text-align: start;
+    }
+
+    .print-brand :global(.print-mark) {
+      width: 0.34in;
+      height: 0.34in;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .print-school {
+      font-family: var(--pta-font-display);
+      font-size: 10pt;
+      font-weight: var(--pta-display-weight);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+    }
+
+    .print-month {
       font-family: var(--pta-font-display);
       font-size: 16pt;
       font-weight: var(--pta-display-weight);
       text-transform: uppercase;
-      text-align: start;
     }
 
     .cell { height: auto; border-color: #000; }
