@@ -97,7 +97,7 @@ export const themes: readonly Theme[] = [
     id: 'print-shop',
     name: 'East Austin Print Shop',
     description:
-      'Screenprint and wood type on newsprint. Flat overprinted colour.',
+      'Screenprint and wood type on newsprint. Flat overprinted color.',
     structure: 'editorial',
     reserve: true,
     fonts: ['--font-alfa', '--font-karla'],

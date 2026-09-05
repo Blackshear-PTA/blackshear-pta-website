@@ -19,13 +19,11 @@ import campusSideEntrance from '../assets/photos/campus-side-entrance.jpg';
  * explicit routes priority, so the URL is unchanged and the page's text still
  * lives in pages.yaml and edits like every other page.
  *
- * NOT an Instagram feed, deliberately (TASKS.md D11). Instagram's Basic Display
- * API - the one that did exactly this - was shut down in December 2024. What
- * replaced it needs a Meta app, a Business account linked to a Facebook Page,
- * and a token refreshed every 60 days. A token that expires every two months,
- * on an account that changes hands at board turnover, is a gallery that breaks
- * silently. So: a real grid that works forever, and a link to Instagram beside
- * it for anyone who wants the live feed.
+ * NOT an automatic Instagram feed, deliberately (TASKS.md D11). Displaying a
+ * post needs nothing; discovering which posts are recent needs a Meta app and a
+ * token that expires every 60 days, and nobody inherits that at board turnover.
+ * So: a real photo grid that works forever, up to six posts chosen in /admin,
+ * and a link to the account for anyone who wants the live feed.
  *
  * This is thin - nine photos, most of them the campus. It is a frame waiting
  * for the photo library (A28), not a finished gallery.
@@ -35,6 +33,17 @@ const entry = await getEntry('pages', 'gallery');
 if (!entry) throw new Error('Missing `gallery:` entry in src/content/pages.yaml.');
 
 const INSTAGRAM = 'https://www.instagram.com/blackshearpta/';
+
+/**
+ * Embedded posts, chosen in /admin and stored in src/content/instagram.yaml.
+ *
+ * Empty by default, and the section below omits the grid entirely when it is -
+ * so the page never shows a row of empty boxes, and nothing is loaded from
+ * instagram.com until somebody has actually picked a post. See
+ * docs/INSTAGRAM.md for why this is a chosen list rather than a live feed.
+ */
+const instagram = await getEntry('instagram', 'gallery');
+const igPosts = instagram?.data.posts ?? [];
 
 /**
  * Alt text is written per photo rather than generated, because "gallery image
@@ -63,7 +72,7 @@ const photos = [
 <PageLayout page={entry.data}>
   {entry.data.body.map((paragraph) => <p class="prose">{paragraph}</p>)}
 
-  <ul class="grid">
+  <ul class="photo-wall">
     {
       photos.map((photo, index) => (
         <li>
@@ -80,24 +89,64 @@ const photos = [
     }
   </ul>
 
-  <section class="block">
+  <section class="section-block">
     <div class="rule" role="presentation"></div>
     <h2>More on Instagram</h2>
     <p class="prose">
       We post most things there first: events, student work, and whatever is
       going on in the garden.
     </p>
+
+    {
+      igPosts.length > 0 && (
+        <ul class="ig-wall">
+          {igPosts.map((post) => (
+            /*
+              Instagram's own embed markup: embed.js finds each blockquote by
+              class and swaps in an iframe. The link inside is not decoration -
+              it is what a visitor sees when the script is blocked, fails, or
+              has not run yet, which is what keeps this from being a blank box.
+            */
+            <li>
+              <blockquote
+                class="instagram-media"
+                data-instgrm-permalink={post.url}
+                data-instgrm-version="14"
+              >
+                <a href={post.url} target="_blank" rel="noopener">
+                  View this post on Instagram
+                  <span class="sr-only"> (opens in a new tab)</span>
+                </a>
+              </blockquote>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
     <p class="cta-row">
       <a class="cta" href={INSTAGRAM} target="_blank" rel="noopener">
         Follow @blackshearpta
         <span class="sr-only"> (opens in a new tab)</span>
       </a>
     </p>
+
+    {
+      /*
+        Loaded only when there is something for it to do. is:inline keeps Astro
+        from bundling a third-party URL it cannot see the contents of, and async
+        keeps it off the critical path - the fallback links are already readable
+        while it fetches.
+      */
+      igPosts.length > 0 && (
+        <script is:inline async src="https://www.instagram.com/embed.js" />
+      )
+    }
   </section>
 
   {
     entry.data.contact && (
-      <section class="block contact">
+      <section class="section-block contact">
         <div class="rule" role="presentation" />
         <h2>Questions?</h2>
         <p class="prose">
@@ -117,22 +166,39 @@ const photos = [
     max-width: var(--pta-measure);
   }
 
-  .prose:first-child {
-    margin-block-start: var(--pta-section-y);
-  }
-
   /*
     auto-fill rather than auto-fit: with auto-fit a single leftover photo on the
     last row stretches to the full container width, which looks like a mistake.
     auto-fill keeps every cell the same size regardless of how many there are.
   */
-  .grid {
+  .photo-wall {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: var(--pta-gap);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  /*
+    Instagram's script rewrites each blockquote into an iframe and puts its own
+    inline styles on it, including a margin and a max-width of 540px. Those win
+    over anything here, so this only has to provide the track they sit in and
+    stop the pre-swap blockquote looking like a stray quote.
+  */
+  .ig-wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: var(--pta-gap);
+    margin: 0 0 var(--pta-gap);
+    padding: 0;
+    list-style: none;
+    justify-items: center;
+  }
+
+  .ig-wall .instagram-media {
+    margin: 0 !important;
+    max-width: 100%;
   }
 
   li {
@@ -162,7 +228,7 @@ const photos = [
     margin-block-end: var(--pta-gap);
   }
 
-  .block {
+  .section-block {
     padding-block-start: var(--pta-section-y);
   }
 

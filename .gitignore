@@ -5,7 +5,13 @@ dist/
 # Generated from wrangler.jsonc by `wrangler types`; 15k lines of vendored
 # runtime types that would dominate every diff. `npm run check` regenerates it.
 worker-configuration.d.ts
-.dev.vars
+# Every variant, not just the exact name. Wrangler itself reads
+# .dev.vars.<environment>, and a hand-made .dev.vars.bak holds the same secrets
+# as the original while matching no rule - which is exactly how a local secrets
+# file ends up in a public repo. The example file is the one deliberate
+# exception; it holds placeholders.
+.dev.vars*
+!.dev.vars.example
 .env
 .env.*
 .DS_Store

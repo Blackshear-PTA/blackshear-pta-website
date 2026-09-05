@@ -3,10 +3,10 @@
    Anchor: identical to Civic Letterpress A except for two things, so the two
            can be compared without any other variable moving:
              1. the masthead is brand blue rather than black, borrowing East
-                Austin Print Shop's header colour
+                Austin Print Shop's header color
              2. it carries the YouTube embed inside the hero, between the
                 headline and the intro line (registry `video`)
-           Fonts, body colours, buttons, rules and spacing are all A's.
+           Fonts, body colors, buttons, rules and spacing are all A's.
    Structure: stacked-rules
 
    Paired with civic-letterpress-b.css, which is this file with a blue masthead
@@ -20,7 +20,11 @@
   --pta-display-transform: uppercase;
 
   --pta-surface: #ffffff;
-  --pta-surface-alt: #f0e430;   /* lemon panel - black text only */
+  /* A quiet panel, NOT the lemon. This token backs every inset panel on the
+     site - hint boxes, thumbnails, table headers, dialog footers - and when it
+     was the brand lemon all of those became lemon slabs. The accent is still
+     one token away as --pta-accent-quiet for the places that want it. */
+  --pta-surface-alt: #f5f5f2;
   --pta-ink: #000000;
   --pta-ink-muted: #2e2e2e;     /* 14.0:1 on white */
   --pta-ink-on-accent: #ffffff; /* 8.43:1 on blue */
@@ -30,9 +34,9 @@
   --pta-rule: #000000;
   --pta-focus: #0048a8;
 
-  /* The only colour that differs from A. White ink and the lemon rule below
+  /* The only color that differs from A. White ink and the lemon rule below
      are kept deliberately: the brief was blue masthead, everything else the
-     same, so this is not a licence to redesign the header. */
+     same, so this is not a license to redesign the header. */
   --pta-header-bg: #0048a8;
   --pta-header-ink: #ffffff;    /* 8.43:1 on this blue */
   --pta-header-ink-muted: #cfcfcf; /* 5.5:1 on this blue */

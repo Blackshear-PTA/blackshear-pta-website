@@ -9,7 +9,7 @@
  *      commits to a public repo, and those commits should carry the editor's
  *      address, not a shared bot identity.
  *   2. An Access policy is dashboard configuration, and dashboard configuration
- *      can be edited, scoped wrong, or deleted by someone who does not realise
+ *      can be edited, scoped wrong, or deleted by someone who does not realize
  *      it is the only thing standing in front of a write endpoint. If that
  *      happens, this fails closed instead of handing the repo to the internet.
  *
@@ -72,6 +72,44 @@ async function fetchKeys(teamDomain: string): Promise<Jwk[]> {
   const keys = body.keys ?? [];
   keyCache = { url, keys, expires: Date.now() + KEY_TTL_MS };
   return keys;
+}
+
+/**
+ * Hostnames that can only ever mean "this machine".
+ *
+ * Exact matches, no suffix test. "localhost.example.com" and "notlocalhost"
+ * are ordinary registrable names that an attacker can own, and a check written
+ * as endsWith('localhost') would accept both.
+ */
+const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+
+/**
+ * Stands in for a verified identity during local development.
+ *
+ * Access is enforced at Cloudflare's edge, so on localhost it does not exist:
+ * no Cf-Access-Jwt-Assertion header is ever attached, verifyAccessJwt correctly
+ * returns null, and every /admin/api call answers 401. The effect is that the
+ * editor - the part of the site with the most behavior and the most need for a
+ * fast feedback loop - is the one part that cannot be exercised without
+ * deploying. This closes that gap.
+ *
+ * WHY IT CANNOT OPEN PRODUCTION. The hostname is the control; the variable is
+ * only the second lock. The names that route to this Worker are
+ * blackshearpta.org and its workers.dev subdomain, and Cloudflare will not
+ * route a request whose Host is "localhost" to either of them - such a request
+ * never reaches this code. So the loopback branch is unreachable in production
+ * even if someone were to mistakenly run `wrangler secret put DEV_ADMIN_EMAIL`.
+ * Requiring the variable as well means a local run WITHOUT .dev.vars still
+ * behaves exactly like production, which is what makes it safe to test the real
+ * 401 path here too.
+ *
+ * Deliberately a pure function of (url, email) so scripts/check-access.mjs can
+ * assert the hostname rule directly rather than by standing up a server.
+ */
+export function devIdentity(url: URL, email: string | undefined): AccessIdentity | null {
+  if (!email) return null;
+  if (!LOOPBACK.has(url.hostname)) return null;
+  return { email };
 }
 
 /**

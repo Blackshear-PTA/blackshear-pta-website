@@ -12,7 +12,7 @@
  *
  * Run: npm run check:crop
  */
-import { baseScale, clampView, centreView, sourceRect } from '../src/lib/crop.ts';
+import { baseScale, clampView, centerView, sourceRect } from '../src/lib/crop.ts';
 
 let failures = 0;
 const pass = (n) => console.log(`  ok   ${n}`);
@@ -71,26 +71,26 @@ for (const [label, imageW, imageH] of SHAPES) {
 
 console.log('\nthe source rectangle always has the stage aspect (3:2):');
 for (const [label, imageW, imageH] of SHAPES) {
-  const r = sourceRect({ ...STAGE, imageW, imageH, view: centreView({ ...STAGE, imageW, imageH, zoom: 1 }) });
+  const r = sourceRect({ ...STAGE, imageW, imageH, view: centerView({ ...STAGE, imageW, imageH, zoom: 1 }) });
   const aspect = r.sw / r.sh;
   if (near(aspect, 1.5, 0.0001)) pass(`${label} -> ${aspect.toFixed(4)}`);
   else fail(`${label} aspect`, `got ${aspect}, want 1.5`);
 }
 
-console.log('\nzoom 1 centred takes the largest possible crop:');
+console.log('\nzoom 1 centered takes the largest possible crop:');
 {
   // A 4000x1000 strip: the full height is usable, so the crop is 1000 tall.
-  const r = sourceRect({ ...STAGE, imageW: 4000, imageH: 1000, view: centreView({ ...STAGE, imageW: 4000, imageH: 1000, zoom: 1 }) });
-  if (near(r.sh, 1000) && near(r.sw, 1500) && near(r.sy, 0) && near(r.sx, 1250)) pass('wide strip uses full height, centred horizontally');
+  const r = sourceRect({ ...STAGE, imageW: 4000, imageH: 1000, view: centerView({ ...STAGE, imageW: 4000, imageH: 1000, zoom: 1 }) });
+  if (near(r.sh, 1000) && near(r.sw, 1500) && near(r.sy, 0) && near(r.sx, 1250)) pass('wide strip uses full height, centered horizontally');
   else fail('wide strip', JSON.stringify(r));
 
   // A 1000x4000 tower: the full width is usable, so the crop is 1000 wide.
-  const t = sourceRect({ ...STAGE, imageW: 1000, imageH: 4000, view: centreView({ ...STAGE, imageW: 1000, imageH: 4000, zoom: 1 }) });
-  if (near(t.sw, 1000) && near(t.sh, 666.667, 0.01) && near(t.sx, 0)) pass('tall tower uses full width, centred vertically');
+  const t = sourceRect({ ...STAGE, imageW: 1000, imageH: 4000, view: centerView({ ...STAGE, imageW: 1000, imageH: 4000, zoom: 1 }) });
+  if (near(t.sw, 1000) && near(t.sh, 666.667, 0.01) && near(t.sx, 0)) pass('tall tower uses full width, centered vertically');
   else fail('tall tower', JSON.stringify(t));
 
   // An image already 3:2 is used whole.
-  const e = sourceRect({ ...STAGE, imageW: 3000, imageH: 2000, view: centreView({ ...STAGE, imageW: 3000, imageH: 2000, zoom: 1 }) });
+  const e = sourceRect({ ...STAGE, imageW: 3000, imageH: 2000, view: centerView({ ...STAGE, imageW: 3000, imageH: 2000, zoom: 1 }) });
   if (near(e.sx, 0) && near(e.sy, 0) && near(e.sw, 3000) && near(e.sh, 2000)) pass('3:2 image is used whole, nothing cropped away');
   else fail('3:2 whole', JSON.stringify(e));
 }
@@ -100,7 +100,7 @@ console.log('\nzooming in takes less of the image, never more:');
   const shape = { ...STAGE, imageW: 3000, imageH: 2000 };
   let prev = Infinity;
   for (const zoom of [1, 1.5, 2, 3]) {
-    const r = sourceRect({ ...shape, view: centreView({ ...shape, zoom }) });
+    const r = sourceRect({ ...shape, view: centerView({ ...shape, zoom }) });
     const area = r.sw * r.sh;
     if (area > prev) { fail('zoom monotonic', `zoom ${zoom} took MORE of the image`); prev = area; break; }
     prev = area;

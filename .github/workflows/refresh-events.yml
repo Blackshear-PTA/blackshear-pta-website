@@ -3,7 +3,7 @@
 # The calendar is baked into the site at build time rather than fetched live
 # (scripts/refresh-events.mjs explains why). That means it only changes when
 # something rebuilds the site, and nobody pushes to a finished website every
-# day. This does that instead.
+# day. This does that instead, hourly.
 #
 # IT COMMITS DIRECTLY TO main. Only ever src/data/events.json, and only when the
 # events actually changed. A daily pull request would be worse: somebody would
@@ -19,10 +19,22 @@ name: Refresh calendar
 
 on:
   schedule:
-    # 09:20 UTC, a little after 4am in Austin. Off the hour on purpose: GitHub
-    # queues scheduled jobs, and everything asking for :00 waits behind
-    # everything else asking for :00.
-    - cron: '20 9 * * *'
+    # Hourly. Off the hour on purpose: GitHub queues scheduled jobs, and
+    # everything asking for :00 waits behind everything else asking for :00.
+    #
+    # Hourly is close to free, because the cost is not in the polling:
+    #  - GitHub Actions minutes are unlimited on a public repository (F9), so
+    #    24 runs a day that find nothing cost nothing.
+    #  - A Cloudflare build only happens when the job COMMITS, and it only
+    #    commits when events.json actually changed. The calendar changes a
+    #    couple of times a week, not a couple of times an hour.
+    #  - Workers Builds gives 3,000 build minutes a month free and these builds
+    #    take about one. Even a pathological week of daily changes is noise
+    #    against that.
+    #
+    # What it buys is latency: a change made at 9am appears within the hour
+    # instead of the next morning.
+    - cron: '20 * * * *'
   workflow_dispatch: # so it can be run by hand from the Actions tab
 
 # Only what it needs: push one data file. Nothing here touches code.

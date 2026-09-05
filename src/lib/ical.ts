@@ -16,7 +16,7 @@
  *   DTSTART/DTEND as VALUE=DATE (all-day), UTC (trailing Z), and TZID=
  *   RRULE  FREQ=DAILY|WEEKLY|MONTHLY|YEARLY with INTERVAL, COUNT, UNTIL,
  *          BYDAY (including ordinals like 2SU and 4WE), BYMONTH, BYMONTHDAY
- *   EXDATE          cancelled occurrences
+ *   EXDATE          canceled occurrences
  *   RECURRENCE-ID   a single occurrence moved or edited
  *   STATUS:CANCELLED
  *
@@ -404,7 +404,7 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
       skipped.push({ reason: `RRULE uses ${rule.unsupported.join(', ')}`, summary });
     }
 
-    // EXDATE marks occurrences the organiser deleted from the series.
+    // EXDATE marks occurrences the organizer deleted from the series.
     const excluded = new Set<number>();
     for (const line of lines.filter((l) => l.name === 'EXDATE')) {
       for (const value of line.value.split(',')) {

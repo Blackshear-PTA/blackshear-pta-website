@@ -43,6 +43,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <p class="who">Signed in as <b data-who>checking…</b></p>
       </header>
 
+      <!--
+        Shown only on localhost, filled in from the session response. A dev
+        server looks exactly like the real editor, but there is no local copy of
+        the content behind it - reads and saves both go to the real repository -
+        so the banner names the branch rather than leaving that to be assumed.
+      -->
+      <p class="devbar" data-devbar hidden></p>
+
       <div class="rule" role="presentation"></div>
 
       <details class="guide">
@@ -110,8 +118,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <table class="posts">
           <thead>
             <tr>
-              <th scope="col" class="c-photo"><span class="sr-only">Photo</span></th>
-              <th scope="col" class="c-post">Post</th>
+              <th scope="col" class="c-post">Title</th>
+              <th scope="col" class="c-photos">Photos</th>
               <th scope="col" class="c-date">Date</th>
               <th scope="col" class="c-status">Status</th>
               <th scope="col" class="c-actions"><span class="sr-only">Actions</span></th>
@@ -122,6 +130,41 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           </tbody>
         </table>
       </div>
+
+      {/*
+        Instagram lives below the posts table, not above it: posting
+        announcements is why anyone opens this page, and this is a thing you
+        touch a few times a year.
+
+        It edits src/content/instagram.yaml through the same commit-per-save
+        path as everything else here, so there is no second kind of storage and
+        no second thing to back up.
+      */}
+      <section class="ig-block">
+        <div class="list-head">
+          <h2>Instagram posts</h2>
+        </div>
+        <p class="ig-hint">
+          The posts shown on the <a href="/gallery">photos page</a>. Open a post on
+          Instagram, copy the address from the browser bar, and paste it below.
+          Up to <b data-ig-max>6</b>; they appear in the order listed.
+        </p>
+        <div class="ig-add">
+          <label class="sr-only" for="ig-url">Instagram post address</label>
+          <input
+            id="ig-url"
+            type="url"
+            data-ig-input
+            placeholder="https://www.instagram.com/p/..."
+            autocomplete="off"
+          />
+          <button type="button" class="btn" data-ig-add>Add</button>
+        </div>
+        <p class="status" data-ig-status hidden role="status"></p>
+        <ul class="ig-list" data-ig-list>
+          <li class="ig-empty">Loading…</li>
+        </ul>
+      </section>
     </div>
   </main>
 
@@ -224,6 +267,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <div class="field">
           <label for="f-linkLabel">Link text (optional)</label>
           <input id="f-linkLabel" name="linkLabel" type="text" placeholder="Read more" />
+          <p class="hint">
+            The words on that button. Leave it blank and it says "Read more".
+          </p>
         </div>
 
         <div class="checks">
@@ -245,6 +291,28 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <p class="hint foot-hint">The live site updates about a minute after saving.</p>
       </div>
     </form>
+  </dialog>
+
+  {/*
+    Confirmations, in the page rather than as a browser alert.
+
+    window.confirm works and is honest, but it renders as a Chrome-branded
+    system box that says "blackshearpta.org says" - which reads like the
+    website is doing something to you rather than asking a question. It also
+    cannot be styled, so it is the one part of the editor that looks like a
+    different application.
+  */}
+  <dialog class="sheet ask" data-ask aria-labelledby="ask-title">
+    <div class="sheet-head">
+      <h2 id="ask-title" data-ask-title>Are you sure?</h2>
+    </div>
+    <div class="sheet-body">
+      <p class="ask-body" data-ask-body></p>
+    </div>
+    <div class="sheet-foot">
+      <button type="button" class="btn danger" data-ask-yes>Yes, do it</button>
+      <button type="button" class="btn primary" data-ask-no>Cancel</button>
+    </div>
   </dialog>
 
   {/*
@@ -284,7 +352,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 </BaseLayout>
 
 <script>
-  import { baseScale, clampView, centreView, sourceRect, type CropView } from '../../lib/crop';
+  import { baseScale, clampView, centerView, sourceRect, type CropView } from '../../lib/crop';
 
   const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
 
@@ -331,6 +399,39 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     el.hidden = false;
   };
   const clear = (el: HTMLElement) => { el.hidden = true; };
+
+  /**
+   * An in-page confirmation. Resolves true if the person confirms.
+   *
+   * Same shape as window.confirm from the caller's side, so the call sites
+   * read the same, but it is our dialog rather than a browser alert. Escape
+   * and Cancel both resolve false; there is nothing to lose by dismissing a
+   * question, so unlike the editor this one does close on Escape.
+   */
+  const askDialog = $<HTMLDialogElement>('[data-ask]');
+  function ask(title: string, body: string, confirmLabel = 'Yes, do it'): Promise<boolean> {
+    $('[data-ask-title]').textContent = title;
+    $('[data-ask-body]').textContent = body;
+    $('[data-ask-yes]').textContent = confirmLabel;
+    askDialog.showModal();
+    return new Promise((resolve) => {
+      const done = (answer: boolean) => {
+        askDialog.close();
+        yes.removeEventListener('click', onYes);
+        no.removeEventListener('click', onNo);
+        askDialog.removeEventListener('cancel', onCancel);
+        resolve(answer);
+      };
+      const onYes = () => done(true);
+      const onNo = () => done(false);
+      const onCancel = () => done(false);
+      const yes = $<HTMLButtonElement>('[data-ask-yes]');
+      const no = $<HTMLButtonElement>('[data-ask-no]');
+      yes.addEventListener('click', onYes);
+      no.addEventListener('click', onNo);
+      askDialog.addEventListener('cancel', onCancel);
+    });
+  }
 
   const EXPIRED = 'Your sign-in session expired. Reload the page and sign in again.';
 
@@ -411,26 +512,15 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         const images = Array.isArray(post.images)
           ? (post.images as Array<{ key: string; alt: string }>)
           : [];
-        const coverKey = String(post.cover || '') || images[0]?.key || '';
 
-        // Photo
-        const photoCell = cell('c-photo');
-        if (coverKey) {
-          const thumb = document.createElement('img');
-          thumb.className = 'thumb';
-          thumb.src = `/images/${coverKey}`;
-          thumb.alt = '';
-          thumb.loading = 'lazy';
-          add(photoCell, thumb);
-        } else {
-          const blank = document.createElement('span');
-          blank.className = 'thumb blank';
-          blank.setAttribute('aria-hidden', 'true');
-          add(photoCell, blank);
-        }
-
-        // Post: title plus the opening line, so a row is recognisable without
-        // opening it.
+        /**
+         * Title only. The opening line of the body used to sit under it as an
+         * excerpt, and a thumbnail sat in a column to its left; between them a
+         * five-post list was taller than the screen and the thing you actually
+         * scan for - the title - was the smallest text in the row. The count
+         * below says whether a post has photos, which is the only thing the
+         * thumbnail was really being asked.
+         */
         const postCell = cell('c-post');
         const title = document.createElement('p');
         title.className = 'row-title';
@@ -438,64 +528,71 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         // are rendered back into a privileged page.
         title.textContent = String(post.title);
         add(postCell, title);
-        const summary = String(post.excerpt ?? '').trim();
-        if (summary) {
-          const p = document.createElement('p');
-          p.className = 'row-excerpt';
-          p.textContent = summary;
-          add(postCell, p);
-        }
-        const shots = images.length;
-        if (shots > 0) {
-          const count = document.createElement('p');
-          count.className = 'row-photos';
-          count.textContent = `${shots} photo${shots > 1 ? 's' : ''}`;
-          add(postCell, count);
-        }
+
+        // Photos: a number, zero included, so the column reads as a column
+        // rather than as a scattering of occasional text.
+        const photosCell = cell('c-photos');
+        photosCell.textContent = String(images.length);
+        if (images.length === 0) photosCell.classList.add('is-none');
 
         // Date
         const dateCell = cell('c-date');
         dateCell.textContent = String(post.date || 'no date');
 
         // Status
+        // Publication state ALWAYS shows, with grades as an extra line rather
+        // than a replacement. Showing only the grades made a published post
+        // look like it had no status at all.
         const statusCell = cell('c-status');
-        if (post.pinned) add(statusCell, badge('Pinned', 'pin'));
         if (post.draft) add(statusCell, badge('Draft', 'draft'));
+        else add(statusCell, badge('Published', 'live'));
+        if (post.pinned) add(statusCell, badge('Pinned', 'pin'));
         if (post.partial) add(statusCell, badge('Still saving', 'partial'));
         const gradeList = Array.isArray(post.grades) ? post.grades : [];
         if (gradeList.length > 0) {
-          add(
-            statusCell,
-            badge(
-              gradeList.map((g) => GRADE_LABELS[String(g)] ?? String(g)).join(', '),
-              'grades',
-            ),
-          );
-        }
-        if (statusCell.childElementCount === 0) {
-          const everyone = document.createElement('span');
-          everyone.className = 'muted';
-          everyone.textContent = 'Published';
-          add(statusCell, everyone);
+          const g = document.createElement('p');
+          g.className = 'row-grades';
+          g.textContent = `${gradeList.length === 1 ? 'Grade' : 'Grades'} ${gradeList
+            .map((x) => GRADE_LABELS[String(x)] ?? String(x))
+            .join(', ')}`;
+          add(statusCell, g);
         }
 
         // Actions: both are buttons. Previously these were bare text and a
         // link crammed together, and neither read as something you could press.
         const actionCell = cell('c-actions');
+
+        const PENCIL =
+          '<svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">' +
+          '<path d="M11.5 1.5 14.5 4.5 5 14H2v-3z" fill="none" stroke="currentColor" ' +
+          'stroke-width="1.6" stroke-linejoin="round"/></svg>';
+        const EYE =
+          '<svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">' +
+          '<path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z" fill="none" ' +
+          'stroke="currentColor" stroke-width="1.6"/>' +
+          '<circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+
+        // innerHTML only for these two constant SVG strings, which are literals
+        // in this file. Post content is never set this way - see the textContent
+        // calls above.
         const edit = document.createElement('button');
         edit.type = 'button';
-        edit.className = 'btn primary small';
-        edit.textContent = 'Edit';
+        edit.className = 'icon-btn';
+        edit.title = 'Edit this post';
+        edit.innerHTML = `${PENCIL}<span class="sr-only">Edit</span>`;
         edit.addEventListener('click', () => openPost(slug));
+
         const view = document.createElement('a');
-        view.className = 'btn small';
+        view.className = 'icon-btn';
         view.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
         view.target = '_blank';
         view.rel = 'noopener';
-        view.textContent = 'View';
+        view.title = 'View on the site (opens in a new tab)';
+        view.innerHTML = `${EYE}<span class="sr-only">View on the site (opens in a new tab)</span>`;
+
         add(actionCell, edit, view);
 
-        add(tr, photoCell, postCell, dateCell, statusCell, actionCell);
+        add(tr, postCell, photosCell, dateCell, statusCell, actionCell);
         add(listEl, tr);
       }
     } catch (error) {
@@ -531,9 +628,11 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       const altLabel = document.createElement('label');
       altLabel.className = 'photo-alt';
       const altText = document.createElement('span');
+      altText.className = 'field-label';
       altText.textContent = 'Description';
       const altInput = document.createElement('input');
       altInput.type = 'text';
+      altInput.className = 'field-box';
       altInput.value = photo.alt;
       altInput.placeholder = 'What is in the photo?';
       altInput.addEventListener('input', () => { photos[index]!.alt = altInput.value; });
@@ -562,9 +661,13 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         // hand, so an accidental click costs real work, and there is no undo
         // inside the form.
         const what = photo.alt.trim() ? `"${photo.alt.trim()}"` : 'this photo';
-        if (!confirm(`Remove ${what} from this post?`)) return;
-        photos.splice(index, 1);
-        renderPhotos();
+        void ask('Remove this photo?', `${what} will be taken off this post.`, 'Remove it').then(
+          (yes) => {
+            if (!yes) return;
+            photos.splice(index, 1);
+            renderPhotos();
+          },
+        );
       });
 
       add(controls, coverLabel, remove);
@@ -613,9 +716,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     cropImg.style.transform = `translate(${view.x}px, ${view.y}px)`;
   }
 
-  function centre() {
+  function center() {
     if (!bitmap) return;
-    view = centreView({ ...geometry(), zoom: view.zoom });
+    view = centerView({ ...geometry(), zoom: view.zoom });
     paint();
   }
 
@@ -662,7 +765,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     view = { zoom: 1, x: 0, y: 0 };
     if (!cropDialog.open) cropDialog.showModal();
     // Wait for layout so the stage has a measurable size.
-    requestAnimationFrame(() => centre());
+    requestAnimationFrame(() => center());
   }
 
   $('[data-crop-skip]').addEventListener('click', () => {
@@ -822,11 +925,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     (form.elements.namedItem('title') as HTMLInputElement).focus();
   }
 
-  function tryClose() {
-    if (snapshot() !== pristine && !confirm('Close without saving? Your changes will be lost.')) {
-      return;
-    }
-    dialog.close();
+  async function tryClose() {
+    if (snapshot() === pristine) { dialog.close(); return; }
+    const discard = await ask(
+      'Close without saving?',
+      'The changes you have made to this post will be lost.',
+      'Discard them',
+    );
+    if (discard) dialog.close();
   }
 
   /**
@@ -847,10 +953,10 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
    */
   dialog.addEventListener('cancel', (event) => {
     event.preventDefault();
-    tryClose();
+    void tryClose();
   });
 
-  $('[data-cancel]').addEventListener('click', tryClose);
+  $('[data-cancel]').addEventListener('click', () => void tryClose());
 
   async function openPost(slug: string) {
     clear(statusEl);
@@ -905,7 +1011,12 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   deleteBtn.addEventListener('click', async () => {
     if (!current) return;
-    if (!confirm('Delete this post? It can be recovered from the website history, but not from here.')) return;
+    const sure = await ask(
+      'Delete this post?',
+      'It can be brought back from the website history, but not from this page.',
+      'Delete it',
+    );
+    if (!sure) return;
     say(sheetStatus, 'Deleting…', 'busy');
     try {
       await api(`posts/${encodeURIComponent(current.slug)}`, { method: 'DELETE' });
@@ -921,6 +1032,165 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   $('[data-new]').addEventListener('click', () => { clear(statusEl); openEditor(null); });
 
+  /**
+   * Instagram posts.
+   *
+   * Held in memory and written whole on every change, because the list is at
+   * most six strings. Add, remove and reorder are therefore all the same
+   * operation - mutate the array, save, redraw - rather than three endpoints.
+   *
+   * Every change saves immediately. There is no Save button on purpose: a
+   * separate one invites half-finished state and someone navigating away
+   * believing they were done, and undoing a wrong paste is one click of Remove.
+   */
+  {
+    const igList = $<HTMLUListElement>('[data-ig-list]');
+    const igStatus = $<HTMLElement>('[data-ig-status]');
+    const igAdd = $<HTMLButtonElement>('[data-ig-add]');
+    const igMax = $<HTMLElement>('[data-ig-max]');
+    const igInput = $<HTMLInputElement>('[data-ig-input]');
+
+    let urls: string[] = [];
+    let sha: string | null = null;
+    let max = 6;
+
+    function drawIg() {
+      igList.textContent = '';
+      igAdd.disabled = urls.length >= max;
+      igInput.disabled = urls.length >= max;
+
+      if (urls.length === 0) {
+        const empty = document.createElement('li');
+        empty.className = 'ig-empty';
+        empty.textContent = 'No posts yet. The photos page shows just the photo grid.';
+        add(igList, empty);
+        return;
+      }
+
+      urls.forEach((url, index) => {
+        const row = document.createElement('li');
+        row.className = 'ig-row';
+
+        const position = document.createElement('span');
+        position.className = 'ig-num';
+        position.textContent = String(index + 1);
+
+        // A link, so it can be checked before anyone trusts the list.
+        const link = document.createElement('a');
+        link.className = 'ig-url';
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = url;
+
+        const tools = document.createElement('div');
+        tools.className = 'ig-tools';
+
+        const up = document.createElement('button');
+        up.type = 'button';
+        up.className = 'icon-btn';
+        up.title = 'Move up';
+        up.setAttribute('aria-label', `Move post ${index + 1} up`);
+        up.textContent = '↑';
+        up.disabled = index === 0;
+        up.addEventListener('click', () => {
+          [urls[index - 1], urls[index]] = [urls[index]!, urls[index - 1]!];
+          void saveIg('Moved.');
+        });
+
+        const down = document.createElement('button');
+        down.type = 'button';
+        down.className = 'icon-btn';
+        down.title = 'Move down';
+        down.setAttribute('aria-label', `Move post ${index + 1} down`);
+        down.textContent = '↓';
+        down.disabled = index === urls.length - 1;
+        down.addEventListener('click', () => {
+          [urls[index + 1], urls[index]] = [urls[index]!, urls[index + 1]!];
+          void saveIg('Moved.');
+        });
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'icon-btn danger';
+        remove.title = 'Remove';
+        remove.setAttribute('aria-label', `Remove post ${index + 1}`);
+        remove.textContent = '✕';
+        remove.addEventListener('click', async () => {
+          // Reuses the same in-page confirm the delete button uses, rather
+          // than window.confirm.
+          if (!(await ask('Remove this post from the photos page?', 'Remove'))) return;
+          urls.splice(index, 1);
+          void saveIg('Removed.');
+        });
+
+        add(tools, up); add(tools, down); add(tools, remove);
+        add(row, position); add(row, link); add(row, tools);
+        add(igList, row);
+      });
+    }
+
+    async function saveIg(done: string) {
+      clear(igStatus);
+      try {
+        const result = (await api('instagram', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls, sha }),
+        })) as { urls: string[]; sha: string };
+        urls = result.urls;
+        sha = result.sha;
+        drawIg();
+        say(igStatus, `${done} The photos page updates in about a minute.`, 'ok');
+      } catch (error) {
+        // Reload rather than leave the screen showing a change that did not
+        // happen - the most likely cause is somebody else having saved.
+        say(igStatus, (error as Error).message, 'bad');
+        await loadIg();
+      }
+    }
+
+    async function loadIg() {
+      try {
+        const result = (await api('instagram')) as {
+          urls: string[];
+          sha: string | null;
+          max: number;
+        };
+        urls = result.urls ?? [];
+        sha = result.sha;
+        max = result.max ?? 6;
+        igMax.textContent = String(max);
+        drawIg();
+      } catch (error) {
+        igList.textContent = '';
+        const failed = document.createElement('li');
+        failed.className = 'ig-empty';
+        failed.textContent = (error as Error).message;
+        add(igList, failed);
+      }
+    }
+
+    async function addIg() {
+      const url = igInput.value.trim();
+      if (!url) return;
+      urls.push(url);
+      // Cleared only after the save succeeds, so a rejected address is still
+      // in the box to be corrected rather than lost.
+      const before = urls.length;
+      await saveIg('Added.');
+      if (urls.length === before) igInput.value = '';
+    }
+
+    igAdd.addEventListener('click', () => void addIg());
+    igInput.addEventListener('keydown', (event) => {
+      // Enter is what anyone pasting into a single box will press.
+      if (event.key === 'Enter') { event.preventDefault(); void addIg(); }
+    });
+
+    void loadIg();
+  }
+
   // The chevron rotates, but a word is unambiguous in a way an icon is not.
   const guide = $<HTMLDetailsElement>('.guide');
   const guideHint = $<HTMLElement>('[data-guide-hint]');
@@ -930,8 +1200,24 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   (async () => {
     try {
-      const session = (await api('session')) as { email: string };
+      const session = (await api('session')) as {
+        email: string;
+        dev?: boolean;
+        repo?: string;
+        branch?: string;
+        canWrite?: boolean;
+      };
       $('[data-who]').textContent = session.email;
+
+      // The `dev` fields only ever come back from a localhost run.
+      if (session.dev) {
+        const bar = $<HTMLElement>('[data-devbar]');
+        bar.textContent = session.canWrite
+          ? `Local development — saving commits for real to ${session.repo} on ${session.branch}.`
+          : `Local development — read-only. Posts are read live from ${session.repo} on ${session.branch}.`;
+        bar.classList.toggle('is-live', Boolean(session.canWrite));
+        bar.hidden = false;
+      }
     } catch (error) {
       $('[data-who]').textContent = 'not signed in';
       say(statusEl, (error as Error).message, 'bad');
@@ -946,7 +1232,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     margin-inline: auto;
     padding: var(--pta-gutter);
   }
-
   .top {
     display: flex;
     flex-wrap: wrap;
@@ -954,7 +1239,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     justify-content: space-between;
     gap: var(--pta-gap);
   }
-
   .brand {
     display: flex;
     align-items: center;
@@ -962,7 +1246,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-decoration: none;
     color: inherit;
   }
-
   .brand-name {
     font-family: var(--pta-font-display);
     font-size: var(--text-title);
@@ -970,22 +1253,39 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
   }
-
   .who { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
-
+  /*
+    Same stripe idiom as .guide - a colored edge on white, never a filled
+    panel. Read-only carries the quiet accent; .is-live means a save commits
+    for real, and borrows the delete button's red so it reads as a warning
+    rather than as decoration.
+  */
+  .devbar {
+    margin: 0 0 var(--pta-gap);
+    padding: 0.6rem 0.85rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-inline-start: 8px solid var(--pta-accent-quiet);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    font-size: var(--text-fine);
+    color: var(--pta-ink);
+  }
+  .devbar.is-live {
+    border-inline-start-color: #b3261e;
+    font-weight: 600;
+  }
   .rule {
     height: var(--pta-rule-width);
     background: var(--pta-rule);
     margin-block: var(--pta-gap);
   }
-
   /*
     Collapsed by default: useful the first few times, in the way after that.
 
     Black on white with a lemon edge, not a lemon panel. --pta-surface-alt is
     the brand lemon, and a paragraph of body copy on it is unpleasant to read
     even where it technically clears AA - the accent works as a bar or a fill
-    behind three words, not behind a list of instructions. The colour stays as
+    behind three words, not behind a list of instructions. The color stays as
     a stripe so the box still belongs to the site.
   */
   .guide {
@@ -995,7 +1295,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     border-radius: var(--pta-radius);
     background: var(--pta-surface);
   }
-
   .guide summary {
     display: flex;
     align-items: center;
@@ -1011,19 +1310,16 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   }
   .guide summary::-webkit-details-marker { display: none; }
   .guide summary::marker { content: ''; }
-
   .summary-hint {
     margin-inline-start: auto;
     font-size: var(--text-fine);
     color: var(--pta-ink-muted);
   }
-
   .chev {
     flex: none;
     transition: transform 0.15s ease;
   }
   .guide[open] .chev { transform: rotate(180deg); }
-
   /* Body copy, so it is read rather than skimmed past. The old --text-fine was
      small enough to look like a disclaimer. */
   .guide-body { padding: 0 0.9rem 0.9rem; font-size: var(--text-body); }
@@ -1031,7 +1327,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   .guide-body ul { margin: 0 0 0.7rem; padding-inline-start: 1.2rem; max-width: var(--pta-measure); }
   .guide-body li { margin-block-end: 0.5rem; }
   .guide-help { color: var(--pta-ink-muted); }
-
   .status {
     margin: 0 0 var(--pta-gap);
     padding: 0.7rem 0.9rem;
@@ -1042,7 +1337,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     font-size: var(--text-body);
   }
   .status[data-tone='bad'] { border-inline-start-color: #b3261e; font-weight: 700; }
-
   .list-head {
     display: flex;
     align-items: center;
@@ -1050,7 +1344,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     gap: var(--pta-gap);
     margin-block-end: var(--pta-gap);
   }
-
   h2 {
     margin: 0;
     font-family: var(--pta-font-display);
@@ -1059,15 +1352,12 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
   }
-
   .table-wrap { overflow-x: auto; }
-
   .posts {
     width: 100%;
     border-collapse: collapse;
     font-size: var(--text-body);
   }
-
   .posts th {
     text-align: start;
     padding: 0.5rem 0.7rem;
@@ -1079,64 +1369,49 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-transform: uppercase;
     white-space: nowrap;
   }
-
   .posts td {
-    padding: 0.7rem;
+    padding: 0.8rem 0.9rem;
     border-block-end: var(--pta-border-width) solid var(--pta-rule);
+    /* Vertical rules as well as horizontal. With only row lines the eye had
+       nothing to follow across, which is what made this read as a list that
+       happened to be indented rather than as a table. */
+    border-inline-end: var(--pta-border-width) solid var(--pta-rule);
     vertical-align: top;
   }
-
-  .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 6%, transparent); }
-
-  .c-photo { width: 5.5rem; }
-  .c-date { width: 7rem; white-space: nowrap; }
-  .c-status { width: 12rem; }
-  .c-actions { width: 1%; white-space: nowrap; }
-
-  .thumb {
-    display: block;
-    width: 4.5rem;
-    aspect-ratio: 3 / 2;
-    object-fit: cover;
+  .posts td:last-child, .posts th:last-child { border-inline-end: 0; }
+  .posts th { border-inline-end: var(--pta-border-width) solid var(--pta-rule); }
+  .posts {
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
-    background: var(--pta-surface-alt);
+    overflow: hidden;
   }
-  .thumb.blank { background: repeating-linear-gradient(45deg, #eee 0 6px, #f7f7f7 6px 12px); }
-
-  .row-title {
-    margin: 0;
-    font-family: var(--pta-font-display);
-    font-size: var(--text-lede);
-    font-weight: var(--pta-display-weight);
-    line-height: var(--leading-snug);
-  }
-  .row-excerpt { margin: 0.25rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); max-width: 34rem; }
-  .row-photos { margin: 0.25rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); }
-
-  .c-status { display: table-cell; }
-  .c-status .tag { margin: 0 0.3rem 0.3rem 0; }
   .muted { color: var(--pta-ink-muted); font-size: var(--text-fine); }
-
-  .tag {
-    display: inline-block;
-    padding: 0.1rem 0.45rem;
+  /* ── Instagram posts ──────────────────────────────────────────────────── */
+  .ig-block { margin-block-start: var(--pta-section-y); }
+  .ig-hint {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+  .ig-add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-end: var(--pta-gap);
+  }
+  .ig-add input {
+    flex: 1 1 22rem;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.5rem 0.65rem;
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
-    font-family: var(--pta-font-display);
-    font-size: var(--text-fine);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
   }
-  .tag.pin { background: var(--pta-accent-quiet); color: #000; border-color: var(--pta-rule); }
-  .tag.draft { border-style: dashed; color: var(--pta-ink-muted); }
-  .tag.grades, .tag.partial { color: var(--pta-ink-muted); }
-
-  .c-actions { display: table-cell; }
-  .c-actions .btn { margin: 0 0 0.4rem 0.4rem; }
-
-  .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
-
+  .ig-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
   .btn {
     min-height: 44px;
     padding: 0.6rem 1.1rem;
@@ -1155,30 +1430,26 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     align-items: center;
   }
   /*
-    Primary is blue with white text, not the brand lemon.
-    A lemon button sitting on a lemon panel was invisible, and the accent is
-    also what marks a pinned post - one colour cannot mean both "press this"
-    and "this is pinned" on the same screen. Blue on white is 8.43:1 and is
-    already the site's other brand colour, so it reads as deliberate rather
-    than borrowed.
+    Lemon on white, matching the rest of the site.
+    It was briefly blue, because a lemon button on the then-lemon footer bar
+    was invisible. Fixing --pta-surface-alt removed that collision at the
+    source, so the primary can go back to the brand color. The pinned badge
+    is outlined rather than filled now, so lemon means one thing here.
   */
   .btn.primary {
-    background: var(--pta-accent);
-    color: var(--pta-ink-on-accent);
-    border-color: var(--pta-accent);
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    border-color: var(--pta-cta-border);
     box-shadow: var(--pta-shadow);
   }
-  .btn.primary:hover { background: #003a89; border-color: #003a89; }
-
   .btn.small { min-height: 38px; padding: 0.4rem 0.8rem; }
   .btn.danger { border-style: dashed; color: #b3261e; border-color: #b3261e; }
   .btn.ghost { border-color: transparent; text-decoration: underline; }
   .btn[disabled] { opacity: 0.6; cursor: progress; }
-
   /* ----------------------------------------------------------- the dialog */
 
   .sheet {
-    /* Explicit, because the UA's centring did not survive whatever this page
+    /* Explicit, because the UA's centering did not survive whatever this page
        does to it: the dialog opened flush against the top-left corner. */
     margin: auto;
     width: min(46rem, 100vw - 2rem);
@@ -1191,17 +1462,15 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     font-family: var(--pta-font-body);
   }
   .sheet::backdrop { background: rgb(0 0 0 / 0.55); }
-
+  .ask { width: min(28rem, 100vw - 2rem); }
+  .ask-body { margin: 0; max-width: var(--pta-measure); }
   .sheet-form { display: flex; flex-direction: column; max-height: inherit; }
-
   .sheet-head {
     padding: var(--pta-gap);
     border-block-end: var(--pta-border-width) solid var(--pta-rule);
   }
   .sheet-head h2 { font-size: var(--text-lede); }
-
   .sheet-body { padding: var(--pta-gap); overflow-y: auto; }
-
   .sheet-foot {
     display: flex;
     flex-wrap: wrap;
@@ -1212,9 +1481,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     background: var(--pta-surface);
   }
   .foot-hint { flex-basis: 100%; margin: 0; }
-
   .field { display: grid; gap: 0.3rem; margin-block-end: var(--pta-gap); border: 0; padding: 0; }
-
   label, legend {
     font-family: var(--pta-font-display);
     font-size: var(--text-fine);
@@ -1223,7 +1490,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-transform: uppercase;
     padding: 0;
   }
-
   input[type='text'], input[type='url'], input[type='date'], textarea {
     min-height: 44px;
     padding: 0.6rem 0.75rem;
@@ -1238,9 +1504,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     width: 100%;
   }
   textarea { line-height: 1.5; resize: vertical; }
-
   .hint { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
-
   .dropzone {
     display: grid;
     justify-items: center;
@@ -1260,7 +1524,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   .dropzone:focus-visible { outline: 3px solid var(--pta-accent); outline-offset: 2px; }
   .drop-title { font-family: var(--pta-font-display); font-weight: var(--pta-display-weight); font-size: var(--text-fine); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .drop-note { font-size: var(--text-fine); color: var(--pta-ink-muted); }
-
   .photos { margin: var(--pta-gap) 0 0.4rem; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
   .photos li {
     display: flex;
@@ -1287,20 +1550,40 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
   }
-
   /* Was three controls run together with no separation, so "Cover photo" and
      "Remove" read as one string. */
+  /* Stacked, not a row. "Use as cover" and "Remove" side by side read as one
+     run-on string, which is exactly what they looked like. */
   .photo-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    padding-block-start: 0.4rem;
+    display: grid;
+    justify-items: start;
+    gap: 0.2rem;
+    padding-block-start: 0.5rem;
     border-block-start: var(--pta-border-width) solid var(--pta-rule);
   }
   .photo-controls .check { min-height: 38px; }
-
+  .field-label {
+    display: block;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin-block-end: 0.15rem;
+  }
+  /* An obvious box, so it is clear the description can be edited from here.
+     It previously looked like static text until you happened to click it. */
+  .field-box {
+    min-height: 40px;
+    padding: 0.45rem 0.6rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+    font-size: 1rem;
+    width: 100%;
+  }
   .checks, .grades { display: grid; gap: 0.3rem; }
   .grades { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); margin-block-start: 0.3rem; }
   .check {
@@ -1315,7 +1598,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     font-size: var(--text-body);
   }
   .check input { width: 1.1rem; height: 1.1rem; }
-
   /* ------------------------------------------------------------- the crop */
 
   .crop-stage {
@@ -1340,10 +1622,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     user-select: none;
     -webkit-user-drag: none;
   }
-
   .zoom { display: flex; align-items: center; gap: 0.6rem; margin-block-end: var(--pta-gap); }
   .zoom input { flex: 1; }
-
   .sr-only {
     position: absolute;
     width: 1px;
@@ -1354,10 +1634,162 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     clip-path: inset(50%);
     white-space: nowrap;
   }
-
   @media (max-width: 40rem) {
     .row-actions { flex-basis: 100%; }
     .photos li { flex-wrap: wrap; }
     .photos img { width: 100%; }
   }
+</style>
+
+{/*
+  RULES FOR ELEMENTS THE SCRIPT BUILDS.
+
+  Astro scopes a component's styles by appending a [data-astro-cid-…] attribute
+  to both the selectors and the elements in its template. Elements created with
+  document.createElement never get that attribute, so a scoped rule cannot match
+  one - silently. Every row of the posts table is built in script, and every one
+  of these rules had therefore been dead: `.icon-btn` was resolving to a 16px
+  bare glyph rather than a 38px button, and the photo count was left-aligned in
+  a column whose header said centred.
+
+  The column widths looked right only because the <th> in the template carries
+  them and a table propagates column width from its header.
+
+  So these are global, and scoped by hand to `.admin` instead - a class that IS
+  in the template, which keeps them off the rest of the site.
+*/}
+<style is:global>
+  .admin .posts tbody tr:last-child td { border-block-end: 0; }
+
+  .admin .posts tbody tr:nth-child(even) { background: var(--pta-surface-alt); }
+
+  .admin .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 8%, transparent); }
+
+  .admin .c-photos { width: 5rem; text-align: center; white-space: nowrap; }
+
+  .admin .c-date { width: 7rem; white-space: nowrap; }
+
+  .admin .c-status { width: 11rem; }
+
+  .admin .c-actions { width: 1%; white-space: nowrap; }
+
+  .admin /* Zero is greyed rather than hidden. A blank cell reads as "unknown"; a
+     grey 0 reads as "none",
+  .admin which is the thing being said. */
+  .c-photos.is-none { color: var(--pta-ink-muted); }
+
+  .admin /* One line between rows,
+  .admin so a list of similar titles separates without the
+     cell borders a full grid would add. */
+  .posts tbody tr + tr td {
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  .admin .row-title {
+    margin: 0;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-lede);
+    font-weight: var(--pta-display-weight);
+    line-height: var(--leading-snug);
+  }
+
+  .admin .row-grades { margin: 0.35rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); }
+
+  .admin .c-status { display: table-cell; }
+
+  .admin .c-status .tag { margin: 0 0.3rem 0.3rem 0; }
+
+  .admin .tag {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  .admin /* Outlined,
+  .admin not filled. A filled lemon badge and a filled lemon button on
+     one screen made the accent mean two different things. */
+  .tag.pin { border-color: var(--pta-rule); border-width: 2px; }
+
+  .admin .tag.live { color: var(--pta-ink-muted); border-style: dotted; }
+
+  .admin .tag.draft { border-style: dashed; color: var(--pta-ink-muted); }
+
+  .admin .tag.grades,
+  .admin .tag.partial { color: var(--pta-ink-muted); }
+
+  .admin .c-actions { display: table-cell; }
+
+  .admin .c-actions { white-space: nowrap; }
+
+  .admin .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-inline-start: 0.35rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .admin .icon-btn:first-child { margin-inline-start: 0; }
+
+  .admin .icon-btn:hover { background: var(--pta-ink); color: var(--pta-surface); }
+
+  .admin .icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .admin .icon-btn:disabled:hover { background: var(--pta-surface); color: var(--pta-ink); }
+
+  .admin .icon-btn.danger:hover { background: #b3261e; border-color: #b3261e; color: #fff; }
+
+  .admin .ig-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.5rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+  }
+
+  .admin .ig-num {
+    flex: none;
+    width: 1.4rem;
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    color: var(--pta-ink-muted);
+    font-size: var(--text-fine);
+  }
+
+  .admin /* The address is long and uninteresting past the post id,
+  .admin so it truncates
+     rather than wrapping a row to three lines. The link still opens the post. */
+  .ig-url {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-fine);
+    color: var(--pta-ink);
+  }
+
+  .admin .ig-tools { flex: none; display: flex; }
+
+  .admin .ig-empty {
+    padding: 0.6rem 0;
+    color: var(--pta-ink-muted);
+    font-size: var(--text-fine);
+  }
+
+  .admin .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
 </style>

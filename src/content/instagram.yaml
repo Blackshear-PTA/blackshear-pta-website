@@ -1,0 +1,20 @@
+# Instagram posts embedded on /gallery.
+#
+# MANAGED FROM /admin. Open the site's editor and use "Instagram posts" - it
+# checks each address, keeps the order, and saves the file for you.
+#
+# Editing by hand still works and is not discouraged; this is an ordinary
+# content file. Keep the shape below exactly: a list of `- url:` entries under
+# `gallery: posts:`, each a public post permalink in double quotes.
+#
+# WHY A CHOSEN LIST AND NOT THE WHOLE FEED. Reading an account's recent posts
+# needs a Meta app, a Business account and an access token that expires every 60
+# days. Displaying a post needs none of that - Instagram renders any public post
+# from its address. So the site does the part that is free forever and a person
+# picks which 6 posts are worth showing, which is a better page anyway.
+#
+# A private post renders as an empty box for everyone but its followers.
+
+gallery:
+  posts:
+    - url: "https://www.instagram.com/p/DU_h7inEsyQ/"

@@ -121,7 +121,7 @@ to get wrong and invisible when you do:
 | All-day events keep their date | The classic off-by-one; a holiday moving a day is the worst bug this page can have |
 | TZID across DST, both directions | A fixed offset is right half the year |
 | Monthly on the 31st in a 30-day month | RFC 5545 says skip; naive date maths invents an event in March |
-| EXDATE actually removes something | A cancelled meeting that still shows is worse than no calendar |
+| EXDATE actually removes something | A canceled meeting that still shows is worse than no calendar |
 | VTIMEZONE not read as events | Those blocks contain their own `DTSTART` and `RRULE`, and a careless split turns them into two events named after DST transitions |
 
 ### The bug worth knowing about

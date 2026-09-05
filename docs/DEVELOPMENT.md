@@ -34,7 +34,7 @@ npm run check:access    # Access token verification refuses every forgery
 npm run check:ical      # the iCalendar reader, fixtures plus the live feed
 npm run check:crop      # what you see in the crop frame is what gets stored
 npm run check:images    # only real images reach the bucket, on their bytes
-npm run check:secrets   # no recognisable credential committed to a public repo
+npm run check:secrets   # no recognizable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
 ```
 
@@ -71,9 +71,9 @@ than the code.
 `check:secrets` exists because this repo is public, three documents already
 said the password must never be committed, and it was committed anyway (F28) -
 in the note explaining how to clean up a different mistake involving it. Prose
-did not hold. It is honest about its limits: it cannot recognise a secret that
+did not hold. It is honest about its limits: it cannot recognize a secret that
 looks like an ordinary English word, which is exactly what leaked. A green run
-means "no *recognisable* secret", not "no secret".
+means "no *recognizable* secret", not "no secret".
 
 `check:ical` runs in CI before the calendar refresh, so a parser regression
 keeps yesterday's good snapshot instead of committing a broken one.
@@ -86,10 +86,24 @@ opens as a new tab in the same shared Ghostty/tmux window as the other apps.
 ```bash
 dev              # interactive controller (status + menu)
 dev start        # astro dev on :4321, hot reload
-dev worker       # wrangler dev on :8787
+dev worker       # wrangler dev on :8787 - checks .dev.vars, seeds photos first
+dev all          # dev + worker together
+dev restart      # restarts whatever is currently up
+dev images       # refill the local photo bucket (--force to re-fetch)
 dev stop         # stops every mode and closes its tabs
-dev check        # build + astro check + contrast gate, in the foreground
+dev check        # every gate in the repo, in the foreground
 ```
+
+The three modes are independent: `dev start` brings up `astro dev` and nothing
+else, which is why `dev status` normally shows the other two stopped. `dev all`
+is the pair worth having open together — hot reload for iterating, the Workers
+runtime for the gate, `/admin` and photos.
+
+`dev stop` takes down all three, and `dev restart` therefore restarts **whatever
+was up** rather than dropping back to `dev` alone. Losing the worker silently is
+the failure worth avoiding: the site still loads on 4321, so nothing looks
+wrong, but it is ungated with no `/admin` and no photos — which reads as those
+features breaking rather than as a server not running.
 
 `dev` finds the controller by walking up from your current directory, so it
 works from anywhere inside the repo. `dev blackshear-web` from outside does
@@ -116,6 +130,83 @@ to those files looks perfectly fine locally and only fails once deployed.
 If you are testing the password gate, copy `.dev.vars.example` to `.dev.vars`
 and put the real password in it first, or the gate fails closed and lets nobody
 through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
+
+### Testing `/admin` and photos locally
+
+Two parts of the site are edge infrastructure: `/admin/api/*` and `/images/*`
+live in the Worker, so `astro dev` cannot serve either and both 404 on their
+own. `astro dev` therefore **proxies those two paths to the worker on 8787**
+(see `astro.config.mjs`), which means 4321 does everything — hot reload plus a
+working editor and real photos — as long as `dev worker` is also up. `dev all`
+starts both. With the worker down, those paths answer with a sentence saying so
+rather than a generic 500.
+
+That proxy is dev-only; a build never sees it. On the deployed site the Worker
+handles both paths itself.
+
+What the worker still needs set up, because the edge services behind it have no
+local equivalent:
+
+`dev worker` handles most of it: before launching it reads `.dev.vars`, tells
+you which of the gate and `/admin` will not work and why, and seeds the local
+photo bucket. `dev status` shows the same thing without starting anything. The
+one thing it cannot invent is which address to sign you in as.
+
+**Sign-in.** Cloudflare Access runs at Cloudflare's edge, so no Access token is
+ever attached to a localhost request and `/admin/api/*` answers `401 Not signed
+in.` Put one line in `.dev.vars`:
+
+```
+DEV_ADMIN_EMAIL=you@example.com
+```
+
+That is honoured **only** when the request arrives on `localhost`, `127.0.0.1`
+or `[::1]`, so it cannot open anything in production even if it were set there
+by mistake — the hostname is the lock, not the variable. See `devIdentity()` in
+`src/worker/access.ts`, and `npm run check:access` for the tests holding it to
+that.
+
+You do **not** need a GitHub token for this. The repository is public, so a
+read-only local session lists and opens the real posts unauthenticated. If you
+have a stale `GITHUB_TOKEN` line in `.dev.vars`, delete it — an invalid token is
+worse than none, and the editor will tell you so.
+
+**Local runs are read-only.** There is no local copy of the content: `/admin`
+reads and writes through the GitHub API, so a save from localhost is a real
+commit to the real repository. Writing therefore needs saying twice:
+
+- a real fine-grained `GITHUB_TOKEN` with **Contents: write**
+- `GITHUB_BRANCH` pointed at a scratch branch, so a test post lands somewhere
+  harmless rather than on the live site
+- `DEV_ALLOW_WRITES=true`
+
+The editor shows a banner naming the repository and branch a save would land
+on — quiet accent for read-only, red for live.
+
+**Photos.** `wrangler dev` binds a *local* R2 bucket, not the production one, so
+it starts empty and every photo 404s. `dev worker` fills it automatically; the
+manual form is `dev images`, or:
+
+```bash
+npm run dev:images
+```
+
+That copies the photos the current posts reference from the live site. It needs
+no credentials — `/images/*` is routed ahead of the gate — and it records what
+it has already fetched, so running it again does nothing. Add `--force` after
+someone uploads a photo through the real `/admin`, or to re-fetch after clearing
+`.wrangler/`.
+
+### Running the gates
+
+```bash
+dev check
+```
+
+Twelve of them: build, `astro check`, and the ten `check:*` scripts. **Nothing
+else runs these** — there is no CI workflow for them, and Cloudflare Workers
+Builds only runs `npm run build` — so a gate missing from `do_check` in
+`dev-control.sh` is a gate that never runs. Add new ones there.
 
 ## Layout
 
@@ -144,7 +235,7 @@ src/pages/[page].astro     renders anything in pages.yaml
 src/worker.ts              TEMPORARY - the pre-launch password gate
 
 wrangler.jsonc             Cloudflare config. Three lines marked TEMPORARY
-scripts/                   the gates, plus the calendar refresh
+scripts/                   the gates, the calendar refresh, the image seeder
 ```
 
 ## Two rules that will bite you
@@ -156,13 +247,13 @@ they will not error, the utility simply is not generated. Use the tokens in
 short version is that a design system you can bypass by accident is not one.
 
 **Yellow is never text on white.** Lemon on white is 1.33:1 and fails WCAG AA
-outright. It is a background and accent colour only; yellow text needs a black
+outright. It is a background and accent color only; yellow text needs a black
 or blue ground. Full table in [`../assets/brand/README.md`](../assets/brand/README.md).
 
 ## Themes
 
 A theme is a **token set and a structure**, paired in `src/themes/registry.ts`.
-Pairing them is deliberate: it makes a token-only recolour impossible to ship by
+Pairing them is deliberate: it makes a token-only recolor impossible to ship by
 accident, which is the failure mode where several "different designs" turn out
 to be one template in several palettes.
 

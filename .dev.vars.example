@@ -1,5 +1,10 @@
 # Copy to .dev.vars (gitignored) for local `wrangler dev` runs.
 #
+# Nothing in here is needed for `npm run dev` - that is Astro on its own and
+# never runs the Worker. This file is only for the :8787 worker server.
+
+
+# ---------------------------------------------------------------- the gate ---
 # The real value is NOT in this repo and must not be - the repo is public, so a
 # committed password is no password. In production it lives in a Cloudflare
 # secret, set once with:
@@ -8,3 +13,54 @@
 #
 # Ask the PTA for the current value. See src/worker.ts.
 SITE_PASSWORD=replace-me
+
+
+# --------------------------------------------------------------- /admin -----
+# Cloudflare Access runs at Cloudflare's edge, which means it does not exist on
+# localhost. Without the line below, every /admin/api call answers
+# 401 "Not signed in." and the editor cannot be tested without deploying.
+#
+# Setting it signs you in locally as this address. It is honoured ONLY when the
+# request arrives on localhost, so it cannot open anything in production even by
+# accident - see devIdentity() in src/worker/access.ts for why, and
+# scripts/check-access.mjs for the tests that hold it to that.
+#
+# Use your own address: it becomes the commit author if you turn writes on.
+DEV_ADMIN_EMAIL=you@example.com
+
+# A GitHub fine-grained token with Contents: read and write.
+#
+# THERE IS NO LOCAL COPY OF THE CONTENT. /admin reads and writes through the
+# GitHub API, so a local editor session shows the real posts and - if writes are
+# on - commits real changes.
+GITHUB_TOKEN=replace-me
+
+# The branch /admin reads and writes. Defaults to main.
+#
+# Point it at a scratch branch if you are going to turn writes on, so a test
+# post lands somewhere harmless rather than on the live site.
+# GITHUB_BRANCH=some-scratch-branch
+
+# Local runs are read-only unless this says true, because a save here is a real
+# commit. Leave it off to click around the editor; turn it on deliberately, and
+# preferably with GITHUB_BRANCH set above.
+# DEV_ALLOW_WRITES=true
+
+
+# ------------------------------------------------------- photos on :8787 -----
+# `wrangler dev` binds a LOCAL, empty R2 bucket, so announcement photos 404
+# until something copies them in. `dev worker` does that for you before it
+# starts. The manual form, if you are not using the controller:
+#
+#   npm run dev:images
+#
+# It pulls the photos the current posts reference from the live site, needs no
+# credentials, and does nothing on a second run.
+
+
+# ------------------------------------------------- not needed for dev -------
+# The two Access secrets are only consulted when DEV_ADMIN_EMAIL is unset. Set
+# them if you specifically want to exercise the real token path locally, which
+# will still fail: no Access token is attached to a localhost request.
+# CF_ACCESS_TEAM_DOMAIN=blackshearpta.cloudflareaccess.com
+# CF_ACCESS_AUD=replace-me
