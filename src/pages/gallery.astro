@@ -201,7 +201,13 @@ const photos = [
     max-width: 100%;
   }
 
-  li {
+  /*
+    .photo-wall li, not a bare `li`. When this was the only list on the page a
+    bare selector was harmless; the Instagram row is a list too, and it was
+    inheriting a 4:3 box with overflow:hidden - which crops an embed whose
+    height Instagram's own script sets after it loads.
+  */
+  .photo-wall li {
     /* Fixed ratio so the grid stays a grid: the sources are a mix of portrait
        and landscape, and letting each cell take its own height gives a ragged
        masonry look this theme has no other instance of. */
@@ -215,7 +221,7 @@ const photos = [
        border is enough to hold the cell's shape. */
   }
 
-  li :global(img) {
+  .photo-wall li :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
