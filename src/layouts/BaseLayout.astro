@@ -59,9 +59,9 @@ const preloadFonts = new Set(themeId ? getTheme(themeId).fonts : []);
  * as shot.
  *
  * 1200x630 rather than a square. Facebook, Slack, LinkedIn and X all crop
- * og:image to roughly 1.91:1, so a square would be centre-cropped to this
+ * og:image to roughly 1.91:1, so a square would be center-cropped to this
  * anyway - by them, not by us, and without the deliberate crop. Astro
- * centre-crops the 3000x2000 source to keep the building, doors and walkway.
+ * center-crops the 3000x2000 source to keep the building, doors and walkway.
  */
 const social = await getImage({
   src: socialSource,

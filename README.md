@@ -139,7 +139,7 @@ because updating it was harder than not updating it.
 ## Who runs this
 
 The website is maintained by the PTA's Communications role, currently **Jon
-Flowers**. The GitHub organisation and every account are owned by the PTA's own
+Flowers**. The GitHub organization and every account are owned by the PTA's own
 `blackshearpta@gmail.com`, not by any individual, so nothing is lost when a
 volunteer moves on.
 

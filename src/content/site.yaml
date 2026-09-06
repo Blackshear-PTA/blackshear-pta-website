@@ -31,6 +31,8 @@ site:
       href: "/calendar"
     - label: "Little EAST"
       href: "/little-east"
+    - label: "Photos"
+      href: "/gallery"
     - label: "Sponsors"
       href: "/sponsors"
     - label: "Contact"

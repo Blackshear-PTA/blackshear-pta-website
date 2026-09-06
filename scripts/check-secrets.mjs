@@ -7,12 +7,12 @@
  * involving it. Prose did not hold. This is the same rule with an exit code.
  *
  * WHAT IT CANNOT DO, stated plainly so nobody trusts it further than it goes:
- * it cannot recognise a secret that looks like an ordinary English word, which
+ * it cannot recognize a secret that looks like an ordinary English word, which
  * is exactly what leaked. No grep can. What it catches is token-shaped strings,
  * private keys, a real value sitting in an .env-style assignment, and the two
  * command shapes that put a credential on a documented command line.
  *
- * A green run means "no *recognisable* secret", not "no secret".
+ * A green run means "no *recognizable* secret", not "no secret".
  *
  * Run: npm run check:secrets
  */
@@ -148,4 +148,4 @@ if (failures.length) {
   console.error('The value is in the history and must be rotated.');
   process.exit(1);
 }
-console.log('No recognisable committed secrets. (Cannot detect a secret that looks like a normal word.)');
+console.log('No recognizable committed secrets. (Cannot detect a secret that looks like a normal word.)');

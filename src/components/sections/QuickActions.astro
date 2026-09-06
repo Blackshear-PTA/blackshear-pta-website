@@ -27,12 +27,13 @@ const headingId = uid('quick-actions-heading');
           >
             <span class="label">
               {item.label}
-              {isExternal(item.href) && (
-                <svg class="ext" viewBox="0 0 12 12" aria-hidden="true" width="9" height="9">
-                  <path d="M4 2h6v6M10 2 3 9" fill="none" stroke="currentColor"
-                    stroke-width="1.75" stroke-linecap="round" />
-                </svg>
-              )}
+              {/*
+                No out-arrow here, deliberately. Six tiles in a grid, four of
+                them arrowed, read as inconsistent rather than informative -
+                the marker drew attention to itself instead of to the label.
+                The screen-reader warning stays, because that one costs nothing
+                visually and is the only warning a screen reader user gets.
+              */}
               {isExternal(item.href) && <span class="sr-only"> (opens in a new tab)</span>}
             </span>
             {item.note && <span class="note">{item.note}</span>}
@@ -50,17 +51,11 @@ const headingId = uid('quick-actions-heading');
   header already marks external links, so not marking them here would be the
   site contradicting itself on the same screen.
 
-  External-ness is derived from the href, not declared in content - see
-  src/lib/links.ts for why.
+  External-ness still drives target and rel; it just no longer shows. Derived
+  from the href, not declared in content - see src/lib/links.ts for why.
 */}
 
 <style>
-  .ext {
-    opacity: 0.65;
-    margin-inline-start: 0.25em;
-    vertical-align: baseline;
-  }
-
   .sr-only {
     position: absolute;
     width: 1px;

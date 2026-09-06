@@ -33,7 +33,7 @@ globalThis.fetch = async (url) => {
   return new Response('not found', { status: 404 });
 };
 
-const { verifyAccessJwt } = await import('../src/worker/access.ts');
+const { verifyAccessJwt, devIdentity } = await import('../src/worker/access.ts');
 
 const b64 = (obj) =>
   Buffer.from(typeof obj === 'string' ? obj : JSON.stringify(obj))
@@ -108,6 +108,45 @@ await expect('empty email claim', mint({ payload: { email: '' } }), false);
   const forged = `${h}.${b64({ aud: [AUD], iss: `https://${TEAM}`, email: 'attacker@example.com', exp: now() + 600 })}.${s}`;
   await expect('tampered payload, original signature', forged, false);
 }
+
+/**
+ * The local-development sign-in.
+ *
+ * devIdentity() hands out an identity with no token at all, so the thing worth
+ * testing is not that it works - it is that the hostname rule is the real lock
+ * and holds even when the variable IS set. The cases below are what a mistake
+ * would look like: the variable leaking into production, and a hostname check
+ * written loosely enough that a name an attacker can register satisfies it.
+ */
+console.log('\ndev sign-in:');
+const DEV_EMAIL = 'parent@blackshearpta.org';
+
+function expectDev(name, href, email, shouldPass) {
+  const result = devIdentity(new URL(href), email);
+  const passed = shouldPass ? result?.email === DEV_EMAIL : result === null;
+  if (passed) console.log(`  ok   ${name}`);
+  else {
+    failures++;
+    console.error(
+      `  FAIL ${name}\n       expected ${shouldPass ? 'accept' : 'REJECT'}, got ${JSON.stringify(result)}`,
+    );
+  }
+}
+
+expectDev('localhost with the var set', 'http://localhost:8787/admin/api/session', DEV_EMAIL, true);
+expectDev('127.0.0.1 with the var set', 'http://127.0.0.1:8787/admin/api/session', DEV_EMAIL, true);
+expectDev('IPv6 loopback with the var set', 'http://[::1]:8787/admin/api/session', DEV_EMAIL, true);
+
+expectDev('localhost, var unset', 'http://localhost:8787/admin/api/session', undefined, false);
+expectDev('localhost, var empty', 'http://localhost:8787/admin/api/session', '', false);
+// The one that matters: the variable set somewhere it should never be.
+expectDev('production host, var set', 'https://blackshearpta.org/admin/api/session', DEV_EMAIL, false);
+expectDev('workers.dev host, var set', 'https://blackshear-pta.workers.dev/admin/api/session', DEV_EMAIL, false);
+// Names an attacker can register, against a suffix or substring check.
+expectDev('localhost.example.com', 'https://localhost.example.com/admin/api/session', DEV_EMAIL, false);
+expectDev('notlocalhost', 'https://notlocalhost/admin/api/session', DEV_EMAIL, false);
+expectDev('evil.com/?h=localhost', 'https://evil.com/admin/api/session?h=localhost', DEV_EMAIL, false);
+expectDev('127.0.0.1.example.com', 'https://127.0.0.1.example.com/admin/api/session', DEV_EMAIL, false);
 
 console.log(`\n${failures ? `${failures} failing` : 'all Access token checks passed'}.`);
 process.exit(failures ? 1 : 0);

@@ -35,13 +35,28 @@
 #   touching them, verify on :8787 - and copy .dev.vars.example to .dev.vars
 #   first, or the gate will fail closed and let nobody through.
 #
+#   /admin and announcement photos need more than the other two modes, because
+#   Cloudflare Access and the production R2 bucket are edge infrastructure and
+#   neither exists here. `worker` handles it: before launching it checks
+#   .dev.vars and says which of the gate and /admin will not work, then seeds
+#   the local photo bucket. The one thing it cannot invent is the sign-in
+#   address - put DEV_ADMIN_EMAIL in .dev.vars, or /admin answers 401.
+#   See docs/DEVELOPMENT.md.
+#
 #   preview and worker build first, so they show you the real thing rather than
 #   whatever was in dist/ from last time.
 #
 # USAGE
 #   ./dev-control.sh              interactive controller
 #   ./dev-control.sh start        one-shot actions (scriptable)
-#   ./dev-control.sh preview | worker | stop | restart | status | logs | check | open
+#   ./dev-control.sh all | preview | worker | stop | restart | status | logs
+#   ./dev-control.sh check | open | images
+#
+#   The three modes are independent - `start` brings up dev and nothing else.
+#   `all` starts dev + worker, the pair worth having open together. `restart`
+#   with no argument restarts whatever is currently up rather than dropping
+#   back to dev, because `stop` takes down all three and quietly losing the
+#   worker looks like /admin and photos breaking rather than stopping.
 #
 #   The global `dev` command finds this by walking up from $PWD, so `dev` and
 #   `dev start` work from anywhere inside the repo. `dev blackshear-web` from
@@ -120,6 +135,74 @@ any_running() {
   return 1
 }
 
+# ── Worker environment ────────────────────────────────────────────────────────
+# The Workers runtime needs setup that astro dev does not, and every missing
+# piece fails in a way that reads as a bug rather than as absent configuration:
+# no SITE_PASSWORD and the gate fails closed on everyone, no DEV_ADMIN_EMAIL and
+# /admin answers "401 Not signed in.", an empty local R2 bucket and every
+# announcement photo 404s. Checking here turns three confusing symptoms into
+# three sentences, and seeds the photos rather than just complaining about them.
+
+# One value out of .dev.vars. Only ever used to test whether something is set,
+# except DEV_ADMIN_EMAIL, which is an address rather than a secret and is shown
+# deliberately so you can see which identity you are about to edit as.
+_dev_var() {
+  [[ -f "$REPO_DIR/.dev.vars" ]] || return 1
+  sed -n "s/^$1=//p" "$REPO_DIR/.dev.vars" | head -1
+}
+
+# How many photos the seeder believes are in the local bucket. Its manifest
+# lives inside .wrangler/state, so it is only trustworthy while that is too.
+_seeded_count() {
+  local manifest="$REPO_DIR/.wrangler/state/pta-seeded-images.json"
+  if [[ -f "$manifest" && -d "$REPO_DIR/.wrangler/state/v3" ]]; then
+    grep -c '"[0-9a-f]\{32\}\.' "$manifest" 2>/dev/null || printf '0'
+  else
+    printf '0'
+  fi
+}
+
+# Runs before the worker launches. Never fatal: a half-configured worker that
+# starts and says why is more useful than one that refuses to.
+_worker_preflight() {
+  cd "$REPO_DIR" || return 0
+
+  if [[ ! -f "$REPO_DIR/.dev.vars" ]]; then
+    printf '%s  ! No .dev.vars - the password gate fails closed and lets nobody in.%s\n' "$YELLOW" "$RESET"
+    printf '%s    cp .dev.vars.example .dev.vars, then fill in SITE_PASSWORD.%s\n' "$DIM" "$RESET"
+    return 0
+  fi
+
+  local pw admin token
+  pw="$(_dev_var SITE_PASSWORD)"
+  admin="$(_dev_var DEV_ADMIN_EMAIL)"
+  token="$(_dev_var GITHUB_TOKEN)"
+
+  if [[ -z "$pw" || "$pw" == "replace-me" ]]; then
+    printf '%s  ! SITE_PASSWORD is unset - the gate fails closed, nobody gets in.%s\n' "$YELLOW" "$RESET"
+  fi
+
+  if [[ -z "$admin" ]]; then
+    printf '%s  ! DEV_ADMIN_EMAIL is unset - /admin will answer 401 Not signed in.%s\n' "$YELLOW" "$RESET"
+    printf '%s    Add DEV_ADMIN_EMAIL=you@example.com to .dev.vars (loopback only).%s\n' "$DIM" "$RESET"
+  else
+    printf '  %s/admin signs in as%s %s\n' "$DIM" "$RESET" "$admin"
+  fi
+
+  # A token is not needed for read-only local work, and a bad one is worse than
+  # none: the repository is public, so reads succeed unauthenticated and fail
+  # with a bare "Bad credentials" the moment a stale token is attached.
+  if [[ -n "$token" && "${#token}" -lt 20 ]]; then
+    printf '%s  ! GITHUB_TOKEN looks like a placeholder - posts will fail to load.%s\n' "$YELLOW" "$RESET"
+    printf '%s    Delete the line; local reads need no token.%s\n' "$DIM" "$RESET"
+  fi
+
+  # Silent when the bucket is already populated; noisy only when it does work.
+  if ! $NODE_RUNNER npm run --silent dev:images -- --quiet; then
+    printf '%s  ! Could not seed photos - they will 404. Try: dev images%s\n' "$YELLOW" "$RESET"
+  fi
+}
+
 # ── Status panel ──────────────────────────────────────────────────────────────
 _row() {
   local label="$1" port="$2" up="$3" note="${4:-}"
@@ -140,7 +223,7 @@ print_status() {
     case "$s" in
       dev)     note="hot reload" ;;
       preview) note="built output" ;;
-      worker)  note="real Workers runtime - _headers / _redirects" ;;
+      worker)  note="the gate, /admin, photos, _headers" ;;
     esac
     _row "$(_svc_label "$s")" "$p" "$up" "$note"
   done
@@ -155,6 +238,29 @@ print_status() {
   else
     printf '%s│%s  %-11s %snone%s\n' "$CYAN" "$RESET" "dev tabs" "$DIM" "$RESET"
   fi
+
+  # What the :8787 worker will and will not be able to do, before you start it.
+  printf '%s│%s\n' "$CYAN" "$RESET"
+  local admin seeded
+  if [[ ! -f "$REPO_DIR/.dev.vars" ]]; then
+    printf '%s│%s  %-11s %bno .dev.vars - gate and /admin will not work%b\n' \
+      "$CYAN" "$RESET" "worker env" "$YELLOW" "$RESET"
+  else
+    admin="$(_dev_var DEV_ADMIN_EMAIL)"
+    if [[ -n "$admin" ]]; then
+      printf '%s│%s  %-11s %s\n' "$CYAN" "$RESET" "/admin as" "$admin"
+    else
+      printf '%s│%s  %-11s %bDEV_ADMIN_EMAIL unset - /admin will 401%b\n' \
+        "$CYAN" "$RESET" "/admin as" "$YELLOW" "$RESET"
+    fi
+    seeded="$(_seeded_count)"
+    if [[ "$seeded" != "0" ]]; then
+      printf '%s│%s  %-11s %s in the local bucket\n' "$CYAN" "$RESET" "photos" "$seeded"
+    else
+      printf '%s│%s  %-11s %bnone seeded - `dev worker` will fetch them%b\n' \
+        "$CYAN" "$RESET" "photos" "$DIM" "$RESET"
+    fi
+  fi
   printf '%s└%s\n' "$CYAN" "$RESET"
 }
 
@@ -162,7 +268,7 @@ _pause() { printf '\n%sPress Enter to continue…%s' "$DIM" "$RESET"; read -r _ 
 
 # ── tmux + Ghostty ────────────────────────────────────────────────────────────
 # Lifted from the fleet controller on purpose. The whole point is that this repo
-# lands in the same shared window as every other app, so the behaviour has to
+# lands in the same shared window as every other app, so the behavior has to
 # match rather than merely resemble it.
 _fleet_tmux_conf() {
   local c
@@ -235,6 +341,19 @@ do_start() {
   case "$svc" in
     preview|worker) printf '%s▶ Building first (%s serves the built output)…%s\n' "$BOLD" "$svc" "$RESET" ;;
   esac
+  # The gate, /admin and the photos exist only in the Workers runtime, so this
+  # is the one mode whose environment is worth checking before it starts.
+  [[ "$svc" == "worker" ]] && _worker_preflight
+  # Said once here rather than left to be rediscovered: on 4321 and 4322 the
+  # site is ungated and the editor's API is simply absent.
+  # astro dev proxies /admin/api and /images to :8787, so 4321 is complete only
+  # while the worker is also up. Preview has no such proxy.
+  if [[ "$svc" == "dev" ]] && ! port_listening "$WORKER_PORT"; then
+    printf '%s  Note: /admin and photos need the worker too - `dev all` starts both.%s\n' "$DIM" "$RESET"
+  elif [[ "$svc" == "preview" ]]; then
+    printf '%s  Note: the gate, /admin and photos are Workers-only - use `dev worker`.%s\n' "$DIM" "$RESET"
+  fi
+
   printf '%s▶ Launching %s into the "%s" window, tab "%s"…%s\n' \
     "$BOLD" "$(_svc_label "$svc")" "$TMUX_SESSION" "$win" "$RESET"
   _launch "$svc"
@@ -264,7 +383,46 @@ do_stop() {
   printf '%s✓ Stopped.%s The shared session stays up if other apps are using it.\n' "$GREEN" "$RESET"
 }
 
-do_restart() { do_stop; sleep 1; do_start "${1:-dev}"; }
+# Restart whatever is actually up, rather than a hardcoded default.
+#
+# This used to be `do_stop; do_start dev`, and do_stop kills all three - so a
+# restart with the worker running stopped it and brought back only :4321. That
+# is the worst mode to drop silently: the site still loads, so nothing looks
+# wrong, but it is ungated with no /admin and no photos, which reads as those
+# features being broken rather than absent.
+#
+# An explicit argument still wins, and restarting from nothing starts dev.
+do_restart() {
+  local want="${1:-}" s
+  if [[ -z "$want" ]]; then
+    for s in $SERVICES; do
+      port_listening "$(_svc_port "$s")" && want="$want $s"
+    done
+    want="${want# }"
+    [[ -z "$want" ]] && want="dev"
+  fi
+  do_stop
+  sleep 1
+  for s in $want; do do_start "$s"; done
+}
+
+# The pair worth running together: hot reload for iterating, the real runtime
+# for the gate, /admin and photos. Preview is deliberately not included - it
+# serves the same built output as worker with less of the runtime around it, so
+# running both only competes for the same build.
+do_all() {
+  do_start dev
+  printf '\n'
+  do_start worker
+}
+
+# `dev worker` seeds automatically; this is for re-fetching after someone adds a
+# photo through the real /admin, or with --force after clearing local state.
+do_images() {
+  cd "$REPO_DIR" || return 1
+  printf '%s▶ Announcement photos → local R2 bucket%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run --silent dev:images -- "$@"
+}
 
 do_logs() {
   local s win=""
@@ -278,7 +436,11 @@ do_logs() {
   printf 'Focused %s:%s.\n' "$TMUX_SESSION" "$win"
 }
 
-# The three gates CI runs. Foreground on purpose: you want to read the output.
+# Every gate in the repo. Foreground on purpose: you want to read the output.
+#
+# Nothing else runs these. There is no CI workflow for them - Workers Builds
+# runs `npm run build` and nothing more - so this command IS the gate, and a
+# check missing from here is a check that never runs.
 do_check() {
   cd "$REPO_DIR" || return 1
   local failed=0
@@ -300,9 +462,17 @@ do_check() {
   $NODE_RUNNER npm run check:crop || { printf '%s  crop gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ committed secrets%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:secrets || { printf '%s  secret gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ class names vs Tailwind utilities%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:classnames || { printf '%s  class name gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ calendar feed parsing%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:ical || { printf '%s  ical gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ domain references%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:domain || { printf '%s  domain gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  printf '\n%s▶ Instagram post list%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:instagram || { printf '%s  Instagram gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n'
   if [[ "$failed" == "0" ]]; then
-    printf '%s✓ All nine green.%s\n' "$GREEN" "$RESET"
+    printf '%s✓ All thirteen green.%s\n' "$GREEN" "$RESET"
   else
     printf '%s✗ Something failed above.%s\n' "$RED" "$RESET"
   fi
@@ -351,8 +521,9 @@ menu() {
     _set_tab_title
     printf '%s│%s\n' "$CYAN" "$RESET"
     printf '%s│%s  [s] start dev   [p] preview     [w] worker\n' "$CYAN" "$RESET"
-    printf '%s│%s  [x] stop all    [r] restart     [l] logs\n' "$CYAN" "$RESET"
-    printf '%s│%s  [c] checks      [o] open        [q] quit\n' "$CYAN" "$RESET"
+    printf '%s│%s  [a] dev+worker  [x] stop all    [r] restart\n' "$CYAN" "$RESET"
+    printf '%s│%s  [c] checks      [o] open        [i] photos\n' "$CYAN" "$RESET"
+    printf '%s│%s  [l] logs        [q] quit\n' "$CYAN" "$RESET"
     printf '%s└%s ' "$CYAN" "$RESET"
     SECONDS=0
     read -r -t "$TAB_TITLE_REFRESH_SECS" choice
@@ -372,10 +543,12 @@ menu() {
       p|preview)   do_start preview; _pause ;;
       w|worker)    do_start worker;  _pause ;;
       x|stop)      do_stop;          _pause ;;
-      r|restart)   do_restart dev;   _pause ;;
+      r|restart)   do_restart;       _pause ;;
+      a|all)       do_all;           _pause ;;
       l|logs)      do_logs;          _pause ;;
       c|check)     do_check;         _pause ;;
       o|open)      do_open;          _pause ;;
+      i|images)    do_images;        _pause ;;
       q|quit|exit) _reset_tab_title; printf 'Leaving any running servers up. Bye.\n'; break ;;
       "")          ;;
       *) printf '%sUnknown option: %s%s\n' "$YELLOW" "$choice" "$RESET"; sleep 1 ;;
@@ -390,16 +563,24 @@ case "$(_lc "${1:-}")" in
   preview)        do_start preview ;;
   worker)         do_start worker ;;
   stop)           do_stop ;;
-  restart)        do_restart "${2:-dev}" ;;
+  restart)        do_restart "${2:-}" ;;
+  all)            do_all ;;
   status)         print_status ;;
   logs)           do_logs ;;
   check|checks)   do_check ;;
   open)           do_open ;;
+  images|photos)  shift; do_images "$@" ;;
   -h|--help|help)
-    printf 'Usage: dev [start|dev|preview|worker|stop|restart|status|logs|check|open]\n\n'
+    printf 'Usage: dev [start|all|dev|preview|worker|stop|restart|status|logs|check|open|images]\n\n'
     printf '  dev       astro dev      :%s  hot reload\n' "$DEV_PORT"
     printf '  preview   astro preview  :%s  built output\n' "$PREVIEW_PORT"
-    printf '  worker    wrangler dev   :%s  real Workers runtime (_headers, _redirects)\n' "$WORKER_PORT"
+    printf '  worker    wrangler dev   :%s  real Workers runtime, the gate, /admin, photos\n' "$WORKER_PORT"
+    printf '  check                        every gate in the repo (nothing else runs them)\n'
+    printf '  all                          dev + worker together\n'
+    printf '  restart                      restarts whatever is currently up\n'
+    printf '  images                       refill the local photo bucket (--force to re-fetch)\n\n'
+    printf '  `worker` checks .dev.vars and seeds photos before it starts, so /admin\n'
+    printf '  and announcement images work. See docs/DEVELOPMENT.md.\n'
     ;;
   *) printf 'Unknown action: %s\nTry: dev --help\n' "$1"; exit 2 ;;
 esac

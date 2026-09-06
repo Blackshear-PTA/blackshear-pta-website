@@ -1,7 +1,7 @@
 /* ============================================================================
    A - Civic Letterpress A                               PROJECT-BRIEF §5.3
    Anchor: WPA and municipal print. Bevan slab over Archivo, two inks, heavy
-           rules, zero radius, zero shadow. Weight does the work, not colour.
+           rules, zero radius, zero shadow. Weight does the work, not color.
    Structure: stacked-rules
 
    Paired with civic-letterpress-b.css, which is this file with a blue masthead
@@ -15,7 +15,11 @@
   --pta-display-transform: uppercase;
 
   --pta-surface: #ffffff;
-  --pta-surface-alt: #f0e430;   /* lemon panel - black text only */
+  /* A quiet panel, NOT the lemon. This token backs every inset panel on the
+     site - hint boxes, thumbnails, table headers, dialog footers - and when it
+     was the brand lemon all of those became lemon slabs. The accent is still
+     one token away as --pta-accent-quiet for the places that want it. */
+  --pta-surface-alt: #f5f5f2;
   --pta-ink: #000000;
   --pta-ink-muted: #2e2e2e;     /* 14.0:1 on white */
   --pta-ink-on-accent: #ffffff; /* 8.43:1 on blue */

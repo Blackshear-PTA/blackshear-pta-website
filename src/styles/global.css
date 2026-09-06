@@ -140,7 +140,7 @@
   --pta-rule: var(--color-brand-black);
   --pta-focus: var(--color-brand-blue);
 
-  /* header - a theme that leaves these alone still gets colour at the top,
+  /* header - a theme that leaves these alone still gets color at the top,
      which is the point: the header is the first thing on every page and a
      black-and-white one reads as unfinished. */
   --pta-header-bg: var(--color-brand-blue);
@@ -158,7 +158,7 @@
   --pta-cta-border: var(--color-brand-black);
 
   /* The disc behind the mascot; see src/components/BuzzMascot.astro. The
-     mascot's own colours are fixed (it is a real logo), so only the disc is
+     mascot's own colors are fixed (it is a real logo), so only the disc is
      themeable. White on black is what lets the same mark sit on a lemon header
      band and a near-black one without the yellow body vanishing into either. */
   --pta-mark-ground: var(--color-brand-white);
@@ -232,6 +232,36 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/*
+  ── MODAL DIALOGS GO IN THE MIDDLE OF THE SCREEN ────────────────────────────
+  Site-wide, deliberately. Every dialog opened with showModal() gets this, and
+  no component should have to ask for it.
+
+  WHY IT IS NEEDED. A modal <dialog> is centred by the browser's own stylesheet
+  with `margin: auto` against `inset: 0`. Tailwind's preflight resets
+  `margin: 0` on every element - `*, ::before, ::after, ::backdrop` - which
+  silently removes that, and the dialog collapses into the top-left corner of
+  the viewport. Nothing in the component's own CSS looks wrong, which is why
+  this was rediscovered separately on the editor sheets and again on the
+  calendar's event details.
+
+  DELIBERATELY UNLAYERED. Tailwind's preflight lives in `@layer base`, and
+  unlayered styles beat layered ones no matter what order they appear in. Moving
+  this inside a layer would put it back in a specificity argument it does not
+  need to have.
+
+  Only `:modal`, so a non-modal dialog used as an inline popover is unaffected.
+
+  IF YOU ADD A DIALOG: you get centring free. What you still owe it is a
+  max-height and a scroll region, because a tall dialog on a short screen
+  otherwise runs off both ends with no way to reach the buttons.
+*/
+dialog:modal {
+  margin: auto;
+  /* Never taller than the screen; the body inside scrolls instead. */
+  max-height: min(85vh, 100% - 2rem);
 }
 
 /* Skip link - keyboard navigation is a hard requirement (§5.3). */

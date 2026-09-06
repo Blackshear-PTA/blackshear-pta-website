@@ -192,7 +192,7 @@ const spansDays = (event: Event) => {
     )
   }
 
-  <section class="block">
+  <section class="section-block">
     <div class="rule" role="presentation"></div>
     <p class="prose note-line">
       Showing {upcoming.length} events, updated {updated}. The calendar is kept in Google and
@@ -227,16 +227,12 @@ const spansDays = (event: Event) => {
   @media print {
     .agenda,
     .cta-row,
-    .block { display: none !important; }
+    .section-block { display: none !important; }
   }
 
   .prose {
     margin: 0 0 var(--pta-gap);
     max-width: var(--pta-measure);
-  }
-
-  .prose:first-child {
-    margin-block-start: var(--pta-section-y);
   }
 
   .cta-row {
@@ -352,7 +348,7 @@ const spansDays = (event: Event) => {
     color: var(--pta-ink-muted);
   }
 
-  .block {
+  .section-block {
     padding-block: var(--pta-section-y);
   }
 

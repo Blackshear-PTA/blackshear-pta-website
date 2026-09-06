@@ -69,7 +69,7 @@ function parseScalar(raw) {
 }
 
 /**
- * Serialise a post to a complete markdown file.
+ * Serialize a post to a complete markdown file.
  *
  * `date` goes out unquoted so the schema's z.coerce.date() sees a YAML date
  * rather than a string. Booleans are omitted when false: the schema defaults

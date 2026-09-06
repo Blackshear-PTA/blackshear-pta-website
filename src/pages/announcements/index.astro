@@ -42,8 +42,13 @@ const theme = getTheme(siteThemeId);
   <main id="main">
     <div class="shell">
       <h1>Announcements</h1>
-      <p class="lede">Everything the PTA has announced, newest first.</p>
 
+      {/*
+        The RSS link stays, quietly, because the feed costs nothing to keep and
+        the few people who use a reader would otherwise have no way to find it.
+        It is not the answer for most parents though - see TASKS.md A32 for the
+        email notification list meant to replace it as the visible option.
+      */}
       <p class="feed">
         <a href="/rss.xml">
           Subscribe by RSS

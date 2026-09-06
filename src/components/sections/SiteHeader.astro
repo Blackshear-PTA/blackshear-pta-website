@@ -9,13 +9,13 @@ import type { SiteData } from '../../types';
  * hamburger earlier on findability grounds and was overruled by the thing that
  * actually matters more: seven wrapped links plus the lockup ate most of the
  * first screen on a phone, and content you have to scroll past is worse than
- * content behind a labelled button.
+ * content behind a labeled button.
  *
- * Two concessions keep the findability cost down. The button is labelled
+ * Two concessions keep the findability cost down. The button is labeled
  * "Menu" rather than being three bare lines, and DONATE stays outside the menu,
  * so the one thing we most want a parent to be able to hit never gets hidden.
  *
- * Colour comes from --pta-header-* so a theme can make this a saturated band,
+ * Color comes from --pta-header-* so a theme can make this a saturated band,
  * a hairline rule, or a paper-toned strip without touching this file.
  */
 interface Props {
@@ -170,17 +170,34 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     color: var(--pta-header-ink-muted);
   }
 
+  /*
+    Donate above the links, both flush to the right edge.
+
+    These used to sit on one row, which worked only while the row fit. Once the
+    nav grew past seven items the button wrapped onto a second line and landed
+    under the LEFT end of the nav - reading as a stray control rather than the
+    primary action. Stacking makes the position fixed instead of a consequence
+    of how many links there happen to be, gives the nav the full width so it is
+    far less likely to wrap at all, and puts the one thing we most want a parent
+    to hit in the corner people already look for it.
+  */
   .hdr-right {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1.25rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
     padding-block-start: 0.35rem;
   }
+
+  .hdr-actions { order: 1; }
+  .nav { order: 2; }
 
   .nav-list {
     display: flex;
     flex-wrap: wrap;
+    /* Right-aligned so a nav that does wrap stays flush with the button above
+       it, rather than leaving a ragged right edge. */
+    justify-content: flex-end;
     gap: 0.35rem 1.1rem;
     margin: 0;
     padding: 0;
@@ -347,6 +364,9 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
 
     .nav-list {
       flex-direction: column;
+      /* Reset the desktop right-alignment: on a column this is the vertical
+         axis, and the open menu should start at the top of its own box. */
+      justify-content: flex-start;
       gap: 0;
     }
 

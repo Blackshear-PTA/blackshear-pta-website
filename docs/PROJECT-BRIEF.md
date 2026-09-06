@@ -131,7 +131,7 @@ makes the survivors legible as choices rather than defaults.
 **B and East Austin Print Shop are held in reserve, not deleted.** They cost one
 CSS file each, still build, and still pass the contrast gate, so reversing the
 decision is a one-line change rather than a rebuild. `/preview` stays up as a
-labelled reference. Retirement steps are documented at the top of
+labeled reference. Retirement steps are documented at the top of
 `src/themes/registry.ts`.
 
 | | Direction | Anchor |

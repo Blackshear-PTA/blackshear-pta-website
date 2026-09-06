@@ -6,7 +6,7 @@ linkLabel: "Read more at saveblackshear.org"
 pinned: true
 ---
 Our campus has been part of this neighbourhood for 135 years. There is an
-organised effort to keep it here for the next 135, and it is worth your
+organized effort to keep it here for the next 135, and it is worth your
 attention.
 
 A neighbourhood school is not only a building. It is the reason children walk

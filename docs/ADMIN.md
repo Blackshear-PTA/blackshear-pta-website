@@ -326,7 +326,7 @@ than trusting that Access did its job. Two reasons:
 1. It is the only trustworthy source of *who* is editing, which is what lands in
    the commit author.
 2. An Access policy is dashboard configuration, and dashboard configuration gets
-   edited, mis-scoped, or deleted by someone who does not realise it is the only
+   edited, mis-scoped, or deleted by someone who does not realize it is the only
    thing in front of a write endpoint. If that happens, this fails closed.
 
 `scripts/check-access.mjs` mints real RS256 tokens against a throwaway keypair
@@ -351,7 +351,51 @@ payloads are all refused.
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
 | `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
 | Login page offers only "Sign in with Cloudflare" | No identity provider is configured. Section 1, step 0. |
+| `Not signed in.` on **localhost** | Expected. Access is enforced at Cloudflare's edge and does not exist locally. See "Running it locally" below. |
+| `Local development is read-only.` | Also expected. A local save is a real commit, so it is off until you ask. Below. |
+| Photos 404 on **localhost** | `wrangler dev` uses an empty local bucket. `npm run dev:images` fills it. |
 | "A code has been emailed to you" and no code ever arrives | Almost always a typo, or an address that is not in the policy. See below - this is by design and gives no feedback. |
+
+## Running it locally
+
+For anyone changing the editor rather than using it. Full version in
+[DEVELOPMENT.md](DEVELOPMENT.md#testing-admin-and-photos-locally).
+
+The editor needs two things that only exist at Cloudflare's edge, so on a dev
+server neither is present. That is not a fault to debug:
+
+- **Access** never attaches a token to a localhost request, so every
+  `/admin/api/*` call answers `401 Not signed in.`
+- **R2** is bound to a *local*, empty bucket, so every photo 404s.
+
+Add one line to `.dev.vars` — the address you want to be signed in as, which
+should be the one you use in production so the editor behaves the same way:
+
+```
+DEV_ADMIN_EMAIL=you@example.com
+```
+
+Then:
+
+```bash
+dev worker
+```
+
+That checks `.dev.vars`, says which pieces will not work and why, seeds the
+local photo bucket, and starts the Workers runtime on :8787.
+`http://localhost:8787/admin` then opens the real editor against the real
+posts. No GitHub token is needed — the repository is public and reads work
+unauthenticated. A stale `GITHUB_TOKEN` line is worse than none; delete it.
+
+`DEV_ADMIN_EMAIL` is honoured **only** on a loopback hostname, so it is inert in
+production; the hostname is the control, not the variable. `npm run
+check:access` tests exactly that, including the lookalike hostnames a loose
+check would wrongly accept.
+
+Local runs are **read-only** — a save from localhost would be a real commit to
+the real repository. To allow it, set `GITHUB_TOKEN`, point `GITHUB_BRANCH` at a
+scratch branch, and add `DEV_ALLOW_WRITES=true`. The editor then shows a red
+banner naming the branch.
 
 ## The one confusing thing a board member will hit
 
@@ -362,7 +406,7 @@ Cloudflare's docs are explicit about it:
 > say **A code has been emailed to you**, regardless of whether or not an email
 > was sent.
 
-That is the right behaviour - it stops anyone probing the login form to work out
+That is the right behavior - it stops anyone probing the login form to work out
 which board members' addresses are configured. But it has a support cost, and
 you will be the one answering it: **someone who mistypes their email waits
 forever for a code that was never sent, and the screen told them it was on its

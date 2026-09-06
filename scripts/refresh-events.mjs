@@ -102,13 +102,13 @@ const snapshot = {
   })),
 };
 
-const serialised = `${JSON.stringify(snapshot, null, 2)}\n`;
-const unchanged = existsSync(OUT) && readFileSync(OUT, 'utf8') === serialised;
+const serialized = `${JSON.stringify(snapshot, null, 2)}\n`;
+const unchanged = existsSync(OUT) && readFileSync(OUT, 'utf8') === serialized;
 
 if (unchanged) {
   console.log(`No change. ${events.length} events, ${skipped.length} skipped.`);
 } else {
-  writeFileSync(OUT, serialised);
+  writeFileSync(OUT, serialized);
   console.log(`Wrote ${events.length} events to src/data/events.json.`);
 }
 
