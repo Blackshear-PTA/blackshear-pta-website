@@ -1,19 +1,11 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-09-06",
+  "generated": "2026-09-07",
   "window": {
-    "from": "2026-09-06",
-    "to": "2027-09-06"
+    "from": "2026-09-07",
+    "to": "2027-09-07"
   },
   "events": [
-    {
-      "id": "6s46tjihcm7sj4io4uot1a37aa@google.com@2026-09-06T19:00:00.000Z",
-      "title": "Community Meetup",
-      "start": "2026-09-06T19:00:00.000Z",
-      "end": "2026-09-06T22:00:00.000Z",
-      "allDay": false,
-      "location": "Industry, 1211 E 5th St. Ste 150, Austin, TX 78702, USA"
-    },
     {
       "id": "6hcc0nt464nq2qbqbakn8v98cb@google.com@2026-09-07T00:00:00.000Z",
       "title": "School Holiday",
@@ -213,15 +205,15 @@
       "allDay": true
     },
     {
-      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
-      "title": "PTA E-board Meeting #2",
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
@@ -262,15 +254,15 @@
       "allDay": false
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Staff Pies & Sides Event",
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
@@ -486,15 +478,15 @@
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -584,13 +576,6 @@
       "allDay": false
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
       "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
       "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
@@ -600,6 +585,13 @@
     {
       "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
       "title": "Ms. Chalida's Birthday! (Cafeteria)",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -885,15 +877,15 @@
       "allDay": false
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
