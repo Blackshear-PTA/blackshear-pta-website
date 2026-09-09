@@ -118,16 +118,34 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <table class="posts">
           <thead>
             <tr>
+              {/*
+                The pin column's header IS the pin, because "Pinned" in words
+                would be three times the width of the thing it labels. Same
+                glyph as PostBadges.astro, so the mark a board member sets here
+                is the mark parents see on the site.
+              */}
+              <th scope="col" class="c-pin">
+                <svg viewBox="0 0 16 16" aria-hidden="true" width="13" height="13">
+                  <path
+                    d="M9.5 1.5 14.5 6.5 12 7 9.9 9.1a4 4 0 0 0-1 1.7l-.4 1.5-4.8-4.8 1.5-.4a4 4 0 0 0 1.7-1L9 4zM4.7 11.3 1.5 14.5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+                <span class="sr-only">Pinned</span>
+              </th>
               <th scope="col" class="c-post">Title</th>
               <th scope="col" class="c-photos">Photos</th>
               <th scope="col" class="c-date">Date</th>
               <th scope="col" class="c-status">Status</th>
-              <th scope="col" class="c-grades">Grades</th>
+              <th scope="col" class="c-grades">Audience</th>
               <th scope="col" class="c-actions">Actions</th>
             </tr>
           </thead>
           <tbody data-list>
-            <tr><td colspan="6" class="empty">Loading…</td></tr>
+            <tr><td colspan="7" class="empty">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -195,10 +213,43 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         </div>
 
         <div class="field">
-          <label for="f-body">What happened</label>
+          <label for="f-body">Main content</label>
           <textarea id="f-body" name="body" rows="8" required></textarea>
+          {/*
+            Formatting works by putting markers around the selected words, the
+            same markers the file already stores - so what is typed by hand and
+            what these buttons produce are the same thing, and nothing has to
+            translate between them. A WYSIWYG box would need that translation in
+            both directions, and getting it wrong corrupts the post.
+          */}
+          <div class="format-bar" role="group" aria-label="Formatting">
+            <button type="button" class="fmt" data-fmt="bold" title="Bold (Ctrl+B)">
+              <b>B</b><span class="sr-only">Bold</span>
+            </button>
+            <button type="button" class="fmt" data-fmt="italic" title="Italic (Ctrl+I)">
+              <i>I</i><span class="sr-only">Italic</span>
+            </button>
+            <button type="button" class="fmt" data-fmt="list" title="Bulleted list">
+              <svg viewBox="0 0 16 16" aria-hidden="true" width="14" height="14">
+                <path d="M5.5 4h8M5.5 8h8M5.5 12h8" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round"></path>
+                <circle cx="2.5" cy="4" r="1.1"></circle>
+                <circle cx="2.5" cy="8" r="1.1"></circle>
+                <circle cx="2.5" cy="12" r="1.1"></circle>
+              </svg>
+              <span class="sr-only">Bulleted list</span>
+            </button>
+            <button type="button" class="fmt" data-fmt="link" title="Link">
+              <svg viewBox="0 0 16 16" aria-hidden="true" width="14" height="14">
+                <path d="M6.5 9.5 9.5 6.5M7 4.5 8.5 3a3 3 0 0 1 4.5 4.5L11.5 9M9 11.5 7.5 13A3 3 0 0 1 3 8.5L4.5 7"
+                  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+              </svg>
+              <span class="sr-only">Link</span>
+            </button>
+          </div>
           <p class="hint">
-            A few short paragraphs. Leave a blank line between them.
+            A few short paragraphs. Leave a blank line between them. Select words
+            and use the buttons above to make them bold or italic.
           </p>
         </div>
 
@@ -273,11 +324,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           </p>
         </div>
 
+        {/*
+          Pinning is deliberately not here. It lives on the ⋯ menu in the post
+          list, because only one post can be pinned at a time - which makes it a
+          decision about the LIST rather than about this post, and a checkbox
+          here would silently unpin something else with no way to see it happen.
+          The value still survives an edit; see editingPinned in the script.
+        */}
         <div class="checks">
-          <label class="check">
-            <input type="checkbox" name="pinned" />
-            <span>Pin to the top of the list</span>
-          </label>
           <label class="check">
             <input type="checkbox" name="draft" />
             <span>Draft (not shown on the site)</span>
@@ -389,6 +443,17 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   /** The post being edited. null means the form is creating a new one. */
   let current: { slug: string; sha: string } | null = null;
+
+  /**
+   * The open post's pin state, carried without a control.
+   *
+   * The checkbox is gone from the form (pinning is a list-level action now),
+   * and the payload still has to send `pinned` - the API writes whole files, so
+   * an omitted field is written as false. Reading it from FormData after
+   * removing the input would have unpinned the pinned post on every save,
+   * silently, which is the kind of bug nobody attributes to an edit.
+   */
+  let editingPinned = false;
   let photos: Photo[] = [];
   let cover = '';
   /** Snapshot taken when the dialog opens, to detect unsaved changes. */
@@ -487,20 +552,87 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     '1': '1st', '2': '2nd', '3': '3rd', '4': '4th', '5': '5th',
   };
 
+  /**
+   * The pin, identical to the one PostBadges.astro puts on the public site.
+   * Copied rather than imported because this page builds its rows in script and
+   * an Astro component cannot be called from there - if that path ever changes,
+   * both have to change together.
+   */
+  const PIN_SVG =
+    '<svg viewBox="0 0 16 16" aria-hidden="true" width="13" height="13">' +
+    '<path d="M9.5 1.5 14.5 6.5 12 7 9.9 9.1a4 4 0 0 0-1 1.7l-.4 1.5-4.8-4.8 1.5-.4a4 4 0 0 0 1.7-1L9 4zM4.7 11.3 1.5 14.5" ' +
+    'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" ' +
+    'stroke-linejoin="round"/></svg>';
+
+  /**
+   * Sets or clears the pin, keeping at most one pinned post.
+   *
+   * There is no "pin" endpoint - /admin writes whole files - so this reads the
+   * post, flips one field and writes it back. Two posts change on a swap, which
+   * is two commits; that is the cost of the file-per-post design and it is
+   * cheap at this size.
+   *
+   * The unpin happens FIRST. If the second write fails, the site is briefly
+   * left with nothing pinned rather than with two pinned posts - the state that
+   * makes the pin meaningless is the worse one to fail into.
+   */
+  async function writePinned(slug: string, pinned: boolean) {
+    const post = (await api(`posts/${encodeURIComponent(slug)}`)) as Record<string, unknown>;
+    await api('posts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...post, pinned }),
+    });
+  }
+
+  async function setPinned(slug: string, pinned: boolean) {
+    clear(statusEl);
+    say(statusEl, pinned ? 'Pinning…' : 'Unpinning…', 'busy');
+    try {
+      if (pinned) {
+        for (const other of lastPosts) {
+          if (other.pinned && String(other.slug) !== slug) {
+            await writePinned(String(other.slug), false);
+          }
+        }
+      }
+      await writePinned(slug, pinned);
+      say(
+        statusEl,
+        pinned
+          ? 'Pinned. Any post that was pinned before is not any more.'
+          : 'Unpinned. Nothing is pinned now.',
+        'ok',
+      );
+      await refresh();
+    } catch (error) {
+      say(statusEl, (error as Error).message, 'bad');
+      await refresh();
+    }
+  }
+
   function cell(className: string) {
     const td = document.createElement('td');
     td.className = className;
     return td;
   }
 
+  /**
+   * The posts from the last refresh. Held because a pin swap has to know which
+   * post is currently pinned, and asking the API again for something already on
+   * screen is a round trip for nothing.
+   */
+  let lastPosts: Array<Record<string, unknown>> = [];
+
   async function refresh() {
     try {
       const { posts } = (await api('posts')) as { posts: Array<Record<string, unknown>> };
+      lastPosts = posts;
       listEl.replaceChildren();
       if (posts.length === 0) {
         const tr = document.createElement('tr');
         const td = cell('empty');
-        td.colSpan = 6;
+        td.colSpan = 7;
         td.textContent = 'No posts yet. Use "New post" to write the first one.';
         add(tr, td);
         add(listEl, tr);
@@ -544,10 +676,28 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         // Publication state ALWAYS shows, with grades as an extra line rather
         // than a replacement. Showing only the grades made a published post
         // look like it had no status at all.
+        /**
+         * Pin: its own column, marked with the glyph rather than the word.
+         *
+         * It was a second badge inside Status, which made that cell say two
+         * unrelated things and gave the pinned row an extra line of height
+         * nothing else had. Pinned is not a publication state - a post can be
+         * pinned and draft at once - so it does not belong on that axis.
+         */
+        const pinCell = cell('c-pin');
+        if (post.pinned) {
+          pinCell.innerHTML = PIN_SVG;
+          pinCell.classList.add('is-pinned');
+          pinCell.title = 'Pinned to the top of the list';
+          const label = document.createElement('span');
+          label.className = 'sr-only';
+          label.textContent = 'Pinned';
+          add(pinCell, label);
+        }
+
         const statusCell = cell('c-status');
         if (post.draft) add(statusCell, badge('Draft', 'draft'));
         else add(statusCell, badge('Published', 'live'));
-        if (post.pinned) add(statusCell, badge('Pinned', 'pin'));
         if (post.partial) add(statusCell, badge('Still saving', 'partial'));
 
         /**
@@ -631,14 +781,45 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           openPost(slug);
         });
 
-        const viewItem = document.createElement('a');
+        /**
+         * A draft has no page on the site, so there is nothing to view. Shown
+         * disabled rather than hidden, so the menu does not change shape and
+         * the reason is on the item itself.
+         */
+        const viewItem = document.createElement(post.draft ? 'button' : 'a');
         viewItem.className = 'rowmenu-item';
-        viewItem.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
-        viewItem.target = '_blank';
-        viewItem.rel = 'noopener';
         viewItem.innerHTML = EYE;
-        add(viewItem, document.createTextNode('View on the site'));
-        viewItem.addEventListener('click', () => { menu.open = false; });
+        if (post.draft) {
+          (viewItem as HTMLButtonElement).type = 'button';
+          (viewItem as HTMLButtonElement).disabled = true;
+          viewItem.title = 'Drafts have no page on the site. Untick Draft to publish it.';
+          add(viewItem, document.createTextNode('View on the site'));
+        } else {
+          const link = viewItem as HTMLAnchorElement;
+          link.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          add(viewItem, document.createTextNode('View on the site'));
+          viewItem.addEventListener('click', () => { menu.open = false; });
+        }
+
+        /**
+         * Pin / Unpin, with only one pinned post allowed.
+         *
+         * The point of a pin is "read this first", and two of them says
+         * neither. So pinning swaps: whatever was pinned gets unpinned in the
+         * same action. Unpinning the pinned post leaves none, which is a
+         * legitimate state - most weeks nothing needs to be first.
+         */
+        const pinItem = document.createElement('button');
+        pinItem.type = 'button';
+        pinItem.className = 'rowmenu-item';
+        pinItem.innerHTML = PIN_SVG;
+        add(pinItem, document.createTextNode(post.pinned ? 'Unpin' : 'Pin to top'));
+        pinItem.addEventListener('click', () => {
+          menu.open = false;
+          void setPinned(slug, !post.pinned);
+        });
 
         const deleteItem = document.createElement('button');
         deleteItem.type = 'button';
@@ -652,18 +833,18 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           void removePost(slug, String(post.title));
         });
 
-        add(panel, editItem, viewItem, deleteItem);
+        add(panel, editItem, viewItem, pinItem, deleteItem);
         add(menu, trigger, panel);
         add(actionCell, menu);
 
-        add(tr, postCell, photosCell, dateCell, statusCell, gradesCell, actionCell);
+        add(tr, pinCell, postCell, photosCell, dateCell, statusCell, gradesCell, actionCell);
         add(listEl, tr);
       }
     } catch (error) {
       listEl.replaceChildren();
       const tr = document.createElement('tr');
       const td = cell('empty');
-      td.colSpan = 6;
+      td.colSpan = 7;
       td.textContent = (error as Error).message;
       add(tr, td);
       add(listEl, tr);
@@ -955,7 +1136,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       body: data.get('body'),
       href: data.get('href'),
       linkLabel: data.get('linkLabel'),
-      pinned: data.get('pinned'),
+      pinned: editingPinned,
       draft: data.get('draft'),
       grades: gradeBoxes().filter((b) => b.checked).map((b) => b.value),
       photos,
@@ -963,18 +1144,48 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     });
   }
 
+  /**
+   * Today in school time, as YYYY-MM-DD.
+   *
+   * en-CA gives ISO order directly. School time rather than the browser's zone,
+   * so somebody posting from a trip does not get yesterday or tomorrow.
+   */
+  const todayInSchoolTime = () =>
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+
   function openEditor(post: Record<string, unknown> | null) {
     current = post ? { slug: String(post.slug), sha: String(post.sha) } : null;
     sheetTitle.textContent = post ? 'Edit post' : 'New post';
     deleteBtn.hidden = !post;
     clear(sheetStatus);
 
+    /**
+     * No future dates.
+     *
+     * A post dated tomorrow is not scheduled - nothing publishes it later, it
+     * just sits at the top of the list looking like it already happened. Draft
+     * is the tool for "not yet". `max` is what the native picker uses to grey
+     * out later days and stop the arrows walking into next month, so this is
+     * enforced by the control rather than argued about after the fact. The
+     * server checks the date is a real date; it does not need to know today's.
+     *
+     * Backdating stays open, because a post written up after the event is the
+     * normal case.
+     */
+    const today = todayInSchoolTime();
+    (form.elements.namedItem('date') as HTMLInputElement).max = today;
+
     setField('title', String(post?.title ?? ''));
-    setField('date', String(post?.date ?? new Date().toISOString().slice(0, 10)));
+    setField('date', String(post?.date ?? today));
     setField('body', String(post?.body ?? ''));
     setField('href', String(post?.href ?? ''));
     setField('linkLabel', String(post?.linkLabel ?? ''));
-    setField('pinned', Boolean(post?.pinned));
+    editingPinned = Boolean(post?.pinned);
     setField('draft', Boolean(post?.draft));
     setGrades(Array.isArray(post?.grades) ? (post.grades as string[]).map(String) : []);
 
@@ -1057,7 +1268,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           grades: allGrades.checked
             ? []
             : gradeBoxes().filter((b) => b.checked).map((b) => b.value),
-          pinned: data.get('pinned') === 'on',
+          pinned: editingPinned,
           draft: data.get('draft') === 'on',
         }),
       });
@@ -1177,6 +1388,119 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     for (const event of ['scroll', 'resize'] as const) {
       window.addEventListener(event, () => closeMenus(), { passive: true });
     }
+  }
+
+  /**
+   * Formatting buttons for the body.
+   *
+   * They insert the same markdown the file already stores, so a post written by
+   * hand and a post written with these buttons are indistinguishable, and there
+   * is nothing to translate in either direction. A WYSIWYG editor would need
+   * that translation both ways, and getting it wrong corrupts the post.
+   *
+   * setRangeText rather than replacing .value: it keeps the browser's own undo
+   * history intact, so Ctrl+Z still works, and it can leave the new text
+   * selected - which is what makes bolding two words and then italicising the
+   * same two possible without re-selecting them.
+   */
+  {
+    const bodyField = $<HTMLTextAreaElement>('#f-body');
+
+    /**
+     * Wraps the selection, or unwraps it if the markers are already there.
+     *
+     * THE SELECTION ENDS ON THE TEXT, NOT THE MARKERS. setRangeText's 'select'
+     * mode selects everything it inserted, markers included - so a second press
+     * looked outside those and wrapped again, turning **gloves** into
+     * ****gloves****. Leaving the words selected makes the button a real toggle
+     * and lets bold and italic be applied to the same words in either order.
+     */
+    function wrap(marker: string) {
+      const { selectionStart: from, selectionEnd: to, value } = bodyField;
+      const selected = value.slice(from, to);
+      const width = marker.length;
+
+      /**
+       * A single '*' next to a '**' is half of a bold marker, not an italic
+       * one. Without this, italicising the inside of **gloves** would strip one
+       * asterisk from each side and quietly demote it to italic.
+       */
+      const partOfBold =
+        marker === '*' &&
+        (value.slice(Math.max(0, from - 2), from) === '**' || value.slice(to, to + 2) === '**');
+
+      const wrapped =
+        value.slice(Math.max(0, from - width), from) === marker &&
+        value.slice(to, to + width) === marker;
+
+      if (wrapped && !partOfBold) {
+        bodyField.setRangeText(selected, from - width, to + width, 'end');
+        bodyField.selectionStart = from - width;
+        bodyField.selectionEnd = to - width;
+      } else if (selected) {
+        bodyField.setRangeText(`${marker}${selected}${marker}`, from, to, 'end');
+        bodyField.selectionStart = from + width;
+        bodyField.selectionEnd = to + width;
+      } else {
+        // Nothing selected: leave the caret between the markers, ready to type.
+        bodyField.setRangeText(`${marker}${marker}`, from, to, 'end');
+        bodyField.selectionStart = bodyField.selectionEnd = from + width;
+      }
+      bodyField.focus();
+      bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    /** Prefixes every selected line, so a list can be made in one go. */
+    function bulletList() {
+      const { selectionStart: from, selectionEnd: to, value } = bodyField;
+      // Grow the range to whole lines - half a line is not a list item.
+      const lineStart = value.lastIndexOf('\n', from - 1) + 1;
+      const lineEndIndex = value.indexOf('\n', to);
+      const lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex;
+      const lines = value.slice(lineStart, lineEnd).split('\n');
+      const allBulleted = lines.every((line) => /^\s*-\s/.test(line) || !line.trim());
+      const next = lines
+        .map((line) => {
+          if (!line.trim()) return line;
+          return allBulleted ? line.replace(/^(\s*)-\s+/, '$1') : `- ${line}`;
+        })
+        .join('\n');
+      bodyField.setRangeText(next, lineStart, lineEnd, 'select');
+      bodyField.focus();
+      bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    /** [text](url), with the caret left in the url so it can be pasted over. */
+    function link() {
+      const { selectionStart: from, selectionEnd: to, value } = bodyField;
+      const selected = value.slice(from, to) || 'link text';
+      bodyField.setRangeText(`[${selected}](https://)`, from, to, 'end');
+      const urlStart = from + selected.length + 3;
+      bodyField.selectionStart = urlStart;
+      bodyField.selectionEnd = urlStart + 8;
+      bodyField.focus();
+      bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const apply = (what: string) => {
+      if (what === 'bold') wrap('**');
+      else if (what === 'italic') wrap('*');
+      else if (what === 'list') bulletList();
+      else if (what === 'link') link();
+    };
+
+    for (const button of document.querySelectorAll<HTMLElement>('.fmt[data-fmt]')) {
+      button.addEventListener('click', () => apply(button.dataset.fmt!));
+    }
+
+    // The shortcuts people already have in their fingers. Without these the
+    // browser would apply its own bold to a textarea, which does nothing.
+    bodyField.addEventListener('keydown', (event) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === 'b') { event.preventDefault(); wrap('**'); }
+      else if (key === 'i') { event.preventDefault(); wrap('*'); }
+    });
   }
 
   $('[data-new]').addEventListener('click', () => { clear(statusEl); openEditor(null); });
@@ -1775,7 +2099,13 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   :is(.admin, .sheet) .photo-body { display: grid; gap: 0.6rem; flex: 1; min-width: 0; }
 
-  :is(.admin, .sheet) .photo-alt { display: grid; gap: 0.25rem; }
+    /*
+    The gap here is the space between the photo and the DESCRIPTION label, and
+    it was the smaller of the two - so the label sat close to the picture and
+    far from its own field, reading as a caption on the photo rather than as a
+    label for the box. The two values are swapped.
+  */
+  :is(.admin, .sheet) .photo-alt { display: grid; gap: 0; margin-block-start: 0.75rem; }
 
   /*
     The old copy of this styling, targeting `.photo-alt > span`, is gone. It
@@ -1819,6 +2149,33 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     or nothing. Archivo has a real 600 loaded, so this is an actual weight
     rather than a request the font cannot honour.
   */
+  /* Sits directly under the textarea, reading as its controls. */
+  :is(.admin, .sheet) .format-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-block-start: 0.4rem;
+  }
+
+  :is(.admin, .sheet) .fmt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.3rem 0.5rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+    font-size: var(--text-fine);
+    cursor: pointer;
+  }
+
+  :is(.admin, .sheet) .fmt:hover { background: var(--pta-ink); color: var(--pta-surface); }
+  :is(.admin, .sheet) .fmt:focus-visible { outline: 2px solid var(--pta-focus); outline-offset: 1px; }
+
   :is(.admin, .sheet) .field-label {
     display: block;
     font-family: var(--pta-font-body);
@@ -1827,7 +2184,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     color: var(--pta-ink);
-    margin-block-end: 0.3rem;
+    /* Tight to the field it names; the room goes ABOVE, on .photo-alt. */
+    margin-block-end: 0.1rem;
   }
 
   /* An obvious box, so it is clear the description can be edited from here.
@@ -1864,9 +2222,45 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
 
   :is(.admin, .sheet) .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 8%, transparent); }
 
+  /*
+    A square, only as wide as the glyph. Muted rather than accent-colored: it
+    marks one row in a list, and at this size a colored mark reads as an alert.
+  */
+  :is(.admin, .sheet) .c-pin {
+    width: 2.4rem;
+    text-align: center;
+    color: var(--pta-ink-muted);
+  }
+
+  :is(.admin, .sheet) .c-pin.is-pinned { color: var(--pta-ink); }
+
+  /*
+    Breathing room in every row, taken from the one row that already had it.
+    The pinned row was taller because "Pinned" sat on a second line under
+    "Published", and that height read better than the rest - so it became the
+    height of all of them, and the badge moved to its own column. Vertically
+    centered, because a 38px button in a 30px cell filled the row edge to edge.
+  */
+  :is(.admin, .sheet) .posts tbody td {
+    padding-block: 0.85rem;
+    vertical-align: middle;
+  }
+
+  /* Off the border, so the title is not touching the edge of the table. */
+  :is(.admin, .sheet) .c-post { padding-inline-start: 0.9rem; }
+
   :is(.admin, .sheet) .c-photos { width: 5rem; text-align: center; white-space: nowrap; }
 
-  :is(.admin, .sheet) .c-date { width: 7rem; white-space: nowrap; }
+  /*
+    Wider, and left-aligned under its own header. The dates sat centered in a
+    7rem column, which put them adrift of the word DATE above while still
+    looking cramped.
+  */
+  :is(.admin, .sheet) .c-date {
+    width: 9rem;
+    white-space: nowrap;
+    text-align: start;
+  }
 
   :is(.admin, .sheet) .c-status { width: 11rem; }
 
@@ -2004,7 +2398,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     cursor: pointer;
   }
 
-  :is(.admin, .sheet) .rowmenu-item:hover {
+    :is(.admin, .sheet) .rowmenu-item:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  :is(.admin, .sheet) .rowmenu-item:disabled:hover { background: none; }
+
+  :is(.admin, .sheet) .rowmenu-item:not(:disabled):hover {
     background: var(--pta-surface-alt);
   }
 

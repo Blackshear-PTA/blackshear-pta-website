@@ -133,16 +133,50 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     border-bottom: var(--pta-header-rule-width) solid var(--pta-header-rule);
   }
 
+  /*
+    Two columns, two rows: brand top-left, Donate top-right, nav across the
+    bottom.
+
+    Was a flex row of [brand | right-hand column], and the right-hand column was
+    as wide as the nav - so at any width where the nav did not fit beside the
+    lockup, the WHOLE thing wrapped below it. That is the band of empty space
+    that appeared to the right of "East Austin, TX": Donate had been carried
+    down with the nav rather than staying in the corner.
+
+    A grid separates the two decisions. Donate is placed in the top-right cell
+    and stays there; the nav gets a row of its own and can be as wide as it
+    likes without moving anything.
+  */
   .hdr-inner {
     max-width: var(--pta-container);
     margin-inline: auto;
     padding: var(--pta-header-y) var(--pta-gutter);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem var(--pta-gap);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: var(--pta-gap);
+    row-gap: 0.35rem;
   }
+
+  .brand { grid-column: 1; grid-row: 1; }
+
+  /*
+    The wrapper stops producing a box, so its two children are placed on the
+    grid above directly. Done this way rather than by unwrapping the markup
+    because the mobile layout still wants them as one ordered group, and
+    `display: contents` costs nothing on either.
+  */
+  .hdr-right { display: contents; }
+
+  .hdr-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+  }
+
+  /* Full width on its own row, contents pushed right. */
+  .nav { grid-column: 1 / -1; grid-row: 2; }
 
   /* Desktop lockup is stacked: mark, then name, then location. */
   .brand {
@@ -170,33 +204,11 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     color: var(--pta-header-ink-muted);
   }
 
-  /*
-    Donate above the links, both flush to the right edge.
-
-    These used to sit on one row, which worked only while the row fit. Once the
-    nav grew past seven items the button wrapped onto a second line and landed
-    under the LEFT end of the nav - reading as a stray control rather than the
-    primary action. Stacking makes the position fixed instead of a consequence
-    of how many links there happen to be, gives the nav the full width so it is
-    far less likely to wrap at all, and puts the one thing we most want a parent
-    to hit in the corner people already look for it.
-  */
-  .hdr-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.4rem;
-    padding-block-start: 0.35rem;
-  }
-
-  .hdr-actions { order: 1; }
-  .nav { order: 2; }
-
   .nav-list {
     display: flex;
     flex-wrap: wrap;
-    /* Right-aligned so a nav that does wrap stays flush with the button above
-       it, rather than leaving a ragged right edge. */
+    /* Right-aligned, so the last link ends on the same edge as Donate above it
+       and a nav that wraps does not leave a ragged right side. */
     justify-content: flex-end;
     gap: 0.35rem 1.1rem;
     margin: 0;
@@ -237,11 +249,17 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     gap: 0.6rem;
   }
 
+  /*
+    A quarter larger than the nav links, on purpose. It is the one action the
+    header is asking for, and at --text-fine it was the same size as every link
+    beside it. Padding and the tap target grow with it rather than leaving a
+    bigger word in the same box.
+  */
   .cta {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    padding: 0.6rem 1.1rem;
+    min-height: 50px;
+    padding: 0.7rem 1.35rem;
     border: var(--pta-border-width) solid var(--pta-cta-border);
     border-radius: var(--pta-radius);
     background: var(--pta-cta-bg);
@@ -250,7 +268,7 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     text-decoration: none;
     font-family: var(--pta-font-display);
     font-weight: var(--pta-display-weight);
-    font-size: var(--text-fine);
+    font-size: calc(var(--text-fine) * 1.25);
     letter-spacing: var(--tracking-wide);
     text-transform: var(--pta-nav-transform);
   }
@@ -292,7 +310,18 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
   }
 
   @media (max-width: 47.99rem) {
+    /* Back to a single stacked column; the grid above is a desktop shape. */
     .hdr-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    /* Produces a box again here, so Menu and Donate stay one row under the
+       lockup rather than becoming separate stacked children. */
+    .hdr-right {
+      display: flex;
       flex-direction: column;
       align-items: stretch;
     }
