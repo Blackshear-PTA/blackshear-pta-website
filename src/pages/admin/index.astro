@@ -122,11 +122,12 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
               <th scope="col" class="c-photos">Photos</th>
               <th scope="col" class="c-date">Date</th>
               <th scope="col" class="c-status">Status</th>
-              <th scope="col" class="c-actions"><span class="sr-only">Actions</span></th>
+              <th scope="col" class="c-grades">Grades</th>
+              <th scope="col" class="c-actions">Actions</th>
             </tr>
           </thead>
           <tbody data-list>
-            <tr><td colspan="5" class="empty">Loading…</td></tr>
+            <tr><td colspan="6" class="empty">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -499,7 +500,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       if (posts.length === 0) {
         const tr = document.createElement('tr');
         const td = cell('empty');
-        td.colSpan = 5;
+        td.colSpan = 6;
         td.textContent = 'No posts yet. Use "New post" to write the first one.';
         add(tr, td);
         add(listEl, tr);
@@ -548,14 +549,24 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         else add(statusCell, badge('Published', 'live'));
         if (post.pinned) add(statusCell, badge('Pinned', 'pin'));
         if (post.partial) add(statusCell, badge('Still saving', 'partial'));
+
+        /**
+         * Grades get their own column.
+         *
+         * They were a second line inside Status, which put two unrelated facts
+         * in one cell and made the row taller for the posts that had both.
+         * "Everyone" rather than a blank, because an empty cell reads as
+         * "nobody set this" when the meaning is the whole school.
+         */
+        const gradesCell = cell('c-grades');
         const gradeList = Array.isArray(post.grades) ? post.grades : [];
         if (gradeList.length > 0) {
-          const g = document.createElement('p');
-          g.className = 'row-grades';
-          g.textContent = `${gradeList.length === 1 ? 'Grade' : 'Grades'} ${gradeList
+          gradesCell.textContent = gradeList
             .map((x) => GRADE_LABELS[String(x)] ?? String(x))
-            .join(', ')}`;
-          add(statusCell, g);
+            .join(', ');
+        } else {
+          gradesCell.textContent = 'Everyone';
+          gradesCell.classList.add('is-all');
         }
 
         // Actions: both are buttons. Previously these were bare text and a
@@ -572,34 +583,87 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           'stroke="currentColor" stroke-width="1.6"/>' +
           '<circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 
-        // innerHTML only for these two constant SVG strings, which are literals
-        // in this file. Post content is never set this way - see the textContent
-        // calls above.
-        const edit = document.createElement('button');
-        edit.type = 'button';
-        edit.className = 'icon-btn';
-        edit.title = 'Edit this post';
-        edit.innerHTML = `${PENCIL}<span class="sr-only">Edit</span>`;
-        edit.addEventListener('click', () => openPost(slug));
+        const TRASH =
+          '<svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">' +
+          '<path d="M2.5 4.5h11M6 4.5V2.5h4v2M4 4.5l.7 9h6.6l.7-9" fill="none" ' +
+          'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" ' +
+          'stroke-linejoin="round"/></svg>';
 
-        const view = document.createElement('a');
-        view.className = 'icon-btn';
-        view.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
-        view.target = '_blank';
-        view.rel = 'noopener';
-        view.title = 'View on the site (opens in a new tab)';
-        view.innerHTML = `${EYE}<span class="sr-only">View on the site (opens in a new tab)</span>`;
+        /**
+         * One menu instead of a row of icons.
+         *
+         * Two bare icons had no room to grow: Delete could not join them without
+         * a third glyph nobody would read correctly, and the pencil and eye were
+         * already being guessed at. A labelled menu says what each item does in
+         * words.
+         *
+         * <details> carries the open state, so Enter, Space and Escape work
+         * without a keydown handler - the browser already does that for a
+         * summary. The panel is positioned in script rather than with CSS
+         * because .table-wrap scrolls horizontally, and an absolutely positioned
+         * menu inside a scroll container gets clipped by it.
+         */
+        const menu = document.createElement('details');
+        menu.className = 'rowmenu';
 
-        add(actionCell, edit, view);
+        const trigger = document.createElement('summary');
+        trigger.className = 'icon-btn';
+        trigger.title = 'Actions for this post';
+        // innerHTML only for constant SVG/entity strings that are literals in
+        // this file. Post content is never set this way - see textContent above.
+        trigger.innerHTML =
+          '<svg viewBox="0 0 16 16" aria-hidden="true" width="16" height="16">' +
+          '<circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/>' +
+          '<circle cx="8" cy="13" r="1.5"/></svg>' +
+          `<span class="sr-only">Actions for ${'' /* title added below */}</span>`;
+        trigger.querySelector('.sr-only')!.textContent = `Actions for ${String(post.title)}`;
 
-        add(tr, postCell, photosCell, dateCell, statusCell, actionCell);
+        const panel = document.createElement('div');
+        panel.className = 'rowmenu-panel';
+
+        const editItem = document.createElement('button');
+        editItem.type = 'button';
+        editItem.className = 'rowmenu-item';
+        editItem.innerHTML = PENCIL;
+        add(editItem, document.createTextNode('Edit'));
+        editItem.addEventListener('click', () => {
+          menu.open = false;
+          openPost(slug);
+        });
+
+        const viewItem = document.createElement('a');
+        viewItem.className = 'rowmenu-item';
+        viewItem.href = `/announcements/${slug.replace(/\.md$/, '')}/`;
+        viewItem.target = '_blank';
+        viewItem.rel = 'noopener';
+        viewItem.innerHTML = EYE;
+        add(viewItem, document.createTextNode('View on the site'));
+        viewItem.addEventListener('click', () => { menu.open = false; });
+
+        const deleteItem = document.createElement('button');
+        deleteItem.type = 'button';
+        deleteItem.className = 'rowmenu-item is-danger';
+        deleteItem.innerHTML = TRASH;
+        add(deleteItem, document.createTextNode('Delete'));
+        deleteItem.addEventListener('click', () => {
+          // Closed before the confirmation opens, so the menu is not left
+          // hanging behind a modal it cannot be seen past.
+          menu.open = false;
+          void removePost(slug, String(post.title));
+        });
+
+        add(panel, editItem, viewItem, deleteItem);
+        add(menu, trigger, panel);
+        add(actionCell, menu);
+
+        add(tr, postCell, photosCell, dateCell, statusCell, gradesCell, actionCell);
         add(listEl, tr);
       }
     } catch (error) {
       listEl.replaceChildren();
       const tr = document.createElement('tr');
       const td = cell('empty');
-      td.colSpan = 5;
+      td.colSpan = 6;
       td.textContent = (error as Error).message;
       add(tr, td);
       add(listEl, tr);
@@ -1009,26 +1073,111 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     }
   });
 
-  deleteBtn.addEventListener('click', async () => {
-    if (!current) return;
+  /**
+   * Deletes a post, after confirming.
+   *
+   * Shared by the editor's Delete button and the row menu, so there is one
+   * wording and one recovery message rather than two that drift apart. The
+   * confirmation names the post: from the row menu there is nothing else on
+   * screen to say which one is about to go.
+   *
+   * `fromSheet` decides where errors are reported. A failure while the editor
+   * is open belongs inside it; a failure from the table belongs above the table.
+   */
+  async function removePost(slug: string, title: string, fromSheet = false) {
     const sure = await ask(
       'Delete this post?',
-      'It can be brought back from the website history, but not from this page.',
+      `"${title}" will be taken off the site. It can be brought back from the ` +
+        'website history, but not from this page.',
       'Delete it',
     );
     if (!sure) return;
-    say(sheetStatus, 'Deleting…', 'busy');
+
+    const target = fromSheet ? sheetStatus : statusEl;
+    say(target, 'Deleting…', 'busy');
     try {
-      await api(`posts/${encodeURIComponent(current.slug)}`, { method: 'DELETE' });
-      pristine = snapshot();
-      dialog.close();
+      await api(`posts/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+      if (fromSheet) {
+        // Reset the dirty check before closing, or the unsaved-changes guard
+        // fires on a post that no longer exists.
+        pristine = snapshot();
+        dialog.close();
+        current = null;
+      }
       say(statusEl, 'Deleted. The live site will catch up in about a minute.', 'ok');
-      current = null;
       await refresh();
     } catch (error) {
-      say(sheetStatus, (error as Error).message, 'bad');
+      say(target, (error as Error).message, 'bad');
     }
+  }
+
+  deleteBtn.addEventListener('click', () => {
+    if (!current) return;
+    const titleField = $<HTMLInputElement>('#f-title');
+    void removePost(current.slug, titleField.value.trim() || 'This post', true);
   });
+
+  /**
+   * Row menus: position on open, and only one open at a time.
+   *
+   * The panel is fixed-positioned from the trigger's box rather than absolutely
+   * positioned inside the cell, because .table-wrap scrolls horizontally and
+   * would clip it. That means the position has to be recomputed on open, and
+   * the menu closed on scroll or resize rather than left floating beside where
+   * its row used to be.
+   *
+   * Delegated on document: rows are rebuilt on every refresh, so per-row
+   * listeners would have to be re-attached each time.
+   */
+  {
+    const closeMenus = (except?: HTMLDetailsElement) => {
+      for (const open of document.querySelectorAll<HTMLDetailsElement>('.rowmenu[open]')) {
+        if (open !== except) open.open = false;
+      }
+    };
+
+    const place = (menu: HTMLDetailsElement) => {
+      const trigger = menu.querySelector<HTMLElement>('summary');
+      const panel = menu.querySelector<HTMLElement>('.rowmenu-panel');
+      if (!trigger || !panel) return;
+      const box = trigger.getBoundingClientRect();
+      // Right-aligned to the trigger, since the column sits at the table's
+      // right edge and a left-aligned panel would run off screen.
+      panel.style.left = `${Math.max(8, box.right - panel.offsetWidth)}px`;
+      // Flip above when there is not room below, so the last row's menu is
+      // not half off the bottom of the window.
+      const below = window.innerHeight - box.bottom;
+      panel.style.top =
+        below < panel.offsetHeight + 12
+          ? `${Math.max(8, box.top - panel.offsetHeight - 4)}px`
+          : `${box.bottom + 4}px`;
+    };
+
+    document.addEventListener('toggle', (event) => {
+      const menu = event.target as HTMLElement;
+      if (!(menu instanceof HTMLDetailsElement) || !menu.classList.contains('rowmenu')) return;
+      if (menu.open) {
+        closeMenus(menu);
+        place(menu);
+      }
+    }, true);
+
+    document.addEventListener('click', (event) => {
+      const inside = (event.target as HTMLElement).closest('.rowmenu');
+      if (!inside) closeMenus();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeMenus();
+    });
+
+    // Not repositioned on scroll - closed. Following the row while the table
+    // moves under it is more work and worse: the menu should not outlive the
+    // moment it was opened in.
+    for (const event of ['scroll', 'resize'] as const) {
+      window.addEventListener(event, () => closeMenus(), { passive: true });
+    }
+  }
 
   $('[data-new]').addEventListener('click', () => { clear(statusEl); openEditor(null); });
 
@@ -1412,40 +1561,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     font: inherit;
   }
   .ig-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
-  .btn {
-    min-height: 44px;
-    padding: 0.6rem 1.1rem;
-    border: var(--pta-border-width) solid var(--pta-rule);
-    border-radius: var(--pta-radius);
-    background: var(--pta-surface);
-    color: var(--pta-ink);
-    font-family: var(--pta-font-display);
-    font-weight: var(--pta-display-weight);
-    font-size: var(--text-fine);
-    letter-spacing: var(--tracking-wide);
-    text-transform: var(--pta-nav-transform);
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-  }
-  /*
-    Lemon on white, matching the rest of the site.
-    It was briefly blue, because a lemon button on the then-lemon footer bar
-    was invisible. Fixing --pta-surface-alt removed that collision at the
-    source, so the primary can go back to the brand color. The pinned badge
-    is outlined rather than filled now, so lemon means one thing here.
-  */
-  .btn.primary {
-    background: var(--pta-cta-bg);
-    color: var(--pta-cta-ink);
-    border-color: var(--pta-cta-border);
-    box-shadow: var(--pta-shadow);
-  }
-  .btn.small { min-height: 38px; padding: 0.4rem 0.8rem; }
-  .btn.danger { border-style: dashed; color: #b3261e; border-color: #b3261e; }
-  .btn.ghost { border-color: transparent; text-decoration: underline; }
-  .btn[disabled] { opacity: 0.6; cursor: progress; }
   /* ----------------------------------------------------------- the dialog */
 
   .sheet {
@@ -1541,63 +1656,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     border-radius: var(--pta-radius);
     background: var(--pta-surface-alt);
   }
-  .photo-body { display: grid; gap: 0.6rem; flex: 1; min-width: 0; }
-  .photo-alt { display: grid; gap: 0.25rem; }
-  .photo-alt > span {
-    font-family: var(--pta-font-display);
-    font-size: var(--text-fine);
-    font-weight: var(--pta-display-weight);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-  }
-  /* Was three controls run together with no separation, so "Cover photo" and
-     "Remove" read as one string. */
-  /* Stacked, not a row. "Use as cover" and "Remove" side by side read as one
-     run-on string, which is exactly what they looked like. */
-  .photo-controls {
-    display: grid;
-    justify-items: start;
-    gap: 0.2rem;
-    padding-block-start: 0.5rem;
-    border-block-start: var(--pta-border-width) solid var(--pta-rule);
-  }
-  .photo-controls .check { min-height: 38px; }
-  .field-label {
-    display: block;
-    font-family: var(--pta-font-display);
-    font-size: var(--text-fine);
-    font-weight: var(--pta-display-weight);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    margin-block-end: 0.15rem;
-  }
-  /* An obvious box, so it is clear the description can be edited from here.
-     It previously looked like static text until you happened to click it. */
-  .field-box {
-    min-height: 40px;
-    padding: 0.45rem 0.6rem;
-    border: var(--pta-border-width) solid var(--pta-rule);
-    border-radius: var(--pta-radius);
-    background: var(--pta-surface);
-    color: var(--pta-ink);
-    font: inherit;
-    font-size: 1rem;
-    width: 100%;
-  }
   .checks, .grades { display: grid; gap: 0.3rem; }
   .grades { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); margin-block-start: 0.3rem; }
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    text-transform: none;
-    letter-spacing: normal;
-    font-family: var(--pta-font-body);
-    font-weight: 400;
-    font-size: var(--text-body);
-  }
-  .check input { width: 1.1rem; height: 1.1rem; }
   /* ------------------------------------------------------------- the crop */
 
   .crop-stage {
@@ -1659,47 +1719,192 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   in the template, which keeps them off the rest of the site.
 */}
 <style is:global>
-  .admin .posts tbody tr:last-child td { border-block-end: 0; }
+  :is(.admin, .sheet) .btn {
+    min-height: 44px;
+    padding: 0.6rem 1.1rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
 
-  .admin .posts tbody tr:nth-child(even) { background: var(--pta-surface-alt); }
+  /*
+    Lemon on white, matching the rest of the site.
+    It was briefly blue, because a lemon button on the then-lemon footer bar
+    was invisible. Fixing --pta-surface-alt removed that collision at the
+    source, so the primary can go back to the brand color. The pinned badge
+    is outlined rather than filled now, so lemon means one thing here.
+  */
+  :is(.admin, .sheet) .btn.primary {
+    background: var(--pta-cta-bg);
+    color: var(--pta-cta-ink);
+    border-color: var(--pta-cta-border);
+    box-shadow: var(--pta-shadow);
+  }
 
-  .admin .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 8%, transparent); }
+  :is(.admin, .sheet) .btn.small { min-height: 38px; padding: 0.4rem 0.8rem; }
 
-  .admin .c-photos { width: 5rem; text-align: center; white-space: nowrap; }
+  /*
+    Filled red, not a dashed outline.
 
-  .admin .c-date { width: 7rem; white-space: nowrap; }
+    The outline version read as disabled - which is the wrong signal for the one
+    control on the screen that throws work away. Every use of it is already
+    behind a confirmation, so looking dangerous is the honest presentation.
+    White on #b3261e is 6.5:1.
+  */
+  :is(.admin, .sheet) .btn.danger {
+    background: #b3261e;
+    border-color: #8c1d18;
+    color: #fff;
+  }
 
-  .admin .c-status { width: 11rem; }
+  :is(.admin, .sheet) .btn.danger:hover { background: #8c1d18; }
 
-  .admin .c-actions { width: 1%; white-space: nowrap; }
+  :is(.admin, .sheet) .btn.ghost { border-color: transparent; text-decoration: underline; }
 
-  .admin /* Zero is greyed rather than hidden. A blank cell reads as "unknown"; a
-     grey 0 reads as "none",
-  .admin which is the thing being said. */
-  .c-photos.is-none { color: var(--pta-ink-muted); }
+  :is(.admin, .sheet) .btn[disabled] { opacity: 0.6; cursor: progress; }
 
-  .admin /* One line between rows,
-  .admin so a list of similar titles separates without the
-     cell borders a full grid would add. */
-  .posts tbody tr + tr td {
+  :is(.admin, .sheet) .photo-body { display: grid; gap: 0.6rem; flex: 1; min-width: 0; }
+
+  :is(.admin, .sheet) .photo-alt { display: grid; gap: 0.25rem; }
+
+  /*
+    The old copy of this styling, targeting `.photo-alt > span`, is gone. It
+    predated the .field-label class, said the same thing, and - being one
+    element deeper - outranked it, so setting a weight on .field-label did
+    nothing at all. One rule owns field labels now: see .field-label below.
+  */
+
+  /* Was three controls run together with no separation, so "Cover photo" and
+     "Remove" read as one string. */
+  /* Stacked, not a row. "Use as cover" and "Remove" side by side read as one
+     run-on string, which is exactly what they looked like. */
+  /*
+    Cover on the left, Remove on the right.
+
+    These were stacked because, unstyled, "Use as cover" and "Remove" ran
+    together into one string - but that was the missing CSS talking, not the
+    layout. With a real checkbox and a real button, opposite ends is what says
+    they are unrelated: one is a setting, the other is destructive. Wraps on a
+    narrow dialog rather than crushing.
+  */
+  :is(.admin, .sheet) .photo-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block-start: 0.6rem;
     border-block-start: var(--pta-border-width) solid var(--pta-rule);
   }
 
-  .admin .row-title {
+  :is(.admin, .sheet) .photo-controls .check { min-height: 38px; }
+
+  /*
+    Bold, so the label reads as a label rather than as the first word of the
+    value - which is how "DescriptionGarden day" happened.
+
+    The BODY face, not the display one. Bevan ships a single weight and
+    --pta-display-weight is pinned to 400 for that reason ("faux-bolding it
+    smears"), so asking the display font for 700 gets a smeared synthetic bold
+    or nothing. Archivo has a real 600 loaded, so this is an actual weight
+    rather than a request the font cannot honour.
+  */
+  :is(.admin, .sheet) .field-label {
+    display: block;
+    font-family: var(--pta-font-body);
+    font-size: var(--text-fine);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink);
+    margin-block-end: 0.3rem;
+  }
+
+  /* An obvious box, so it is clear the description can be edited from here.
+     It previously looked like static text until you happened to click it. */
+  :is(.admin, .sheet) .field-box {
+    min-height: 40px;
+    padding: 0.45rem 0.6rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font: inherit;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  :is(.admin, .sheet) .check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--pta-font-body);
+    font-weight: 400;
+    font-size: var(--text-body);
+  }
+
+  :is(.admin, .sheet) .check input { width: 1.1rem; height: 1.1rem; }
+
+  :is(.admin, .sheet) .posts tbody tr:last-child td { border-block-end: 0; }
+
+  :is(.admin, .sheet) .posts tbody tr:nth-child(even) { background: var(--pta-surface-alt); }
+
+  :is(.admin, .sheet) .posts tbody tr:hover { background: color-mix(in srgb, var(--pta-accent) 8%, transparent); }
+
+  :is(.admin, .sheet) .c-photos { width: 5rem; text-align: center; white-space: nowrap; }
+
+  :is(.admin, .sheet) .c-date { width: 7rem; white-space: nowrap; }
+
+  :is(.admin, .sheet) .c-status { width: 11rem; }
+
+  :is(.admin, .sheet) .c-actions { width: 1%; white-space: nowrap; }
+
+  /* Zero is greyed rather than hidden. A blank cell reads as "unknown"; a
+  grey 0 reads as "none",
+  which is the thing being said. */
+  :is(.admin, .sheet) .c-photos.is-none { color: var(--pta-ink-muted); }
+
+  /* One line between rows,
+  so a list of similar titles separates without the
+  cell borders a full grid would add. */
+  :is(.admin, .sheet) .posts tbody tr + tr td {
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+  }
+
+  /*
+    Body size, not display size. This was --text-lede, which rendered larger
+    than the "Posts" heading above the table - so the loudest thing on the page
+    was every row of it, and a list of five was taller than the screen. A title
+    in a table cell is something you scan, not a headline.
+  */
+  :is(.admin, .sheet) .row-title {
     margin: 0;
-    font-family: var(--pta-font-display);
-    font-size: var(--text-lede);
-    font-weight: var(--pta-display-weight);
+    font-family: var(--pta-font-body);
+    font-size: var(--text-body);
+    font-weight: 600;
     line-height: var(--leading-snug);
   }
 
-  .admin .row-grades { margin: 0.35rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); }
+  :is(.admin, .sheet) .row-grades { margin: 0.35rem 0 0; color: var(--pta-ink-muted); font-size: var(--text-fine); }
 
-  .admin .c-status { display: table-cell; }
+  :is(.admin, .sheet) .c-status { display: table-cell; }
 
-  .admin .c-status .tag { margin: 0 0.3rem 0.3rem 0; }
+  :is(.admin, .sheet) .c-status .tag { margin: 0 0.3rem 0.3rem 0; }
 
-  .admin .tag {
+  :is(.admin, .sheet) .tag {
     display: inline-block;
     padding: 0.1rem 0.45rem;
     border: var(--pta-border-width) solid var(--pta-rule);
@@ -1710,23 +1915,132 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-transform: uppercase;
   }
 
-  .admin /* Outlined,
-  .admin not filled. A filled lemon badge and a filled lemon button on
-     one screen made the accent mean two different things. */
-  .tag.pin { border-color: var(--pta-rule); border-width: 2px; }
+  /*
+    Publication state carries color; everything else stays quiet.
 
-  .admin .tag.live { color: var(--pta-ink-muted); border-style: dotted; }
+    There are only two states a post can be in - Published or Draft - so those
+    two get the colors and the eye can sort a list of twenty by hue alone.
+    Pinned and "Still saving" are a SEPARATE axis that can apply to either, so
+    they stay muted: giving them color too would make four colors that no longer
+    mean one thing.
 
-  .admin .tag.draft { border-style: dashed; color: var(--pta-ink-muted); }
+    Deliberately not the brand lemon. That is the accent for buttons; a filled
+    lemon badge beside a filled lemon button made the accent mean two things at
+    once (TASKS.md F39). Green and amber are read as status everywhere.
 
-  .admin .tag.grades,
-  .admin .tag.partial { color: var(--pta-ink-muted); }
+    Every pairing below is checked: 8.3:1 for published text, 7.8:1 for draft,
+    9.6:1 pinned, 9.5:1 saving. The draft border is 4.4:1, which is a border
+    rather than text and so answers to the 3:1 non-text threshold.
+  */
+  :is(.admin, .sheet) .tag.live {
+    background: #dcfce7;
+    border-color: #166534;
+    color: #14532d;
+  }
 
-  .admin .c-actions { display: table-cell; }
+  :is(.admin, .sheet) .tag.draft {
+    background: #fef3c7;
+    border-color: #a16207;
+    color: #713f12;
+  }
 
-  .admin .c-actions { white-space: nowrap; }
+  :is(.admin, .sheet) .tag.pin {
+    background: #e0ecf8;
+    border-color: #2c5c8f;
+    color: #1e3a5f;
+  }
 
-  .admin .icon-btn {
+  :is(.admin, .sheet) .tag.grades,
+  :is(.admin, .sheet) .tag.partial {
+    background: #f4f4f5;
+    border-color: var(--pta-rule);
+    color: #3f3f46;
+  }
+
+  /* ── Row action menu ──────────────────────────────────────────────────── */
+  :is(.admin, .sheet) .rowmenu { position: relative; display: inline-block; }
+
+  /* The marker is the browser's disclosure triangle; the icon replaces it. */
+  :is(.admin, .sheet) .rowmenu > summary { list-style: none; cursor: pointer; }
+  :is(.admin, .sheet) .rowmenu > summary::-webkit-details-marker { display: none; }
+  :is(.admin, .sheet) .rowmenu > summary::marker { content: ''; }
+
+  :is(.admin, .sheet) .rowmenu[open] > summary {
+    background: var(--pta-ink);
+    color: var(--pta-surface);
+  }
+
+  /*
+    Fixed, not absolute: .table-wrap scrolls horizontally and would clip an
+    absolutely positioned panel. Coordinates are set in script on open - see
+    place() there, including the flip-above for the last row.
+  */
+  :is(.admin, .sheet) .rowmenu-panel {
+    position: fixed;
+    z-index: 20;
+    min-width: 12rem;
+    padding: 0.25rem;
+    border: var(--pta-border-width) solid var(--pta-ink);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    box-shadow: var(--pta-shadow);
+  }
+
+  :is(.admin, .sheet) .rowmenu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 40px;
+    padding: 0.4rem 0.6rem;
+    border: 0;
+    border-radius: var(--pta-radius);
+    background: none;
+    color: var(--pta-ink);
+    font: inherit;
+    font-size: var(--text-fine);
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  :is(.admin, .sheet) .rowmenu-item:hover {
+    background: var(--pta-surface-alt);
+  }
+
+  :is(.admin, .sheet) .rowmenu-item:focus-visible {
+    outline: 2px solid var(--pta-focus);
+    outline-offset: -2px;
+  }
+
+  /* Separated and red, because it is the one item here that destroys work. */
+  :is(.admin, .sheet) .rowmenu-item.is-danger {
+    margin-block-start: 0.25rem;
+    border-block-start: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: 0 0 var(--pta-radius) var(--pta-radius);
+    color: #b3261e;
+  }
+
+  :is(.admin, .sheet) .rowmenu-item.is-danger:hover {
+    background: #b3261e;
+    color: #fff;
+  }
+
+  /* Grades read as data, not as a badge; muted when it applies to everyone. */
+  :is(.admin, .sheet) .c-grades {
+    width: 9rem;
+    font-size: var(--text-fine);
+  }
+
+  :is(.admin, .sheet) .c-grades.is-all { color: var(--pta-ink-muted); }
+
+  /* Centred: the "Actions" header is wider than the trigger, so left-aligning
+     it left a visible gap at the table's right edge. */
+  :is(.admin, .sheet) .c-actions { display: table-cell; text-align: center; }
+
+  :is(.admin, .sheet) .c-actions { white-space: nowrap; }
+
+  :is(.admin, .sheet) .icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1741,17 +2055,17 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     text-decoration: none;
   }
 
-  .admin .icon-btn:first-child { margin-inline-start: 0; }
+  :is(.admin, .sheet) .icon-btn:first-child { margin-inline-start: 0; }
 
-  .admin .icon-btn:hover { background: var(--pta-ink); color: var(--pta-surface); }
+  :is(.admin, .sheet) .icon-btn:hover { background: var(--pta-ink); color: var(--pta-surface); }
 
-  .admin .icon-btn:disabled { opacity: 0.35; cursor: default; }
+  :is(.admin, .sheet) .icon-btn:disabled { opacity: 0.35; cursor: default; }
 
-  .admin .icon-btn:disabled:hover { background: var(--pta-surface); color: var(--pta-ink); }
+  :is(.admin, .sheet) .icon-btn:disabled:hover { background: var(--pta-surface); color: var(--pta-ink); }
 
-  .admin .icon-btn.danger:hover { background: #b3261e; border-color: #b3261e; color: #fff; }
+  :is(.admin, .sheet) .icon-btn.danger:hover { background: #b3261e; border-color: #b3261e; color: #fff; }
 
-  .admin .ig-row {
+  :is(.admin, .sheet) .ig-row {
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -1761,7 +2075,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     background: var(--pta-surface);
   }
 
-  .admin .ig-num {
+  :is(.admin, .sheet) .ig-num {
     flex: none;
     width: 1.4rem;
     font-family: var(--pta-font-display);
@@ -1770,10 +2084,10 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     font-size: var(--text-fine);
   }
 
-  .admin /* The address is long and uninteresting past the post id,
-  .admin so it truncates
-     rather than wrapping a row to three lines. The link still opens the post. */
-  .ig-url {
+  /* The address is long and uninteresting past the post id,
+  so it truncates
+  rather than wrapping a row to three lines. The link still opens the post. */
+  :is(.admin, .sheet) .ig-url {
     flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
@@ -1783,13 +2097,13 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     color: var(--pta-ink);
   }
 
-  .admin .ig-tools { flex: none; display: flex; }
+  :is(.admin, .sheet) .ig-tools { flex: none; display: flex; }
 
-  .admin .ig-empty {
+  :is(.admin, .sheet) .ig-empty {
     padding: 0.6rem 0;
     color: var(--pta-ink-muted);
     font-size: var(--text-fine);
   }
 
-  .admin .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
+  :is(.admin, .sheet) .empty { color: var(--pta-ink-muted); font-size: var(--text-fine); }
 </style>
