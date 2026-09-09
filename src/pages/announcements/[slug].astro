@@ -18,7 +18,20 @@ import { siteThemeId, getTheme } from '../../themes/registry';
  * that reads worse than it did in the form.
  */
 export async function getStaticPaths() {
-  const posts = await getCollection('announcements');
+  /**
+   * Drafts get no page at all.
+   *
+   * This called getCollection with no filter, so a draft was removed from the
+   * list, the homepage and the feed - every route that goes through
+   * getAnnouncements() - and then had its own page built anyway. It was
+   * therefore still live at /announcements/<slug>/, reachable by anyone with
+   * the address, which the checkbox labelled "not shown on the site" does not
+   * describe.
+   *
+   * The cost is that a draft cannot be previewed on the site either. That is
+   * the honest reading of "draft": if it were viewable it would be published.
+   */
+  const posts = await getCollection('announcements', ({ data }) => !data.draft);
   return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 

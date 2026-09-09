@@ -314,14 +314,22 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
           {/*
             The masthead, but only on paper. On screen the caption is visually
             hidden (it exists for screen readers, which is why the month is not
-            just a heading), and a printed month leaving the school with no
-            name on it is a sheet nobody can place a week later.
+            just a heading), and a printed month leaving the school with no name
+            on it is a sheet nobody can place a week later.
+
+            The layout goes on this inner div, NOT on the caption. Giving a
+            <caption> `display: block` or `display: grid` takes away its
+            table-caption role, so it stops being laid out above the table and
+            becomes a stray block inside <table> - which is what printed the
+            school name and the month on top of the weekday row.
           */}
-          <span class="print-brand" aria-hidden="true">
-            <BuzzMascot size={30} class="print-mark" />
-            <span class="print-school">Blackshear Elementary</span>
-          </span>
-          <span class="print-month">{month.label}</span>
+          <div class="print-head">
+            <span class="print-brand" aria-hidden="true">
+              <BuzzMascot size={30} class="print-mark" />
+              <span class="print-school">Blackshear Elementary</span>
+            </span>
+            <span class="print-month">{month.label}</span>
+          </div>
         </caption>
         <thead>
           <tr>
@@ -1108,22 +1116,38 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
       brand taken out of flow to the left - which is also what lets the month
       centre on the PAGE rather than on the space left over beside the logo.
     */
+    /*
+      Undoes the visually-hidden treatment and NOTHING ELSE. In particular it
+      does not touch `display`: a caption given `display: block` is no longer a
+      table caption, and the browser then renders it as a stray block inside
+      <table> - which put the school name and the month directly on top of the
+      weekday header row on paper. Screen never showed it because the caption
+      is hidden there.
+    */
     .month-grid.printing caption {
-      position: relative;
+      position: static;
       width: auto;
       height: auto;
       clip-path: none;
       overflow: visible;
-      display: block;
-      min-height: 0.42in;
       padding-block-end: 0.16in;
-      text-align: center;
+    }
+
+    /*
+      Three tracks so the month sits centred on the SHEET rather than centred
+      in whatever space the school name leaves over. The empty third track is
+      what balances the first.
+    */
+    .print-head {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.1in;
     }
 
     .print-brand {
-      position: absolute;
-      inset-inline-start: 0;
-      inset-block-start: 0;
+      grid-column: 1;
+      justify-self: start;
       display: flex;
       align-items: center;
       gap: 0.08in;
@@ -1146,10 +1170,12 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     }
 
     .print-month {
+      grid-column: 2;
       font-family: var(--pta-font-display);
       font-size: 16pt;
       font-weight: var(--pta-display-weight);
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .cell { height: auto; border-color: #000; }
