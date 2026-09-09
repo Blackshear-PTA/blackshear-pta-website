@@ -1,5 +1,6 @@
 ---
 import BuzzMascot from './BuzzMascot.astro';
+import type { SerializedEvent } from '../lib/ical';
 
 /**
  * A month-at-a-time calendar, built to be read on a phone and printed on one
@@ -22,16 +23,17 @@ import BuzzMascot from './BuzzMascot.astro';
  * like nothing until somebody misses a meeting.
  */
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  end?: string;
-  allDay?: boolean;
-  location?: string;
-  /** Google Calendar's own notes field, shown in the details dialog. */
-  description?: string;
-}
+/**
+ * The event shape, from one definition shared with the parser and the page.
+ *
+ * This was a second, looser copy declared here - `end` and `allDay` optional,
+ * everything else repeated. Two declarations of the same data are free to
+ * drift, and the field that eventually caused trouble (`location`) was
+ * optional in both by luck rather than by construction. SerializedEvent is
+ * derived from the parser's own CalendarEvent, so adding a field there cannot
+ * silently leave this behind.
+ */
+type CalendarEvent = SerializedEvent;
 
 interface Props {
   events: CalendarEvent[];
