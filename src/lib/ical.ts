@@ -41,6 +41,35 @@ export interface CalendarEvent {
   description?: string;
 }
 
+/**
+ * The serialized form of a CalendarEvent, as written to src/data/events.json
+ * by scripts/refresh-events.mjs. Dates become ISO strings over JSON.
+ *
+ * DECLARED, NOT INFERRED, and that is the whole point of its existing.
+ * TypeScript types a JSON import from the literal contents of the file, and
+ * refresh-events.yml rewrites that file every hour - so an optional field that
+ * happens to be absent from the current window disappears from the type, and
+ * every use of it becomes a compile error with nobody having touched any code.
+ *
+ * That is not hypothetical. `location` typechecked on /calendar for weeks, then
+ * the single event carrying one rolled out of the window and the page stopped
+ * compiling. Anything reading events.json should type it against this.
+ */
+export type SerializedEvent = Omit<CalendarEvent, 'start' | 'end'> & {
+  start: string;
+  end: string;
+};
+
+/** The whole snapshot file. */
+export interface EventSnapshot {
+  /** The Google Calendar id the events came from. */
+  source: string;
+  /** YYYY-MM-DD the snapshot was taken. */
+  generated: string;
+  window: unknown;
+  events: SerializedEvent[];
+}
+
 export interface ParseResult {
   events: CalendarEvent[];
   /** Rules or events this parser could not represent. Surfaced, never hidden. */

@@ -1,8 +1,19 @@
 ---
 import { getEntry } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
-import snapshot from '../data/events.json';
+import rawSnapshot from '../data/events.json';
 import CalendarGrid from '../components/CalendarGrid.astro';
+import type { EventSnapshot } from '../lib/ical';
+
+/**
+ * Typed against the schema rather than against today's data.
+ *
+ * A JSON import is typed from the literal contents of the file, and this file
+ * is rewritten hourly by the calendar refresh - so an optional field missing
+ * from the current window vanishes from the type and breaks the build with no
+ * code change. See the note on SerializedEvent in ../lib/ical.
+ */
+const snapshot = rawSnapshot as EventSnapshot;
 
 /**
  * /calendar - the PTA calendar, rendered from a build-time snapshot of the
