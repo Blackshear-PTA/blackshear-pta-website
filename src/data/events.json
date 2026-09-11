@@ -198,15 +198,15 @@
       "allDay": true
     },
     {
-      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
-      "title": "PTA E-board Meeting #2",
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
@@ -303,15 +303,15 @@
       "allDay": true
     },
     {
-      "id": "1461a6fp3jh7hi363ctect6tkj@google.com@2026-12-07T00:00:00.000Z",
-      "title": "Dr. Hunt's Birthday (AP)",
+      "id": "25177qf28m6fe8qmd1qnkukib9@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Mrs. Ward's 1/2 Birthday (ECSE)",
       "start": "2026-12-07T00:00:00.000Z",
       "end": "2026-12-08T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "25177qf28m6fe8qmd1qnkukib9@google.com@2026-12-07T00:00:00.000Z",
-      "title": "Mrs. Ward's 1/2 Birthday (ECSE)",
+      "id": "1461a6fp3jh7hi363ctect6tkj@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Dr. Hunt's Birthday (AP)",
       "start": "2026-12-07T00:00:00.000Z",
       "end": "2026-12-08T00:00:00.000Z",
       "allDay": true
@@ -471,15 +471,15 @@
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -569,13 +569,6 @@
       "allDay": false
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
       "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
       "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
@@ -585,6 +578,13 @@
     {
       "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
       "title": "Ms. Chalida's Birthday! (Cafeteria)",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -870,15 +870,15 @@
       "allDay": false
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
