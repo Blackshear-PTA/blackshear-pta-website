@@ -23,15 +23,22 @@
     "check:instagram": "node scripts/check-instagram.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:domain": "node scripts/check-domain.mjs",
+    "check:d1": "node --experimental-sqlite scripts/check-d1.mjs",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
     "astro": "astro",
     "types": "wrangler types",
-    "refresh:events": "node scripts/refresh-events.mjs"
+    "refresh:events": "node scripts/refresh-events.mjs",
+    "export:posts": "node scripts/export-posts.mjs",
+    "build:import": "node scripts/build-import-migration.mjs",
+    "db:migrate": "wrangler d1 migrations apply blackshear-pta --local",
+    "db:migrate:remote": "wrangler d1 migrations apply blackshear-pta --remote"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "~14.2.6",
     "@astrojs/rss": "^4.0.19",
-    "astro": "^7.2.9"
+    "astro": "^7.2.9",
+    "markdown-it": "^15.0.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.5",

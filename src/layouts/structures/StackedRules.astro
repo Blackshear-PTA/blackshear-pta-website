@@ -1,6 +1,23 @@
 ---
-import { getImage } from 'astro:assets';
-import backdrop from '../../assets/photos/campus-front-walk.jpg';
+/**
+ * The top band photo, ALREADY SIZED, imported rather than transformed.
+ *
+ * This was `getImage({ width: 1200, quality: 45, format: 'webp' })` on the
+ * 3000x2000, 6.3MB original. That works at build time, and both pages using
+ * this structure now render ON DEMAND - where the Cloudflare adapter has no
+ * image service and its passthrough endpoint streams the SOURCE FILE back
+ * unchanged. Measured: the homepage backdrop went from 180KB to 6,301,582
+ * bytes, on the page a parent opens on a phone in the pickup line.
+ *
+ * A plain ESM import of an already-correct file has no such failure mode -
+ * Astro emits it to _astro/ with a hash and hands back the URL, identically
+ * whether the page was prerendered or rendered a second ago.
+ *
+ * campus-front-walk-band.webp is DERIVED from campus-front-walk.jpg and is
+ * byte-for-byte what the old call produced. To regenerate it, see
+ * src/assets/photos/README.md.
+ */
+import backdrop from '../../assets/photos/campus-front-walk-band.webp';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import VideoEmbed from '../../components/sections/VideoEmbed.astro';
 import Hero from '../../components/sections/Hero.astro';
@@ -10,10 +27,17 @@ import GetInvolved from '../../components/sections/GetInvolved.astro';
 import Committees from '../../components/sections/Committees.astro';
 import Footer from '../../components/sections/Footer.astro';
 import type { HomeData, SiteData } from '../../types';
+import type { Post } from '../../lib/announcements';
 
 interface Props {
   home: HomeData;
   site: SiteData;
+  /** Announcements to show, already filtered and ordered. Fetched by the page:
+   *  this structure is rendered by both / and /preview, and only one of them
+   *  should decide where the data comes from. */
+  posts: Post[];
+  /** Every published post, for the "see all N" link. */
+  total: number;
   /**
    * id for the <main> landmark. /preview renders both structures on one page,
    * and duplicate ids are invalid HTML and confuse assistive tech, so each
@@ -28,17 +52,15 @@ interface Props {
    */
   video?: boolean;
 }
-const { home, site, mainId = 'main', video = false } = Astro.props;
+const { home, site, posts, total, mainId = 'main', video = false } = Astro.props;
 
-// Same photo and the same request as the editorial structure, deliberately:
-// identical arguments mean Astro emits one asset both themes share rather than
-// two near-identical ones.
+// Same asset as the editorial structure, deliberately: one import both themes
+// share rather than two near-identical encodes.
 //
 // Quality is low on purpose. The photo sits under an ~80% scrim, so detail is
 // invisible by construction and a full-quality encode would be most of the page
-// weight for nothing. The URL goes in as an inline custom property because a
-// scoped <style> block cannot reach a build-time import.
-const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, format: 'webp' });
+// weight for nothing. The URL goes in as an inline custom property below
+// because a scoped <style> block cannot reach an import.
 ---
 
 {/*
@@ -54,7 +76,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
 
 <SiteHeader site={site} />
 <main id={mainId}>
-  <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
+  <div class="topband" style={`--topband-img: url(${backdrop.src})`}>
     <div class="shell">
       <Hero hero={home.hero} headlineId={`hero-${mainId}`}>
         {video && home.video && <VideoEmbed video={home.video} />}
@@ -65,7 +87,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
 
   <div class="shell">
     <div class="rule" role="presentation"></div>
-    <Announcements announcements={home.announcements} />
+    <Announcements announcements={home.announcements} posts={posts} total={total} />
     <div class="rule" role="presentation"></div>
     <GetInvolved getInvolved={home.getInvolved} />
     <Committees committees={home.committees} />

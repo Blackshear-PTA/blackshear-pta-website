@@ -3,6 +3,23 @@ import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { structures } from '../layouts/structures';
 import { siteThemeId, getTheme } from '../themes/registry';
+import { getAnnouncements } from '../lib/announcements';
+
+/**
+ * Rendered on demand, for the announcements block and nothing else.
+ *
+ * Everything else on this page is still content from YAML files that only
+ * change when somebody deploys. The announcements are not: they are rows in D1
+ * now, written by /admin, and no deploy follows a publish. Prerendering this
+ * page would freeze the block at whatever was in the database the last time
+ * somebody changed the CODE - which could be months - while every other surface
+ * showed the new post. That is the failure in F18 with a new cause.
+ *
+ * The cost is a Worker invocation and one query on the most-visited page.
+ * Comfortably inside the free plan's 100k requests a day, and the query is a
+ * single indexed read of four rows.
+ */
+export const prerender = false;
 
 const [homeEntry, siteEntry] = await Promise.all([
   getEntry('home', 'home'),
@@ -18,8 +35,10 @@ const site = siteEntry.data;
 // the top of the registry.
 const theme = getTheme(siteThemeId);
 const Structure = structures[theme.structure];
+
+const { posts, total } = await getAnnouncements(home.announcements.limit);
 ---
 
 <BaseLayout title={home.meta.title} description={home.meta.description} themeId={theme.id}>
-  <Structure home={home} site={site} video={theme.video} />
+  <Structure home={home} site={site} posts={posts} total={total} video={theme.video} />
 </BaseLayout>

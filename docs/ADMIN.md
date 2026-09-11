@@ -9,21 +9,48 @@ page will tell you what is left.
 
 ## Why it is built this way
 
-Saving a post **makes a commit** to this repository. There is no database.
+Saving a post writes a row to a **Cloudflare D1 database**, and the four pages
+that show announcements are rendered when somebody asks for them. A save is
+live immediately - there is no build, and nothing to wait for.
 
-That sounds roundabout and it is the entire point:
+### What this replaced, and why
 
-- Git history is the audit log. `git log src/content/announcements/` says who
-  posted what and when, permanently, with no extra work.
-- `git revert` is the undo button, including for a delete.
-- Developers and board members edit **the same files**. There is no second copy
-  of the content and therefore no sync to get out of step.
-- It costs nothing and there is nothing to back up.
+Until September 2026 a save **made a commit** to this repository: one markdown
+file per post, written through the GitHub Contents API. That was a deliberate
+choice with real advantages - git history was the audit log for free, `git
+revert` was the undo button, and developers and board members edited the same
+files with no second copy to get out of step.
 
-The trade is that the live site updates about a minute after a save, not
-instantly, because Cloudflare rebuilds it. For a PTA announcements page that is
-a fine trade. The editor says so on screen rather than leaving someone
-wondering whether the save worked.
+It was given up because the costs turned out to be larger than the benefits,
+all of them measured rather than predicted:
+
+| Problem | Cause |
+|---|---|
+| Publishing took 60-90 seconds | every save was a commit, and every commit was a full site rebuild |
+| **Local development could not write at all** | there was no local content store, so `/admin` on a dev server read and wrote the real repository |
+| GitHub's 60/hour limit was hit while testing | one `/admin` page load spent about seven Contents API calls |
+| Pinning cost two commits | two files changed and there is no multi-file write |
+| A removed form field silently unpinned a post | the API writes **whole documents**, so a field the form stopped sending was written as false |
+
+Finding F41 in [TASKS.md](../TASKS.md) has the full account, including what the
+move cost.
+
+### What replaced each thing that was lost
+
+- **The audit log.** An `edits` table records every create, edit, pin, unpin and
+  delete with the editor's verified email address and a timestamp. It is on the
+  `/admin` page under **History**; you do not need git or a terminal to read it.
+- **The undo button.** A delete keeps the entire post in that table, so it can
+  be put back. See [Recovering a deleted post](#recovering-a-deleted-post).
+- **Something to back up.** `npm run export:posts -- --remote` writes every post
+  to `exports/` as markdown, in the same format the files used to have, plus the
+  history as JSON. This is the one real new obligation: rows in a managed
+  database are not backed up by every clone the way files in git were.
+
+The Instagram list on `/gallery` was **not** moved. It is still
+`src/content/instagram.yaml`, still saved as a commit, and still appears after a
+rebuild - it holds at most six lines, changes a few times a year, and nobody is
+waiting on it.
 
 ## Setup checklist
 
@@ -46,12 +73,16 @@ done any time; 4 onwards is the Access work.
       Cloudflare will let you complete the wizard during a degradation and then
       lose the result.
 - [ ] **8.** Copy the **AUD tag** and note your **team domain**.
-- [ ] **9.** Create the fine-grained GitHub token (section 2 below).
+- [ ] **9.** Create the fine-grained GitHub token (section 2 below). Only the
+      Instagram list needs it now.
 - [ ] **10.** Set the three Worker secrets (section 3 below).
 - [ ] **11.** Create the photo bucket:
       `npx wrangler r2 bucket create blackshear-pta-images`
-- [ ] **12.** Open `/admin`, sign in, and post something with a photo. Delete it
-      afterwards.
+- [ ] **12.** Create the announcements database and apply the migrations
+      (section 5 below). **Before the first deploy** - a binding for a database
+      that does not exist fails the whole Worker, not just announcements.
+- [ ] **13.** Open `/admin`, sign in, and post something with a photo. Delete it
+      afterwards, then check it is in **History** at the bottom of the page.
 
 If sign-in never arrives, check the status page again before assuming
 misconfiguration - one-time PIN delivery has its own failure mode independent of
@@ -150,7 +181,11 @@ The Worker fetches its signing keys from
 `https://<team-domain>/cdn-cgi/access/certs`, so the team domain has to be
 exact: bare hostname, no scheme, no trailing slash.
 
-### 2. A GitHub token for the write path
+### 2. A GitHub token for the Instagram list
+
+Only the Instagram list on /gallery still writes to the repository; announcements
+do not touch GitHub at all. The editor loads that list without a token - the
+repository is public - so this is needed to SAVE it and for nothing else.
 
 A **fine-grained** token, scoped to this one repository. Not a classic token.
 
@@ -219,6 +254,42 @@ the next deploy.
 
 Free tier is 10GB, which at the sizes below is several thousand photos.
 
+### 5. The announcements database
+
+The posts themselves. Created once, already done for this project:
+
+```sh
+npx wrangler d1 create blackshear-pta
+```
+
+**Say NO** to "Would you like Wrangler to add it on your behalf?", for the same
+reason as the bucket above: it defaults the binding to `blackshear_pta` and the
+code reads **`env.DB`**, which is already declared in `wrangler.jsonc`.
+
+Then create the tables and import the original five posts. Local and remote are
+tracked separately, so both need doing:
+
+```sh
+npm run db:migrate                 # your machine
+npm run db:migrate:remote          # the live database
+```
+
+`migrations/` holds the schema and the import, and wrangler records what it has
+already applied - running either command twice is a no-op.
+
+**Do this before deploying.** A D1 binding naming a database that does not exist
+fails the whole Worker version, exactly like the R2 bucket above (F29). Free
+tier is 5GB of storage and 5 million row reads a day, which this site will not
+approach: the whole announcements table is a few kilobytes and a busy day is a
+few hundred page views.
+
+Two things live in that database:
+
+- **`posts`** - one row per announcement. At most one may be pinned, and the
+  database enforces that with a partial unique index rather than trusting the
+  editor to get it right.
+- **`edits`** - the history. Never deleted from.
+
 ## Using the editor
 
 The list of posts is the page. Writing happens in a panel on top of it, so the
@@ -239,6 +310,34 @@ gave no clue it was clickable. **View** opens the live post in a new tab.
 therefore costs nobody a decision. Untick it to pick specific grades; they show
 as a label on the post and are there for filtering and targeted notifications
 later.
+
+**Saving publishes, immediately.** Reload the announcements page and the change
+is there. There is nothing to wait for and no separate publish step.
+
+**Pinning is on the row's `⋯` menu, not in the editor panel.** At most one post
+is pinned at a time, which makes it a decision about the list rather than about
+one post - and the database refuses to hold two pinned posts, so pinning one
+always unpins the other in the same operation. Saving a post never changes its
+pin.
+
+### Recovering a deleted post
+
+The whole post is kept in the history, so nothing is really gone. It cannot be
+restored from the editor - putting back a post somebody deliberately removed
+should involve a conversation - but it takes one command:
+
+```sh
+npx wrangler d1 execute blackshear-pta --remote \
+  --command "SELECT detail FROM edits WHERE action = 'delete' ORDER BY at DESC LIMIT 5"
+```
+
+That prints the deleted posts as JSON, most recent first. Hand the one you want
+to whoever looks after the website; every field is there.
+
+`npm run export:posts -- --remote` is the other half of this: it writes every
+current post to `exports/` as markdown. **Run it occasionally.** A database is
+not backed up by the fact that somebody has a copy of the repository, which is
+how the old markdown files were protected without anyone thinking about it.
 
 ## Photos
 
@@ -324,7 +423,8 @@ The Worker also **re-verifies the Access token itself** on every API call rather
 than trusting that Access did its job. Two reasons:
 
 1. It is the only trustworthy source of *who* is editing, which is what lands in
-   the commit author.
+   the `edits` table - the history is only worth having if the name on it came
+   from somewhere the browser cannot choose.
 2. An Access policy is dashboard configuration, and dashboard configuration gets
    edited, mis-scoped, or deleted by someone who does not realize it is the only
    thing in front of a write endpoint. If that happens, this fails closed.
@@ -346,14 +446,15 @@ payloads are all refused.
 | `Photo storage is not set up yet` | The R2 bucket does not exist. Section 4 above. |
 | `That file does not look like an image` | The bytes are not a JPEG, PNG or WebP whatever the file is named. |
 | `Describe the photo so screen readers can read it out` | A photo is attached with no description. Required. |
-| Saved, but the site looks unchanged | Give it a minute. Check the build in Workers & Pages -> `blackshear-pta` -> Builds. |
+| Saved, but the site looks unchanged | Reload it - there is no build to wait for any more. If it is still stale, the page was cached by the browser. |
 | `Could not verify sign-in: Access certs fetch failed` | `CF_ACCESS_TEAM_DOMAIN` is wrong. It is the bare hostname, no `https://` and no trailing slash. |
 | Signed in fine, but every call says `Not signed in.` | `CF_ACCESS_AUD` does not match this application's AUD tag. A token minted for a different Access app is refused on purpose. |
 | `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
 | Login page offers only "Sign in with Cloudflare" | No identity provider is configured. Section 1, step 0. |
 | `Not signed in.` on **localhost** | Expected. Access is enforced at Cloudflare's edge and does not exist locally. See "Running it locally" below. |
-| `Local development is read-only.` | Also expected. A local save is a real commit, so it is off until you ask. Below. |
+| `Local development cannot change the Instagram list.` | Expected. That list is still a file in the repo. Announcements write to your local database and are unaffected. Below. |
 | Photos 404 on **localhost** | `wrangler dev` uses an empty local bucket. `npm run dev:images` fills it. |
+| `The announcements database is not connected.` | The D1 binding is missing, or the migrations have never been applied. Section 5. |
 | "A code has been emailed to you" and no code ever arrives | Almost always a typo, or an address that is not in the policy. See below - this is by design and gives no feedback. |
 
 ## Running it locally
@@ -381,10 +482,10 @@ Then:
 dev worker
 ```
 
-That checks `.dev.vars`, says which pieces will not work and why, seeds the
-local photo bucket, and starts the Workers runtime on :8787.
-`http://localhost:8787/admin` then opens the real editor against the real
-posts. No GitHub token is needed — the repository is public and reads work
+That checks `.dev.vars`, says which pieces will not work and why, **sets up the
+local announcements database**, seeds the local photo bucket, and starts the
+Workers runtime on :8787. `http://localhost:8787/admin` then opens the real
+editor. No GitHub token is needed — the repository is public and reads work
 unauthenticated. A stale `GITHUB_TOKEN` line is worse than none; delete it.
 
 `DEV_ADMIN_EMAIL` is honoured **only** on a loopback hostname, so it is inert in
@@ -392,10 +493,23 @@ production; the hostname is the control, not the variable. `npm run
 check:access` tests exactly that, including the lookalike hostnames a loose
 check would wrongly accept.
 
-Local runs are **read-only** — a save from localhost would be a real commit to
-the real repository. To allow it, set `GITHUB_TOKEN`, point `GITHUB_BRANCH` at a
-scratch branch, and add `DEV_ALLOW_WRITES=true`. The editor then shows a red
-banner naming the branch.
+**Writing works locally, and writes nowhere but this machine.** `wrangler dev`
+binds a *local* D1 database under `.wrangler/state`, so you can create, edit,
+pin and delete as much as you like: none of it reaches the live site. That is
+new. It used to be impossible - a save from localhost was a real commit to the
+real repository, so local runs had to be read-only, and the editor was the one
+part of the site with no feedback loop shorter than a deploy (F40).
+
+Two things follow:
+
+- Your local posts are **yours**, and start as a copy of the original five from
+  `migrations/0002`. They will drift from the live site. That is fine and
+  expected; `npm run db:migrate` never overwrites what is already there.
+- To start over, delete `.wrangler/state` and run `dev worker` again.
+
+The **Instagram list** is the exception and is still read-only locally, because
+it is still a file in the repository. Set `DEV_ALLOW_WRITES=true` in `.dev.vars`
+if you really mean to commit to it from a dev server.
 
 ## The one confusing thing a board member will hit
 

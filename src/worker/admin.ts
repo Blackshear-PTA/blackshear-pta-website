@@ -3,47 +3,54 @@
  *
  * Every route here is behind Cloudflare Access AND re-verifies the Access JWT
  * (see access.ts for why both). The editor's verified email is what lands in
- * the commit author, so the repo history says who changed what.
+ * the `edits` table, so the record says who changed what.
  *
- * Deliberately not a REST framework. Six routes with a switch is less code than
- * a router, and this file is meant to stay readable to whoever inherits it.
+ * Deliberately not a REST framework. A handful of routes with a switch is less
+ * code than a router, and this file is meant to stay readable to whoever
+ * inherits it.
+ *
+ * ANNOUNCEMENTS LIVE IN D1. They used to be markdown files written through the
+ * GitHub Contents API, which is why this file once carried a repository config,
+ * a sha for every write and a read-modify-write for the pin. All of that is
+ * gone; see finding F41 in TASKS.md and migrations/0001_announcements.sql.
+ *
+ * The Instagram list has NOT moved. src/content/instagram.yaml is still a file
+ * in the repository, rendered into /gallery at build time, and the two routes
+ * at the bottom still write it through GitHub. That is why github.ts, the
+ * token and the read-only dev guard all survive - in one corner, for one
+ * feature, instead of on every request.
  */
 import { devIdentity, verifyAccessJwt } from './access';
-import {
-  listDirectory,
-  readFile,
-  writeFile,
-  deleteFile,
-  ConflictError,
-  type RepoConfig,
-} from './github';
-import {
-  stringifyPost,
-  parsePost,
-  filenameFor,
-  dateFromFilename,
-  titleFromFilename,
-} from './frontmatter.mjs';
+import { readFile, writeFile, ConflictError, type RepoConfig } from './github';
 import { storeImage, type ImageEnv } from './images';
 import {
-  parsePosts,
-  stringifyPosts,
-  validatePosts,
-  MAX_POSTS,
-} from './instagram.mjs';
+  listAll,
+  getAny,
+  listEdits,
+  createPost,
+  updatePost,
+  deletePost,
+  slugFor,
+  nowStamp,
+} from '../lib/posts.mjs';
+import type { PostFields } from '../lib/posts.mjs';
+import { parsePosts, stringifyPosts, validatePosts, MAX_POSTS } from './instagram.mjs';
 
-const DIR = 'src/content/announcements';
-
-/** The Instagram post list /gallery renders. Managed from the editor. */
+/** The Instagram post list /gallery renders. Still a file in the repo. */
 const INSTAGRAM_FILE = 'src/content/instagram.yaml';
 
-/** Must match `gradeSlugs` in src/content.config.ts. */
+/** Must match `gradeSlugs` in src/lib/grades.ts. */
 const GRADES = new Set(['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5']);
 
 /** Keys are content hashes written by src/worker/images.ts. */
 const IMAGE_KEY = /^[0-9a-f]{32}\.(jpg|png|webp)$/;
 
+/** A URL segment. Matches the slug_shape CHECK in migrations/0001. */
+const SLUG = /^[a-z0-9][a-z0-9-]*$/;
+
 export interface AdminEnv extends ImageEnv {
+  /** Announcements. See migrations/. */
+  DB?: D1Database;
   GITHUB_TOKEN?: string;
   GITHUB_REPO?: string;
   GITHUB_BRANCH?: string;
@@ -55,7 +62,7 @@ export interface AdminEnv extends ImageEnv {
    * production would still change nothing.
    */
   DEV_ADMIN_EMAIL?: string;
-  /** Local development only. "true" lets a local run commit for real. */
+  /** Local development only. "true" lets a local run commit to the real repo. */
   DEV_ALLOW_WRITES?: string;
 }
 
@@ -66,107 +73,22 @@ const json = (data: unknown, status = 200): Response =>
   });
 
 /**
- * Config problems are reported separately from auth failures, and say exactly
- * which value is missing. The alternative is a 500 that sends whoever set this
- * up hunting through Worker logs for a typo in a secret name.
+ * GitHub config, for the Instagram routes only.
+ *
+ * Read where it is needed rather than up front. It used to be resolved on every
+ * request, which meant a missing token made the posts list report a
+ * configuration error for a service the posts list no longer uses.
  */
-function readConfig(env: AdminEnv, dev: boolean, canWrite: boolean): { config: RepoConfig } | { error: string } {
-  /**
-   * Which values a request actually needs, rather than the full set.
-   *
-   * A local run signing in through devIdentity() never reaches verifyAccessJwt,
-   * so demanding the two Access secrets there would invent a configuration
-   * error for a code path that does not run. And a local run that cannot write
-   * needs no GitHub token either: the repository is public, so listing and
-   * reading posts works unauthenticated. That combination is what reduces local
-   * setup to a single line in .dev.vars.
-   */
-  const required: (keyof AdminEnv)[] = [];
-  if (!dev) required.push('GITHUB_TOKEN', 'CF_ACCESS_TEAM_DOMAIN', 'CF_ACCESS_AUD');
-  else if (canWrite) required.push('GITHUB_TOKEN');
-
-  const missing = required.filter((k) => !env[k]);
-  if (missing.length) {
-    return { error: `Not configured yet. Missing Worker secret(s): ${missing.join(', ')}.` };
+function readConfig(env: AdminEnv, needsWrite: boolean): { config: RepoConfig } | { error: string } {
+  // The repository is public, so reading instagram.yaml needs no token at all.
+  if (needsWrite && !env.GITHUB_TOKEN) {
+    return { error: 'Not configured yet. Missing Worker secret: GITHUB_TOKEN.' };
   }
   const [owner, repo] = (env.GITHUB_REPO ?? 'Blackshear-PTA/blackshear-pta-website').split('/');
   if (!owner || !repo) return { error: 'GITHUB_REPO must look like owner/repo.' };
   return {
     config: { owner, repo, branch: env.GITHUB_BRANCH ?? 'main', token: env.GITHUB_TOKEN },
   };
-}
-
-interface PostPayload {
-  /** Present when editing; absent when creating. */
-  slug?: unknown;
-  images?: unknown;
-  cover?: unknown;
-  grades?: unknown;
-  title?: unknown;
-  date?: unknown;
-  href?: unknown;
-  linkLabel?: unknown;
-  pinned?: unknown;
-  draft?: unknown;
-  body?: unknown;
-  sha?: unknown;
-}
-
-/**
- * Validates what the browser sent. The editor page checks these too, but that
- * check is a convenience for the person typing - this one is the one that
- * counts, because the request can be made without the page.
- */
-function validate(payload: PostPayload): { ok: true } | { ok: false; error: string } {
-  const title = typeof payload.title === 'string' ? payload.title.trim() : '';
-  if (!title) return { ok: false, error: 'Give the post a title.' };
-  if (title.length > 140) return { ok: false, error: 'Title is too long (140 characters max).' };
-
-  const date = typeof payload.date === 'string' ? payload.date : '';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, error: 'Date must be YYYY-MM-DD.' };
-  if (Number.isNaN(Date.parse(date))) return { ok: false, error: 'That is not a real date.' };
-
-  const body = typeof payload.body === 'string' ? payload.body.trim() : '';
-  if (!body) return { ok: false, error: 'Write something in the body.' };
-
-  // A photo nobody can see is not a photo. Enforced here as well as in the
-  // content schema, because the schema failure surfaces as a broken build
-  // minutes later and this surfaces as a sentence in the form.
-  const images = readImages(payload.images);
-  if (images === null) return { ok: false, error: 'Those photos could not be read. Re-upload them.' };
-  for (const image of images) {
-    if (!IMAGE_KEY.test(image.key)) {
-      return { ok: false, error: 'One of those photos is not valid. Remove it and upload again.' };
-    }
-    if (!image.alt.trim()) {
-      return { ok: false, error: 'Every photo needs a description. Add one for each.' };
-    }
-  }
-  if (typeof payload.cover === 'string' && payload.cover.trim()) {
-    if (!images.some((image) => image.key === payload.cover)) {
-      return { ok: false, error: 'The cover photo is not one of this post\'s photos.' };
-    }
-  }
-  if (payload.grades !== undefined) {
-    if (!Array.isArray(payload.grades) || payload.grades.some((g) => !GRADES.has(String(g)))) {
-      return { ok: false, error: 'One of those grades is not a grade we know about.' };
-    }
-  }
-
-  // Only http(s). A javascript: or data: URL here would be a stored XSS on
-  // every page that renders the link.
-  if (typeof payload.href === 'string' && payload.href.trim()) {
-    let parsed: URL;
-    try {
-      parsed = new URL(payload.href.trim());
-    } catch {
-      return { ok: false, error: 'The link must be a full URL starting with https://' };
-    }
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-      return { ok: false, error: 'The link must start with https://' };
-    }
-  }
-  return { ok: true };
 }
 
 /**
@@ -186,11 +108,166 @@ function readImages(value: unknown): Array<{ key: string; alt: string }> | null 
   return out;
 }
 
-/** Rejects anything that could climb out of the announcements directory. */
-function safeSlug(slug: string): string | null {
-  if (!/^[a-z0-9][a-z0-9-]*\.md$/.test(slug)) return null;
-  if (slug.includes('..')) return null;
-  return slug;
+type Payload = Record<string, unknown>;
+
+/**
+ * Turns a request body into the fields to write, checking each one.
+ *
+ * ONLY THE KEYS THAT ARE PRESENT. That is the whole difference from the version
+ * this replaces: the Contents API wrote whole documents, so every save had to
+ * send every field, and a field the form stopped sending was written as absent.
+ * That is how removing the pin checkbox silently unpinned a post on its next
+ * edit. Here an omitted key never reaches the UPDATE statement.
+ *
+ * `creating` decides whether the three required columns have to be present -
+ * they have no defaults, and a create without a title is a 500 from SQLite
+ * rather than a sentence somebody can act on.
+ *
+ * The database enforces most of this again (CHECK constraints and two
+ * triggers). These messages exist because those do not have any: a board member
+ * should read "Every photo needs a description", not "constraint failed".
+ */
+async function readFields(
+  db: D1Database,
+  payload: Payload,
+  { creating, slug }: { creating: boolean; slug?: string },
+): Promise<{ ok: true; fields: PostFields } | { ok: false; error: string }> {
+  const fields: PostFields = {};
+  const has = (key: string) => Object.prototype.hasOwnProperty.call(payload, key);
+
+  if (creating || has('title')) {
+    const title = typeof payload.title === 'string' ? payload.title.trim() : '';
+    if (!title) return { ok: false, error: 'Give the post a title.' };
+    if (title.length > 140) return { ok: false, error: 'Title is too long (140 characters max).' };
+    fields.title = title;
+  }
+
+  if (creating || has('date')) {
+    const date = typeof payload.date === 'string' ? payload.date : '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, error: 'Date must be YYYY-MM-DD.' };
+    if (Number.isNaN(Date.parse(date))) return { ok: false, error: 'That is not a real date.' };
+    fields.date = date;
+  }
+
+  if (creating || has('body')) {
+    const body = typeof payload.body === 'string' ? payload.body.trim() : '';
+    if (!body) return { ok: false, error: 'Write something in the body.' };
+    fields.body = body;
+  }
+
+  if (has('images')) {
+    const images = readImages(payload.images);
+    if (images === null) {
+      return { ok: false, error: 'Those photos could not be read. Re-upload them.' };
+    }
+    for (const image of images) {
+      if (!IMAGE_KEY.test(image.key)) {
+        return { ok: false, error: 'One of those photos is not valid. Remove it and upload again.' };
+      }
+      // A photo nobody can see is not a photo. Also a trigger in the schema.
+      if (!image.alt.trim()) {
+        return { ok: false, error: 'Every photo needs a description. Add one for each.' };
+      }
+    }
+    fields.images = images.map((image) => ({ key: image.key, alt: image.alt.trim() }));
+  }
+
+  if (has('cover')) {
+    const cover = typeof payload.cover === 'string' ? payload.cover.trim() : '';
+    if (cover) {
+      /**
+       * Checked against the images being saved, or - when a caller sends a
+       * cover without sending photos - against the ones already stored. The
+       * editor always sends both, so this second read is for the request made
+       * without the page.
+       */
+      const against =
+        fields.images ?? (slug ? ((await getAny(db, slug))?.images ?? []) : []);
+      if (!against.some((image) => image.key === cover)) {
+        return { ok: false, error: "The cover photo is not one of this post's photos." };
+      }
+    }
+    fields.cover = cover;
+  }
+
+  if (has('grades')) {
+    if (!Array.isArray(payload.grades) || payload.grades.some((g) => !GRADES.has(String(g)))) {
+      return { ok: false, error: 'One of those grades is not a grade we know about.' };
+    }
+    fields.grades = payload.grades.map(String);
+  }
+
+  if (has('href')) {
+    const href = typeof payload.href === 'string' ? payload.href.trim() : '';
+    if (href) {
+      // Only http(s). A javascript: or data: URL here would be a stored XSS on
+      // every page that renders the link.
+      let parsed: URL;
+      try {
+        parsed = new URL(href);
+      } catch {
+        return { ok: false, error: 'The link must be a full URL starting with https://' };
+      }
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        return { ok: false, error: 'The link must start with https://' };
+      }
+    }
+    fields.href = href;
+  }
+
+  if (has('linkLabel')) {
+    fields.linkLabel = typeof payload.linkLabel === 'string' ? payload.linkLabel.trim() : '';
+  }
+
+  if (has('draft')) fields.draft = payload.draft === true;
+  if (has('pinned')) fields.pinned = payload.pinned === true;
+
+  return { ok: true, fields };
+}
+
+/**
+ * A database constraint, as a sentence.
+ *
+ * The schema states both .refine() rules and every column rule as CHECKs and
+ * triggers, so they hold even against SQL typed by hand. Reaching one from the
+ * editor means readFields() missed a case - the message still has to be usable,
+ * because "CHECK constraint failed: title_length" is not something to show
+ * somebody who was writing about a bake sale.
+ */
+function explainDbError(error: unknown): { status: number; message: string } {
+  const raw = String((error as Error)?.message ?? error);
+
+  if (/UNIQUE constraint failed: posts\.slug/i.test(raw)) {
+    return { status: 409, message: 'A post with that name and date already exists.' };
+  }
+  if (/UNIQUE constraint failed: posts\.pinned/i.test(raw)) {
+    return {
+      status: 409,
+      message: 'Another post is already pinned. Reload the page and try again.',
+    };
+  }
+  if (/alt text/i.test(raw)) {
+    return { status: 400, message: 'Every photo needs a description. Add one for each.' };
+  }
+  if (/cover must be/i.test(raw)) {
+    return { status: 400, message: "The cover photo is not one of this post's photos." };
+  }
+  if (/CHECK constraint failed: title_length/i.test(raw)) {
+    return { status: 400, message: 'Title is too long (140 characters max).' };
+  }
+  if (/CHECK constraint failed: date_shape/i.test(raw)) {
+    return { status: 400, message: 'Date must be YYYY-MM-DD.' };
+  }
+  if (/CHECK constraint failed: slug_shape/i.test(raw)) {
+    return { status: 400, message: 'That title does not make a usable web address. Try different words.' };
+  }
+  return { status: 500, message: raw };
+}
+
+/** Rejects anything that is not a plain slug. */
+function safeSlug(value: string): string | null {
+  if (!SLUG.test(value) || value.includes('..')) return null;
+  return value;
 }
 
 export async function handleAdminApi(
@@ -204,22 +281,12 @@ export async function handleAdminApi(
    */
   const dev = devIdentity(url, env.DEV_ADMIN_EMAIL);
 
-  /**
-   * A local run is read-only unless you ask for otherwise.
-   *
-   * There is no local copy of the content to practise on: /admin reads and
-   * writes through the GitHub Contents API, so a save from localhost is a real
-   * commit to the real repository, landing on whatever GITHUB_BRANCH says -
-   * `main` unless it was changed. Someone clicking around a dev server to see
-   * how the editor behaves should not be able to publish an announcement by
-   * accident. Reading is the common case and stays open; writing is one line in
-   * .dev.vars away.
-   */
-  const canWrite = !dev || env.DEV_ALLOW_WRITES === 'true';
-
-  const configResult = readConfig(env, Boolean(dev), canWrite);
-  if ('error' in configResult) return json({ error: configResult.error }, 503);
-  const { config } = configResult;
+  if (!dev && (!env.CF_ACCESS_TEAM_DOMAIN || !env.CF_ACCESS_AUD)) {
+    return json(
+      { error: 'Not configured yet. Missing Worker secret(s): CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD.' },
+      503,
+    );
+  }
 
   let identity = dev;
   if (!identity) {
@@ -231,150 +298,139 @@ export async function handleAdminApi(
   }
   if (!identity) return json({ error: 'Not signed in.' }, 401);
 
-  if (!canWrite && request.method !== 'GET') {
-    return json(
-      {
-        error:
-          'Local development is read-only. Saving from here would commit to the real ' +
-          'repository, so it is off unless you ask: set DEV_ALLOW_WRITES=true in .dev.vars.',
-      },
-      403,
-    );
-  }
+  /**
+   * A local run may now write POSTS freely, and still may not write the
+   * REPOSITORY.
+   *
+   * The old guard covered everything, because there was no local copy of the
+   * content and a save from localhost was a real commit to the real repo.
+   * Announcements are in D1 now and `wrangler dev` binds a LOCAL database, so
+   * clicking around the editor cannot publish anything - which is exactly the
+   * feedback loop F40 was missing. The Instagram list is still a file in the
+   * repository, so that half of the guard stays.
+   */
+  const canWriteRepo = !dev || env.DEV_ALLOW_WRITES === 'true';
 
   const route = url.pathname.replace(/^\/admin\/api\/?/, '');
+  const editor = identity.email;
 
   try {
     if (route === 'session') {
       return json({
-        email: identity.email,
-        // Only ever present on localhost. The editor uses it to say out loud
-        // which repository and branch a save would land on, because from a dev
-        // server that is the one thing you cannot tell by looking.
-        ...(dev
-          ? { dev: true, repo: `${config.owner}/${config.repo}`, branch: config.branch, canWrite }
-          : {}),
+        email: editor,
+        // Only ever present on localhost. The editor says out loud which
+        // database it is writing to, because from a dev server that is the one
+        // thing you cannot tell by looking.
+        ...(dev ? { dev: true, database: 'local', canWriteRepo } : {}),
       });
     }
 
-    if (route === 'posts' && request.method === 'GET') {
-      const files = await listDirectory(config, DIR);
-      const posts = await Promise.all(
-        files
-          .filter((f) => f.name.endsWith('.md'))
-          .map(async (file) => {
-            const found = await readFile(config, file.path);
-            const parsed = found ? parsePost(found.text) : null;
-            /**
-             * Fall back to the filename for both title and date.
-             *
-             * Reading a file GitHub has only just committed can 404 while the
-             * directory listing already shows it. When that happened the row
-             * lost its date as well as its title, so a brand new post rendered
-             * as a raw ".md" filename and sorted to the very bottom - the two
-             * places it should least be. The name always carries the date.
-             */
-            return {
-              slug: file.name,
-              sha: file.sha,
-              title: parsed?.meta.title ?? titleFromFilename(file.name),
-              date: parsed?.meta.date ?? dateFromFilename(file.name) ?? '',
-              /** First line of the body, so a row is recognizable unopened. */
-              excerpt: (parsed?.body ?? '').trim().split(/\n\s*\n/)[0]?.slice(0, 120) ?? '',
-              images: parsed?.meta.images ?? [],
-              cover: parsed?.meta.cover ?? '',
-              grades: parsed?.meta.grades ?? [],
-              pinned: Boolean(parsed?.meta.pinned),
-              draft: Boolean(parsed?.meta.draft),
-              /** True when the read failed; the row is showing derived values. */
-              partial: !parsed,
-            };
-          }),
-      );
-      posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      return json({ posts });
-    }
+    // ------------------------------------------------------------- posts
 
-    if (route.startsWith('posts/')) {
-      const slug = safeSlug(decodeURIComponent(route.slice('posts/'.length)));
-      if (!slug) return json({ error: 'Bad post name.' }, 400);
-      const path = `${DIR}/${slug}`;
+    if (route === 'posts' || route.startsWith('posts/') || route === 'edits') {
+      if (!env.DB) {
+        return json(
+          {
+            error:
+              'The announcements database is not connected. Someone needs to run: ' +
+              'npx wrangler d1 migrations apply blackshear-pta --remote',
+          },
+          503,
+        );
+      }
+      const db = env.DB;
 
-      if (request.method === 'GET') {
-        const found = await readFile(config, path);
-        if (!found) return json({ error: 'That post no longer exists.' }, 404);
-        const parsed = parsePost(found.text);
-        if (!parsed) return json({ error: 'That file has no frontmatter.' }, 422);
-        return json({ slug, sha: found.sha, ...parsed.meta, body: parsed.body });
+      if (route === 'edits' && request.method === 'GET') {
+        const limit = Number(url.searchParams.get('limit') ?? '50');
+        return json({ edits: await listEdits(db, Number.isFinite(limit) ? limit : 50) });
       }
 
-      if (request.method === 'DELETE') {
-        const found = await readFile(config, path);
-        if (!found) return json({ error: 'That post no longer exists.' }, 404);
-        await deleteFile(config, path, `Delete announcement: ${slug}`, identity.email, found.sha);
-        return json({ ok: true });
+      if (route === 'posts' && request.method === 'GET') {
+        /**
+         * Drafts included - this is the editor. One query, where the markdown
+         * version spent one Contents API call per file plus one to list the
+         * directory, which is what used up GitHub's unauthenticated hourly
+         * budget during an afternoon of reloads.
+         */
+        return json({ posts: await listAll(db) });
+      }
+
+      if (route === 'posts' && request.method === 'POST') {
+        const payload = (await request.json()) as Payload;
+        const checked = await readFields(db, payload, { creating: true });
+        if (!checked.ok) return json({ error: checked.error }, 400);
+
+        const slug = slugFor(String(checked.fields.date), String(checked.fields.title));
+        if (await getAny(db, slug)) {
+          return json({ error: 'A post with that name and date already exists.' }, 409);
+        }
+
+        await createPost(db, { fields: { ...checked.fields, slug }, editor });
+        return json({ ok: true, post: await getAny(db, slug) }, 201);
+      }
+
+      if (route.startsWith('posts/')) {
+        const slug = safeSlug(decodeURIComponent(route.slice('posts/'.length)));
+        if (!slug) return json({ error: 'Bad post name.' }, 400);
+
+        if (request.method === 'GET') {
+          const post = await getAny(db, slug);
+          if (!post) return json({ error: 'That post no longer exists.' }, 404);
+          return json(post);
+        }
+
+        if (request.method === 'PATCH') {
+          const payload = (await request.json()) as Payload;
+          const checked = await readFields(db, payload, { creating: false, slug });
+          if (!checked.ok) return json({ error: checked.error }, 400);
+
+          const expectedUpdatedAt =
+            typeof payload.updatedAt === 'string' ? payload.updatedAt : undefined;
+
+          const result = await updatePost(db, slug, {
+            fields: checked.fields,
+            editor,
+            expectedUpdatedAt,
+            at: nowStamp(),
+          });
+          if (result === 'missing') return json({ error: 'That post no longer exists.' }, 404);
+          if (result === 'conflict') {
+            return json(
+              {
+                error:
+                  'Somebody else saved this post while you were editing it. Reload the page ' +
+                  'to see their version, then make your change again.',
+              },
+              409,
+            );
+          }
+          return json({ ok: true, post: await getAny(db, slug) });
+        }
+
+        if (request.method === 'DELETE') {
+          const result = await deletePost(db, slug, { editor });
+          if (result === 'missing') return json({ error: 'That post no longer exists.' }, 404);
+          return json({ ok: true });
+        }
       }
     }
 
-    if (route === 'posts' && request.method === 'PUT') {
-      const payload = (await request.json()) as PostPayload;
-      const check = validate(payload);
-      if (!check.ok) return json({ error: check.error }, 400);
-
-      const meta = {
-        title: String(payload.title).trim(),
-        date: String(payload.date),
-        href: typeof payload.href === 'string' && payload.href.trim() ? payload.href.trim() : undefined,
-        linkLabel:
-          typeof payload.linkLabel === 'string' && payload.linkLabel.trim()
-            ? payload.linkLabel.trim()
-            : undefined,
-        images: (readImages(payload.images) ?? []).map((image) => ({
-          key: image.key,
-          alt: image.alt.trim(),
-        })),
-        cover:
-          typeof payload.cover === 'string' && payload.cover.trim() ? payload.cover.trim() : undefined,
-        grades: Array.isArray(payload.grades) ? payload.grades.map(String) : [],
-        pinned: payload.pinned === true,
-        draft: payload.draft === true,
-      };
-      const body = String(payload.body).trim();
-
-      // An existing post keeps its filename even if the title changes, so its
-      // URL and its git history stay put. Only a new post gets a name derived
-      // from the title.
-      const existing = typeof payload.sha === 'string' && payload.sha ? String(payload.sha) : undefined;
-      const requested = typeof payload.slug === 'string' ? safeSlug(payload.slug) : null;
-      const slug = requested ?? filenameFor(meta.date, meta.title);
-      const path = `${DIR}/${slug}`;
-
-      if (!existing && (await readFile(config, path))) {
-        return json({ error: 'A post with that name and date already exists.' }, 409);
-      }
-
-      const { sha } = await writeFile(
-        config,
-        path,
-        stringifyPost(meta, body),
-        `${existing ? 'Update' : 'Add'} announcement: ${meta.title}`,
-        identity.email,
-        existing,
-      );
-      return json({ ok: true, slug, sha });
-    }
+    // --------------------------------------------------------- instagram
 
     /**
      * Instagram posts on /gallery.
      *
-     * The whole file is read and written every time. It holds at most six
-     * lines, so there is nothing to gain from patching it, and a
-     * read-modify-write of the complete document means the editor sends a list
-     * and gets a list back with no partial state to reconcile. The sha is
-     * carried through for the same optimistic-concurrency reason posts use it.
+     * Still markdown-era machinery: the whole file is read and written every
+     * time through the GitHub Contents API, a save is a commit, and the change
+     * appears after a rebuild. That is fine here and was never the complaint -
+     * it holds at most six lines, it changes a few times a year, and nobody is
+     * waiting on it the way they wait on an announcement. The sha is carried
+     * through for optimistic concurrency exactly as before.
      */
     if (route === 'instagram' && request.method === 'GET') {
-      const found = await readFile(config, INSTAGRAM_FILE);
+      const configResult = readConfig(env, false);
+      if ('error' in configResult) return json({ error: configResult.error }, 503);
+      const found = await readFile(configResult.config, INSTAGRAM_FILE);
       return json({
         urls: found ? parsePosts(found.text) : [],
         sha: found?.sha ?? null,
@@ -383,20 +439,37 @@ export async function handleAdminApi(
     }
 
     if (route === 'instagram' && request.method === 'PUT') {
+      if (!canWriteRepo) {
+        return json(
+          {
+            error:
+              'Local development cannot change the Instagram list. That one is still a file ' +
+              'in the repository, so saving it from here would commit to the real repo - ' +
+              'set DEV_ALLOW_WRITES=true in .dev.vars if that is what you want. ' +
+              'Announcements are not affected: those write to your local database.',
+          },
+          403,
+        );
+      }
+      const configResult = readConfig(env, true);
+      if ('error' in configResult) return json({ error: configResult.error }, 503);
+
       const payload = (await request.json()) as { urls?: unknown; sha?: unknown };
       const check = validatePosts(payload.urls);
       if (!check.ok) return json({ error: check.error }, 400);
 
       const written = await writeFile(
-        config,
+        configResult.config,
         INSTAGRAM_FILE,
         stringifyPosts(check.urls),
         `Update Instagram posts (${check.urls.length})`,
-        identity.email,
+        editor,
         typeof payload.sha === 'string' ? payload.sha : undefined,
       );
       return json({ urls: check.urls, sha: written.sha });
     }
+
+    // ------------------------------------------------------------ images
 
     if (route === 'images' && request.method === 'POST') {
       if (!env.IMAGES) {
@@ -420,25 +493,22 @@ export async function handleAdminApi(
     return json({ error: 'Unknown endpoint.' }, 404);
   } catch (error) {
     if (error instanceof ConflictError) return json({ error: error.message }, 409);
-    const message = (error as Error).message;
+
+    const message = (error as Error).message ?? String(error);
+
     /**
-     * A rejected token is the one local failure whose message does not point at
-     * its own fix. Reads here need no token at all - the repository is public -
-     * so a leftover or expired GITHUB_TOKEN in .dev.vars turns a session that
-     * would have worked into a bare "Bad credentials" from GitHub.
-     */
-    /**
-     * The cost of making the token optional for read-only local work, arriving
-     * in practice: unauthenticated GitHub allows 60 requests an hour per IP, and
-     * one load of this page spends seven of them. An afternoon of reloads runs
-     * it out, and GitHub's own text does not say that in a way anyone reads.
+     * GitHub's unauthenticated hourly limit, which only the Instagram routes can
+     * reach now. It used to be reachable by opening the editor at all: a single
+     * page load spent about seven Contents API calls listing and reading posts,
+     * and an afternoon of reloads ran out the 60-per-hour budget.
      */
     if (/rate limit/i.test(message)) {
       return json(
         {
           error: dev
-            ? 'GitHub\'s hourly limit for requests without a token is used up. It resets ' +
-              'within the hour - or add a GITHUB_TOKEN to .dev.vars to raise it.'
+            ? "GitHub's hourly limit for requests without a token is used up. It resets " +
+              'within the hour - or add a GITHUB_TOKEN to .dev.vars to raise it. ' +
+              'This only affects the Instagram list; announcements are unaffected.'
             : 'GitHub is rate limiting us. Wait a few minutes and reload.',
         },
         429,
@@ -448,14 +518,16 @@ export async function handleAdminApi(
       return json(
         {
           error:
-            'GitHub rejected the token in .dev.vars. For read-only local work you do not need ' +
-            'one at all - remove the GITHUB_TOKEN line and reload. ' +
+            'GitHub rejected the token in .dev.vars. Reading the Instagram list needs no ' +
+            'token at all - remove the GITHUB_TOKEN line and reload. ' +
             `(GitHub said: ${message})`,
         },
         500,
       );
     }
-    return json({ error: message }, 500);
+
+    const explained = explainDbError(error);
+    return json({ error: explained.message }, explained.status);
   }
 }
 

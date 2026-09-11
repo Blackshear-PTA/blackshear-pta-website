@@ -5,19 +5,29 @@
   // Store are Workers-only, and Phase 3 depends on Durable Objects. Starting on
   // Pages would mean a later migration with a domain switchover and downtime.
   //
-  // TEMPORARY: "main" and "run_worker_first" exist only for the pre-launch gate
-  // (src/worker.ts). Remove all three marked lines at cutover and this goes back
-  // to serving static assets with no JS invoked at all, which is both cheaper
-  // and simpler. See TASKS.md A29.
+  // "main" points at the hand-written Worker, which now does two jobs: it holds
+  // the pre-launch gate, and it hands everything the gate allows through to the
+  // Astro adapter's generated entry. See the long comment at the top of
+  // src/worker.ts for why it is arranged that way round.
   //
-  // When SSR arrives for real (/api/*, /admin), swap the hand-written Worker for
-  // @astrojs/cloudflare and point "main" at the adapter's generated entry.
+  // TEMPORARY: only "run_worker_first" and the gate branch inside src/worker.ts
+  // belong to the pre-launch gate (TASKS.md A29). At cutover, remove those -
+  // "main" now stays, because the announcement routes render on demand.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
   "compatibility_date": "2026-08-28",
-  "main": "./src/worker.ts", // TEMPORARY - pre-launch gate
+  // Required by @astrojs/cloudflare, which renders the announcement routes.
+  "compatibility_flags": ["nodejs_compat"],
+  // THE Worker. @astrojs/cloudflare builds through @cloudflare/vite-plugin,
+  // which compiles whatever "main" names and attaches Astro to it - so this
+  // stays pointed at the hand-written file, and that file hands off to
+  // @astrojs/cloudflare/entrypoints/server. `astro build` emits the compiled
+  // result as dist/server/entry.mjs; nothing needs to point at it.
+  "main": "./src/worker.ts",
   "assets": {
-    "directory": "./dist",
+    // dist/client, not dist: the adapter splits its output, and dist/server
+    // holds the Worker rather than anything a browser should be able to fetch.
+    "directory": "./dist/client",
     // Serve Astro's built 404 page for unmatched paths.
     "not_found_handling": "404-page",
     // Lets the Worker reach static files once a request is allowed through.
@@ -27,6 +37,26 @@
     // /index.html and would be purely decorative.
     "run_worker_first": true
   },
+  // Announcements. Every post, and the record of who changed what.
+  //
+  // Schema and the import of the original five markdown posts are in
+  // migrations/; wrangler reads that directory by default.
+  //
+  //   npx wrangler d1 migrations apply blackshear-pta --local
+  //   npx wrangler d1 migrations apply blackshear-pta --remote
+  //
+  // THE DATABASE MUST EXIST BEFORE THIS SHIPS. A binding naming a resource that
+  // is not there makes Cloudflare reject the Worker version outright and
+  // nothing deploys - the same hard failure a missing R2 bucket caused in
+  // finding F29, which is a different and worse shape than a missing secret.
+  // This one was created with `npx wrangler d1 create blackshear-pta`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "blackshear-pta",
+      "database_id": "5a9a4520-9daf-4b38-859e-03ed7c50a202"
+    }
+  ],
   // Photos attached to announcements through /admin. Not temporary - this
   // outlives the pre-launch gate. Free tier is 10GB; the browser shrinks each
   // photo before upload, so that is several thousand of them.
