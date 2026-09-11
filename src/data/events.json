@@ -198,15 +198,15 @@
       "allDay": true
     },
     {
-      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
-      "title": "PTA E-board Meeting #2",
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
@@ -247,15 +247,15 @@
       "allDay": false
     },
     {
-      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Staff Pies & Sides Event",
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
@@ -569,13 +569,6 @@
       "allDay": false
     },
     {
-      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Ms. Chalida's Birthday! (Cafeteria)",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
       "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
       "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
@@ -585,6 +578,13 @@
     {
       "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
       "title": "Lunar New Year Performance",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Ms. Chalida's Birthday! (Cafeteria)",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -870,15 +870,15 @@
       "allDay": false
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
