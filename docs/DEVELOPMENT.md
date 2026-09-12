@@ -1,7 +1,9 @@
 # Development
 
-Astro 7, static output, served from Cloudflare Workers static assets. Tailwind
-v4 with its default theme deliberately deleted. No component library.
+Astro 7, served from Cloudflare Workers. Static by default: every page is
+prerendered and served straight off the assets binding EXCEPT the four that show
+announcements, which render on demand against a D1 database. Tailwind v4 with
+its default theme deliberately deleted. No component library.
 
 Why each of those, and what was rejected: [PROJECT-BRIEF.md](PROJECT-BRIEF.md).
 
@@ -13,9 +15,9 @@ you `cd` in.
 ```sh
 npm install
 npm run dev      # dev server at http://localhost:4321
-npm run build    # static build into ./dist
+npm run build    # build into ./dist (client/ static, server/ the Worker)
 npm run check    # TypeScript + Astro diagnostics, strict
-npm run preview  # serve ./dist locally
+npm run preview  # serve ./dist locally (static pages only - no D1, no /admin)
 ```
 
 Astro 7 runs `dev` as a background daemon. `npm run astro -- dev stop` stops it;
@@ -36,6 +38,7 @@ npm run check:crop      # what you see in the crop frame is what gets stored
 npm run check:images    # only real images reach the bucket, on their bytes
 npm run check:secrets   # no recognizable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
+npm run check:d1        # the announcements database, against real SQLite
 ```
 
 `check:contrast` is a **hard gate, not a preference**. This is a public-facing
@@ -77,6 +80,17 @@ means "no *recognizable* secret", not "no secret".
 
 `check:ical` runs in CI before the calendar refresh, so a parser regression
 keeps yesterday's good snapshot instead of committing a broken one.
+
+`check:d1` replaces a guarantee the build used to give away for free. While
+posts were markdown files, the content schema's Zod rules ran on every build and
+`astro build` would not finish if one was malformed. Nothing rebuilds when a
+post is published now, so a build-time check is a check that no longer runs -
+and the failure moved from "red build nobody saw" to "live page". The rules
+moved into the database (`migrations/0001_announcements.sql`) and this runs
+them: the migrations, the single-pin index, both of the old `.refine()` rules,
+the draft filter and the ordering, against real SQLite via `node:sqlite`. Not a
+mock - the same engine D1 is built on, exercising the same migration files the
+deploy applies.
 
 ## The `dev` controller
 
@@ -127,6 +141,17 @@ Those only exist in the Workers runtime. `astro dev` and `astro preview` know
 nothing about either, so on 4321 and 4322 **the site is ungated** and a change
 to those files looks perfectly fine locally and only fails once deployed.
 
+**`preview` cannot serve the four announcement routes at all.** `astro preview`
+serves files; `/`, `/announcements/`, `/announcements/<slug>/` and `/rss.xml`
+are not files any more. Use `worker` for anything involving a post.
+
+**Restart `worker` after `npm run build`.** The build removes and rewrites
+`dist/`, and the running server does not survive having the directory it is
+serving replaced underneath it: it starts answering 404 for pages that exist and
+500 for pages that work. Nothing in the output says so, and it looks exactly
+like the change you just made being broken. Same family as the "restart after a
+branch switch" rule below.
+
 If you are testing the password gate, copy `.dev.vars.example` to `.dev.vars`
 and put the real password in it first, or the gate fails closed and lets nobody
 through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
@@ -166,22 +191,27 @@ by mistake — the hostname is the lock, not the variable. See `devIdentity()` i
 `src/worker/access.ts`, and `npm run check:access` for the tests holding it to
 that.
 
-You do **not** need a GitHub token for this. The repository is public, so a
-read-only local session lists and opens the real posts unauthenticated. If you
-have a stale `GITHUB_TOKEN` line in `.dev.vars`, delete it — an invalid token is
-worse than none, and the editor will tell you so.
+You do **not** need a GitHub token for this. Announcements never touch GitHub,
+and the Instagram list loads without one because the repository is public. If
+you have a stale `GITHUB_TOKEN` line in `.dev.vars`, delete it — an invalid
+token is worse than none, and the editor will tell you so.
 
-**Local runs are read-only.** There is no local copy of the content: `/admin`
-reads and writes through the GitHub API, so a save from localhost is a real
-commit to the real repository. Writing therefore needs saying twice:
+**Announcements are fully writable locally, and write nowhere else.** `wrangler
+dev` binds a *local* D1 database under `.wrangler/state`, so creating, editing,
+pinning and deleting posts on :8787 does not touch the live site. `dev worker`
+applies the migrations before it starts, so the tables and the original five
+posts are there on a fresh clone.
 
-- a real fine-grained `GITHUB_TOKEN` with **Contents: write**
-- `GITHUB_BRANCH` pointed at a scratch branch, so a test post lands somewhere
-  harmless rather than on the live site
-- `DEV_ALLOW_WRITES=true`
+That is new, and it is most of what this migration bought. Local runs used to be
+read-only, because a save was a real commit to the real repository — which made
+the editor the one part of the site with no feedback loop shorter than a deploy
+(F40). Your local posts drift from production from the first edit; that is
+expected. To start over, delete `.wrangler/state` and run `dev worker` again.
 
-The editor shows a banner naming the repository and branch a save would land
-on — quiet accent for read-only, red for live.
+**The Instagram list is still read-only locally**, because it is still a file in
+the repository. `DEV_ALLOW_WRITES=true` in `.dev.vars` enables it, along with a
+`GITHUB_TOKEN` that has **Contents: write**. The editor's banner says which of
+the two states it is in.
 
 **Photos.** `wrangler dev` binds a *local* R2 bucket, not the production one, so
 it starts empty and every photo 404s. `dev worker` fills it automatically; the
@@ -203,7 +233,7 @@ someone uploads a photo through the real `/admin`, or to re-fetch after clearing
 dev check
 ```
 
-Twelve of them: build, `astro check`, and the ten `check:*` scripts. **Nothing
+Fourteen of them: build, `astro check`, and the twelve `check:*` scripts. **Nothing
 else runs these** — there is no CI workflow for them, and Cloudflare Workers
 Builds only runs `npm run build` — so a gate missing from `do_check` in
 `dev-control.sh` is a gate that never runs. Add new ones there.
@@ -222,7 +252,11 @@ src/content/home.yaml      all homepage copy
 src/content/site.yaml      nav, identity, social - the chrome on every page
 src/content/pages.yaml     every standalone page; a top-level key IS a URL
 src/content.config.ts      the schema all of the above is validated against
+                           BUILD-TIME ONLY - never import it from a route
 src/data/events.json       calendar snapshot, generated - never edit by hand
+
+migrations/                the announcements database: schema, then the import
+                           of the five posts that used to be markdown files
 
 src/styles/global.css      brand primitives plus the --pta-* token contract
 src/themes/                one CSS token block per theme, plus registry.ts
@@ -231,10 +265,16 @@ src/layouts/PageLayout     shell for every standalone page
 src/layouts/structures/    structural arrangements a theme renders through
 src/components/sections/   Hero, QuickActions, News, GetInvolved, Committees...
 src/lib/ical.ts            iCalendar reader; no dependencies, no platform APIs
+src/lib/posts.mjs          every read and write of the announcements tables
+src/lib/announcements.ts   what the four on-demand routes call
+src/lib/markdown.mjs       post bodies to HTML, at request time
+src/lib/grades.ts          grade slugs; here rather than in content.config.ts
+                           so a route can import them without dragging the
+                           build-time content loaders into the Worker
 src/pages/[page].astro     renders anything in pages.yaml
-src/worker.ts              TEMPORARY - the pre-launch password gate
+src/worker.ts              the Worker: the pre-launch gate, then Astro
 
-wrangler.jsonc             Cloudflare config. Three lines marked TEMPORARY
+wrangler.jsonc             Cloudflare config. Two lines marked TEMPORARY
 scripts/                   the gates, the calendar refresh, the image seeder
 ```
 

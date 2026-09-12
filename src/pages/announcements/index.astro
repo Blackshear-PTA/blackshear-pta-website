@@ -7,6 +7,7 @@ import PostBadges from '../../components/PostBadges.astro';
 import {
   getAnnouncements,
   formatDate,
+  postDate,
   postPath,
   coverImage,
   imageUrl,
@@ -19,9 +20,17 @@ import { siteThemeId, getTheme } from '../../themes/registry';
  * links here; each title goes to the post's own page.
  *
  * An explicit route rather than an entry in pages.yaml, because this one has
- * real logic behind it - it reads a collection, and it advertises the feed.
+ * real logic behind it - it reads the database, and it advertises the feed.
  * [page].astro exists for pages that are only copy.
  */
+
+/**
+ * On demand. A post published in /admin is on this page the moment it is saved,
+ * with no commit and no rebuild in between - which is the entire point of
+ * moving announcements into D1. See finding F41 in TASKS.md.
+ */
+export const prerender = false;
+
 const [homeEntry, siteEntry] = await Promise.all([
   getEntry('home', 'home'),
   getEntry('site', 'site'),
@@ -29,7 +38,7 @@ const [homeEntry, siteEntry] = await Promise.all([
 if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
 if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
 
-const posts = await getAnnouncements();
+const { posts } = await getAnnouncements();
 const theme = getTheme(siteThemeId);
 ---
 
@@ -64,11 +73,11 @@ const theme = getTheme(siteThemeId);
         {
           posts.map((post) => (
             <li>
-              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
               <h2>
-                <a href={postPath(post)}>{post.data.title}</a>
+                <a href={postPath(post)}>{post.title}</a>
               </h2>
-              <PostBadges pinned={post.data.pinned} grades={post.data.grades} />
+              <PostBadges pinned={post.pinned} grades={post.grades} />
               {coverImage(post) && (
                 <a class="photo-link" href={postPath(post)} tabindex="-1" aria-hidden="true">
                   <img

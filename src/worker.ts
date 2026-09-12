@@ -1,8 +1,44 @@
 /**
- * Blackshear PTA - pre-launch gate.
+ * Blackshear PTA - the Worker. Two jobs: the pre-launch gate, and handing
+ * everything the gate allows through to Astro.
  *
- * TEMPORARY. Delete this file and the "main"/"run_worker_first" lines in
- * wrangler.jsonc at cutover (TASKS.md A29). Everything else keeps working.
+ * WHY THIS FILE IS STILL THE ENTRY POINT.
+ *
+ * Announcements render on demand now, which means @astrojs/cloudflare, which
+ * generates its own Worker at dist/server/entry.mjs. The obvious move would be
+ * to point wrangler.jsonc's "main" at that and delete this file - and it would
+ * delete the gate with it.
+ *
+ * The gate cannot move into Astro middleware, which is the normal place for
+ * "run this before every request". Middleware runs for routes Astro renders;
+ * all but four routes here are prerendered files served straight off the assets
+ * binding, and those are exactly the pages the gate exists to keep people out
+ * of. A gate that only covered /announcements would be no gate.
+ *
+ * So the arrangement is the other way round: this file owns the front door, and
+ * calls Astro's handler for anything it lets past. Astro then does what it
+ * always does - render the four on-demand routes, hand everything else to
+ * ASSETS.
+ *
+ * This is a supported shape, not a workaround. @astrojs/cloudflare builds
+ * through @cloudflare/vite-plugin, which takes wrangler.jsonc's "main" as THE
+ * Worker and compiles it - so this file is the entry, and
+ * `@astrojs/cloudflare/entrypoints/server` is the published handler to hand off
+ * to. (The adapter exports the same thing in smaller pieces for Hono.)
+ *
+ * ONE NON-OBVIOUS CONSEQUENCE, worth writing down because it cost an hour.
+ * That handler also implements the protocol the adapter's *workerd* prerenderer
+ * speaks at build time, over ordinary HTTP requests to this Worker. The gate
+ * below answers a request with no unlock cookie by redirecting it, so with
+ * `prerenderEnvironment: 'workerd'` the build's own prerender requests get
+ * redirected to /under-construction and the build dies on a truncated JSON
+ * response that names nothing relevant. astro.config.mjs pins
+ * `prerenderEnvironment: 'node'`, which keeps prerendering out of this Worker
+ * entirely. Do not change it without reading this paragraph.
+ *
+ * TEMPORARY: the gate itself (TASKS.md A29). At cutover, delete the gate branch
+ * below and "run_worker_first" in wrangler.jsonc. This file stays, because the
+ * hand-off to Astro is now permanent.
  *
  * WHAT IT IS: one shared password, held by the e-board, so people who wander
  * onto blackshearpta.org before launch land on "we are still building, here is
@@ -40,11 +76,36 @@
 
 import { handleAdminApi, isAdminPath, type AdminEnv } from './worker/admin';
 import { isImagePath, serveImage, type ImageEnv } from './worker/images';
+import astro from '@astrojs/cloudflare/entrypoints/server';
 
 interface Env extends AdminEnv, ImageEnv {
   ASSETS: Fetcher;
   /** Set as a Cloudflare secret. Absent means "fail closed"; see above. */
   SITE_PASSWORD?: string;
+}
+
+/**
+ * Hands a request to Astro: the four on-demand routes get rendered, everything
+ * else falls through to the static assets binding inside the adapter's entry.
+ *
+ * Everywhere this appears used to read `env.ASSETS.fetch(request)`. That is
+ * still what happens for a prerendered page - it just happens one layer in,
+ * where the adapter can decide.
+ */
+function toAstro(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  /**
+   * The cast is over optionality, not shape.
+   *
+   * `wrangler types` generates a global Env where every declared binding is
+   * required, because at runtime it is - a Worker whose bindings are missing
+   * does not start (F29). The interfaces in this repo mark them optional on
+   * purpose, so that each feature has to decide out loud what it does when its
+   * binding is absent and can answer with a sentence instead of a stack trace.
+   *
+   * Both describe the same object. Nothing is being asserted here that the
+   * platform does not already guarantee.
+   */
+  return astro.fetch(request, env as unknown as Parameters<typeof astro.fetch>[1], ctx);
 }
 
 const COOKIE = 'pta_access';
@@ -145,9 +206,12 @@ async function handleUnlock(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    // Hashed build output. Straight to the assets binding, ahead of the gate and
+    // ahead of Astro's routing - there is nothing for either to decide about a
+    // fingerprinted stylesheet.
     if (isPublicAsset(url.pathname)) return env.ASSETS.fetch(request);
     if (url.pathname === UNLOCK_PATH) return handleUnlock(request, env);
 
@@ -162,7 +226,7 @@ export default {
      */
     if (isAdminPath(url.pathname)) {
       if (url.pathname.startsWith('/admin/api')) return handleAdminApi(request, env, url);
-      return env.ASSETS.fetch(request);
+      return toAstro(request, env, ctx);
     }
 
     /**
@@ -184,11 +248,11 @@ export default {
     const unlocked =
       expected !== null && presented !== null && timingSafeEqual(presented, expected);
 
-    if (unlocked) return env.ASSETS.fetch(request);
+    if (unlocked) return toAstro(request, env, ctx);
 
     // The gate page has to be reachable while gated, or this redirects forever.
     if (url.pathname === GATE_PATH || url.pathname === '/under-construction') {
-      const page = await env.ASSETS.fetch(request);
+      const page = await toAstro(request, env, ctx);
       // Copy the asset server's headers and override one, rather than building a
       // fresh set. Constructing a new Headers from scratch here silently dropped
       // everything public/_headers adds - including the site-wide

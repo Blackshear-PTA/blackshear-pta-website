@@ -2,12 +2,13 @@
 import { uid } from '../../uid';
 import PostBadges from '../PostBadges.astro';
 import {
-  getAnnouncements,
   formatDate,
+  postDate,
   postPath,
   coverImage,
   imageUrl,
   excerpt,
+  type Post,
 } from '../../lib/announcements';
 import type { HomeData } from '../../types';
 
@@ -15,19 +16,30 @@ import type { HomeData } from '../../types';
  * The homepage announcements block. Was "What's happening"; renamed so the
  * homepage, the nav, the index page and the feed all call this one thing by
  * one name.
+ *
+ * PURELY PRESENTATIONAL: it is handed its posts rather than fetching them.
+ *
+ * It used to call getAnnouncements() itself, which was fine while that read a
+ * content collection at build time. Now it would be a database read, and this
+ * component is rendered by both structures, which are rendered by BOTH the
+ * homepage and /preview - so a self-fetching component would either drag
+ * /preview into on-demand rendering by accident, or run three queries there to
+ * answer one question. Taking props makes the page that owns the request own
+ * the read, which is where the decision belongs and where it is visible.
  */
 interface Props {
   announcements: HomeData['announcements'];
+  /** Already filtered, ordered and limited. See src/lib/announcements.ts. */
+  posts: Post[];
+  /** Every published post, not just the ones passed - drives "see all N". */
+  total: number;
 }
 
-const { announcements } = Astro.props;
+const { announcements, posts, total } = Astro.props;
 
 // Unique per render: /preview puts every design on one page, so a hardcoded
 // id would ship once per design and aria-labelledby would be ambiguous.
 const headingId = uid('announcements-heading');
-
-const posts = await getAnnouncements(announcements.limit);
-const total = (await getAnnouncements()).length;
 ---
 
 <section class="announcements" aria-labelledby={headingId}>
@@ -38,11 +50,11 @@ const total = (await getAnnouncements()).length;
         const cover = coverImage(post);
         return (
           <li>
-            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
             <h3>
-              <a href={postPath(post)}>{post.data.title}</a>
+              <a href={postPath(post)}>{post.title}</a>
             </h3>
-            <PostBadges pinned={post.data.pinned} grades={post.data.grades} />
+            <PostBadges pinned={post.pinned} grades={post.grades} />
             {cover && (
               <a class="cover" href={postPath(post)} tabindex="-1" aria-hidden="true">
                 <img src={imageUrl(cover.key)} alt={cover.alt} loading="lazy" decoding="async" />

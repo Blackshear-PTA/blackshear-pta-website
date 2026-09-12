@@ -122,15 +122,25 @@ outcome is a failed build and a site that keeps showing yesterday's version.
 
 Announcements have their own editor at
 [blackshearpta.org/admin](https://blackshearpta.org/admin). Sign in with your
-PTA account, write a title and a paragraph, save. The live site catches up about
-a minute later.
+PTA account, write a title and a paragraph, save. **It is live straight away** -
+reload the announcements page and it is there.
 
 You can pin a post to the top, or save it as a **draft** to finish later - a
-draft is invisible on the site, the news page and the feed.
+draft is invisible on the site, the homepage and the feed.
 
-Behind the scenes each post is one file in `src/content/announcements/`, so
-anything the editor does can also be done by hand, and everything is in the
-history either way. But there is no reason to edit those by hand.
+Announcements are the one kind of content that is **not** a file in this
+repository. They are rows in a database, which is what makes saving instant:
+everything else here needs the site rebuilt before a change shows up, and that
+is the minute you would otherwise be waiting.
+
+Nothing is lost by that. Every change is listed under **History** at the bottom
+of the editor, with who made it and when, and a deleted post is kept there in
+full so it can be put back. You do not need git or a terminal to read it.
+
+`src/content/announcements/*.md` still exists and holds the five posts as they
+were before the move. It is a frozen copy kept until the new path has proven
+itself, and **editing those files changes nothing on the site**. They will be
+deleted.
 
 Setup and troubleshooting are in [ADMIN.md](ADMIN.md).
 

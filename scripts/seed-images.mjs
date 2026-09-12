@@ -24,7 +24,6 @@
 import { execFileSync } from 'node:child_process';
 import {
   readFileSync,
-  readdirSync,
   writeFileSync,
   mkdtempSync,
   mkdirSync,
@@ -35,10 +34,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { parsePost } from '../src/worker/frontmatter.mjs';
-
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const POSTS = join(ROOT, 'src/content/announcements');
 
 const FORCE = process.argv.includes('--force');
 /** Say nothing when there is nothing to do, so a preflight can call this every time. */
@@ -86,24 +82,57 @@ function bucketName() {
   return found[1];
 }
 
-/** Every image key referenced by a post - gallery images and covers alike. */
+/**
+ * Every image key referenced by a post - gallery images and covers alike.
+ *
+ * Read from the LOCAL D1 database, which is where announcements live now.
+ * It used to read src/content/announcements/*.md. Those files are still in the
+ * repository, deliberately, until the database path has proven itself in
+ * production - but they are already a frozen copy, so seeding from them would
+ * quietly stop fetching photos for anything posted after the migration. The
+ * database is the thing the dev server will actually render.
+ *
+ * Returns an empty set rather than failing when the database is not there yet.
+ * The only consequence is photos that 404, which is the situation this script
+ * exists to fix and not one worth refusing to start a dev server over.
+ */
 function referencedKeys() {
   const keys = new Set();
-  let files = [];
+
+  let raw;
   try {
-    files = readdirSync(POSTS).filter((f) => f.endsWith('.md'));
+    raw = execFileSync(
+      join(ROOT, 'node_modules/.bin/wrangler'),
+      [
+        'd1', 'execute', 'blackshear-pta', '--local', '--json',
+        '--command', 'SELECT images, cover FROM posts',
+      ],
+      { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+    );
   } catch {
     return keys;
   }
-  for (const file of files) {
-    const parsed = parsePost(readFileSync(join(POSTS, file), 'utf8'));
-    if (!parsed) continue;
-    for (const image of parsed.meta.images ?? []) {
-      if (image && typeof image.key === 'string') keys.add(image.key);
+
+  let rows = [];
+  try {
+    const start = raw.indexOf('[');
+    rows = start === -1 ? [] : (JSON.parse(raw.slice(start))[0]?.results ?? []);
+  } catch {
+    return keys;
+  }
+
+  for (const row of rows) {
+    try {
+      for (const image of JSON.parse(row.images ?? '[]')) {
+        if (image && typeof image.key === 'string') keys.add(image.key);
+      }
+    } catch {
+      /* One unreadable row should not cost the other posts their photos. */
     }
-    // A cover names one of the images above in every file this repo writes, but
-    // it is a separate field and a hand-edited file could disagree.
-    if (typeof parsed.meta.cover === 'string' && parsed.meta.cover) keys.add(parsed.meta.cover);
+    // A cover names one of the images above in every post this repo writes, and
+    // the schema has a trigger enforcing it - but it is a separate column, so
+    // it is read separately.
+    if (typeof row.cover === 'string' && row.cover) keys.add(row.cover);
   }
   return keys;
 }

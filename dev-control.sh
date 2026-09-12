@@ -189,12 +189,28 @@ _worker_preflight() {
     printf '  %s/admin signs in as%s %s\n' "$DIM" "$RESET" "$admin"
   fi
 
-  # A token is not needed for read-only local work, and a bad one is worse than
-  # none: the repository is public, so reads succeed unauthenticated and fail
-  # with a bare "Bad credentials" the moment a stale token is attached.
+  # A token is not needed for the Instagram list to LOAD, and a bad one is worse
+  # than none: the repository is public, so reads succeed unauthenticated and
+  # fail with a bare "Bad credentials" the moment a stale token is attached.
+  # Announcements no longer touch GitHub at all.
   if [[ -n "$token" && "${#token}" -lt 20 ]]; then
-    printf '%s  ! GITHUB_TOKEN looks like a placeholder - posts will fail to load.%s\n' "$YELLOW" "$RESET"
+    printf '%s  ! GITHUB_TOKEN looks like a placeholder - the Instagram list will fail to load.%s\n' "$YELLOW" "$RESET"
     printf '%s    Delete the line; local reads need no token.%s\n' "$DIM" "$RESET"
+  fi
+
+  # The announcements database.
+  #
+  # Applied on every worker start rather than left as a step to remember.
+  # wrangler records what it has already applied, so this is a no-op on the
+  # second run and later - and the failure it prevents is a bad one to debug: a
+  # local D1 with no tables answers every announcement route with a 500 whose
+  # message is about SQL, on the one part of the site that has no other
+  # explanation for being broken.
+  if ! $NODE_RUNNER npx wrangler d1 migrations apply blackshear-pta --local >/dev/null 2>&1; then
+    printf '%s  ! Could not set up the local announcements database.%s\n' "$YELLOW" "$RESET"
+    printf '%s    Try it by hand to see why: npm run db:migrate%s\n' "$DIM" "$RESET"
+  else
+    printf '  %sannouncements read from%s a local D1 (writes stay on this machine)\n' "$DIM" "$RESET"
   fi
 
   # Silent when the bucket is already populated; noisy only when it does work.
@@ -470,9 +486,16 @@ do_check() {
   $NODE_RUNNER npm run check:domain || { printf '%s  domain gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ Instagram post list%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:instagram || { printf '%s  Instagram gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  # The announcements database: the migrations, the single-pin index, both
+  # .refine() rules and the draft filter, run against real SQLite. This is the
+  # gate that replaced what `astro build` used to check about content, and it
+  # has to be registered HERE or it does not run at all - there is no CI
+  # workflow and Workers Builds only runs `npm run build`.
+  printf '\n%s▶ announcements database%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:d1 || { printf '%s  D1 gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n'
   if [[ "$failed" == "0" ]]; then
-    printf '%s✓ All thirteen green.%s\n' "$GREEN" "$RESET"
+    printf '%s✓ All fourteen green.%s\n' "$GREEN" "$RESET"
   else
     printf '%s✗ Something failed above.%s\n' "$RED" "$RESET"
   fi

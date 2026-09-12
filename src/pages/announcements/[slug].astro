@@ -1,43 +1,67 @@
 ---
-import { getCollection, getEntry, render } from 'astro:content';
+import { getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Footer from '../../components/sections/Footer.astro';
 import PostBadges from '../../components/PostBadges.astro';
-import { formatDate, coverImage, imageUrl, excerpt } from '../../lib/announcements';
+import {
+  getAnnouncement,
+  formatDate,
+  postDate,
+  coverImage,
+  imageUrl,
+  excerpt,
+} from '../../lib/announcements';
+import { renderMarkdown } from '../../lib/markdown.mjs';
+import { notFoundPage } from '../../lib/not-found';
 import { isExternal } from '../../lib/links';
 import { siteThemeId, getTheme } from '../../themes/registry';
 
 /**
- * One page per announcement.
+ * One page per announcement, rendered on demand.
  *
- * Drafts get a page too, deliberately. Nothing links to it and it stays out of
- * the listings and the feed, so it is not published in any meaningful sense -
- * but it means whoever wrote it can preview the real thing before setting it
- * live, which is the only way to catch a photo that crops badly or a paragraph
- * that reads worse than it did in the form.
+ * There is no getStaticPaths() any more, and its absence closes a bug by
+ * construction. It used to build a page for every entry in the collection,
+ * which meant a draft was filtered out of the list, the homepage and the feed -
+ * every route going through getAnnouncements() - and still had a page built at
+ * its own URL, reachable by anyone with the address. That is not what the
+ * checkbox labelled "not shown on the site" says.
+ *
+ * Now this route asks the same question the listings ask, of the same column,
+ * through getAnnouncement() - which is getPublished(), which has `draft = 0` in
+ * its WHERE clause and no way to be asked otherwise. A draft is a 404 here for
+ * the same reason it is absent there: there is only one query.
+ *
+ * The cost is that a draft cannot be previewed on the site either. That is the
+ * honest reading of "draft": if it were viewable it would be published.
  */
-export async function getStaticPaths() {
-  /**
-   * Drafts get no page at all.
-   *
-   * This called getCollection with no filter, so a draft was removed from the
-   * list, the homepage and the feed - every route that goes through
-   * getAnnouncements() - and then had its own page built anyway. It was
-   * therefore still live at /announcements/<slug>/, reachable by anyone with
-   * the address, which the checkbox labelled "not shown on the site" does not
-   * describe.
-   *
-   * The cost is that a draft cannot be previewed on the site either. That is
-   * the honest reading of "draft": if it were viewable it would be published.
-   */
-  const posts = await getCollection('announcements', ({ data }) => !data.draft);
-  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
-}
+export const prerender = false;
 
-const { entry } = Astro.props;
-const post = entry.data;
-const { Content } = await render(entry);
+const { slug } = Astro.params;
+const match = slug ? await getAnnouncement(slug) : null;
+
+/**
+ * A missing post - or a draft, or a slug somebody mistyped - gets the site's
+ * real 404 page and a real 404 status. See src/lib/not-found.ts for why this is
+ * not Astro.rewrite('/404').
+ *
+ * WHY IT IS BUILT ON ITS OWN LINE rather than inside the `if` below, which is
+ * how anyone would write it: `astro check` transforms a component to TSX and
+ * DROPS a top-level `return` statement from the frontmatter when it does.
+ * Anything referenced only inside that return therefore looks unread, and this
+ * project builds with `noUnusedLocals`, so the honest version of this code
+ * fails the gate with "'notFoundPage' is declared but its value is never read"
+ * - an error about the wrong thing entirely, on a line that is correct.
+ * Assigning first means both names are read by ordinary statements.
+ *
+ * Costs one wasted call in the missing case, which is the case nobody is
+ * waiting on. If a future Astro reports this correctly, collapse it back.
+ */
+const missing = match ? null : await notFoundPage(Astro.url);
+if (missing) return missing;
+
+/** Non-null: the line above returns whenever it is not. */
+const post = match!;
 
 const [homeEntry, siteEntry] = await Promise.all([
   getEntry('home', 'home'),
@@ -47,17 +71,34 @@ if (!homeEntry) throw new Error('Missing home entry in src/content/home.yaml.');
 if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
 
 const theme = getTheme(siteThemeId);
-const cover = coverImage(entry);
+const cover = coverImage(post);
 // The cover already appears at the top; the rest go in the gallery below.
 const gallery = post.images.filter((image) => image.key !== cover?.key);
 
 // Cover first, then the rest: the order the viewer pages through.
 const ordered = cover ? [cover, ...gallery] : gallery;
+
+/**
+ * The body, markdown to HTML, here rather than at build time.
+ *
+ * `render(entry)` needed a collection entry that Astro had already processed
+ * during a build. There is no build for this content any more, so the markdown
+ * is turned into HTML on the request - see src/lib/markdown.mjs, which escapes
+ * raw HTML rather than passing it through.
+ *
+ * Safe with set:html for that reason, and the .prose rules below already use
+ * :global() for the elements inside, so they reach this markup exactly as they
+ * reached <Content />. That is worth stating out loud: Astro's scoped CSS
+ * attaches a data-astro-cid attribute to elements in the TEMPLATE, and markup
+ * injected as a string never gets one - the same trap that left the /admin
+ * tables unstyled twice.
+ */
+const bodyHtml = renderMarkdown(post.body);
 ---
 
 <BaseLayout
   title={`${post.title} - Blackshear PTA`}
-  description={excerpt(entry, 160)}
+  description={excerpt(post, 160)}
   themeId={theme.id}
 >
   <SiteHeader site={siteEntry.data} />
@@ -67,7 +108,7 @@ const ordered = cover ? [cover, ...gallery] : gallery;
 
       <article>
         <header>
-          <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+          <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
           <h1>{post.title}</h1>
           <PostBadges pinned={post.pinned} draft={post.draft} grades={post.grades} />
         </header>
@@ -81,9 +122,7 @@ const ordered = cover ? [cover, ...gallery] : gallery;
           )
         }
 
-        <div class="prose">
-          <Content />
-        </div>
+        <div class="prose" set:html={bodyHtml} />
 
         {
           post.href && (
