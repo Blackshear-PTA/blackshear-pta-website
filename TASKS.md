@@ -45,7 +45,7 @@
 - [x] **C4**: Create Cloudflare account - `JON` - Created 2026-08-28. ⚠️ Confirm it was created as `blackshearpta@gmail.com`, not a personal address
 - [x] **C5**: Add `blackshearpta.org` to Cloudflare, review imported DNS - `JON` - Free plan. All 13 records imported and verified against [Appendix A](#appendix-a--dns-snapshot-2026-08-28): 5 MX, SPF, `google-site-verification`, `_dmarc`, 2 A, 3 CNAME. Nothing lost
 - [x] **C6**: Change nameservers at GoDaddy to Cloudflare - `JON` - `elias` + `sandra.ns.cloudflare.com`. Zone active, registry delegation confirmed, records verified live. DNSSEC was already unsigned so no disable step was needed
-- [!] **C7**: Decide: Cloudflare Email Routing vs. Google mail - `JON` + `CLAUDE` - **Blocked on B2.** Do not enable Email Routing while the Workspace application is live - it overwrites the MX records
+- [!] **C7**: Decide: Cloudflare Email Routing vs. Google mail - `JON` + `CLAUDE` - **Blocked on B2/B3.** Do not enable Email Routing while the Workspace application is live - it overwrites the MX records. **Equally: do not "clean up" the Google MX or `google-site-verification` records to try to free the domain.** That is not what holds the claim, and it would discard a completed verification step - [F41](#f41)
 - [ ] **C8**: Establish `webmaster@blackshearpta.org` - `JON` - Method depends on C7
 - [!] **C9**: Registrar transfer GoDaddy → Cloudflare - `JON` + **Gabe**: **Attempted 2026-08-28, rejected by GoDaddy within minutes.** Domain was unlocked and the auth code was valid, so neither was the cause. See [F15](#f15). **Retry after 2026-10-11.** Confirm Cloudflare refunds the $11.20
 
@@ -59,9 +59,9 @@
 
 - [x] **B1**: Initial Google for Nonprofits request submitted - `JON` - Submitted 2026-08-28
 - [~] **B2**: Complete nonprofit validation - `JON` - Partner is **Goodstack** (We Are Percent Ltd), *not* TechSoup. Rep approval ✅ and identity verification ✅ both cleared 2026-08-28. Application processing. See [F12](#f12)
-- [ ] **B3**: Reconcile with whatever already exists on the domain - `JON` - **Depends on C2.** If a Workspace subscription is already active on `blackshearpta.org`, the nonprofit application may need it converted rather than created fresh
-- [ ] **B4**: Activate Workspace for Nonprofits on `blackshearpta.org` - `JON`
-- [ ] **B5**: Convert `webmaster@` to a real mailbox; migrate MX if needed - `JON` + `CLAUDE`
+- [!] **B3**: Reconcile with whatever already exists on the domain - `JON` - **The conflict predicted in [F8](#f8) has now fired.** Workspace signup returns *"This domain name is already in use"*. **Blocked on Gabe**: the old tenant must be deleted or its super-admin transferred. Neither is a DNS change - see [F41](#f41). Recommended: **delete it**, because of the reseller wrinkle in [F43](#f43)
+- [ ] **B4**: Activate Workspace for Nonprofits on `blackshearpta.org` - `JON` - **Depends on B3.** On the activation form, *"does your nonprofit currently use Google Workspace?"* must be answered **Yes** while the old tenant exists - answering *No* is what produces the collision. If B3 closes by deleting the tenant, the answer becomes *No*. See [F41](#f41)
+- [ ] **B5**: Convert `webmaster@` to a real mailbox; migrate MX if needed - `JON` + `CLAUDE` - **Also fix the SPF record, which is broken today** ([F42](#f42)). Do not carry the current `_spfm` include forward
 - [ ] **B6**: Re-point Cloudflare Access identity provider at Workspace SSO - `CLAUDE` - Config change only, no rework
 
 ### GitHub for Nonprofits
@@ -628,6 +628,16 @@ registered or it does not exist.
 
 ---
 
+**F41 - The domain claim is held in Google's account registry, not in DNS, and the activation form asks the question that actually matters.** Workspace signup on `blackshearpta.org` returns *"This domain name is already in use"*. The intuitive fix - delete the Google MX and `google-site-verification` records left over from Gabe's attempt - **does nothing**, because Google resolves that check against its own tenant database and never looks at the zone. Deleting them is worse than useless: the `google-site-verification` TXT is a *completed* step that would have to be redone, and dropping the MX records breaks inbound mail for any address on the old tenant.
+
+The Google for Nonprofits activation flow asks *"does your nonprofit currently use Google Workspace?"* **Answering "No" is what produces the collision** - it routes into create-a-new-tenant against a domain that already has one. While Gabe's tenant exists the honest answer is **"Yes"**, which asks for the existing customer ID and attaches the nonprofit benefit to that tenant instead of creating a second one. That still needs super-admin on the old tenant, so it reframes the blocker rather than removing it. **Two ways out, both requiring Gabe, neither involving DNS:** (a) he deletes the old tenant, freeing the domain for a clean create with Jon as super admin; or (b) he transfers super-admin to Jon, who then answers "Yes". If he cannot sign in, the GfN admin account from [F44](#f44) is now a real support channel for Google's domain-reclaim process.
+
+**F42 - The SPF record has been broken since the nameserver move, and nobody noticed.** `v=spf1 include:dc-aa8e722993._spfm.blackshearpta.org ~all` points at a hostname that returns **NXDOMAIN**, confirmed against `8.8.8.8` so it is not a local resolver artifact. That `_spfm` target was generated *dynamically by GoDaddy's nameservers* rather than stored as a zone record, so when [C6](#track-c---domain-dns-email) moved delegation to Cloudflare the SPF record's **text** came across but the thing it references did not. An unresolvable `include` is an SPF **permerror**, and DMARC is at `p=quarantine`. [C5](#track-c---domain-dns-email)'s "nothing lost" was accurate record-for-record and wrong functionally - a dynamic dependency is invisible to a record-by-record diff. Harmless while nothing sends as the domain; a live deliverability problem the moment [B5](#google-workspace-for-nonprofits) does. Replace it outright, do not migrate it.
+
+**F43 - The old tenant looks like an empty shell, and may be GoDaddy-resold.** No DKIM record exists at any common selector (`google`, `default`, `selector1`, `selector2`, `s1`), which means Workspace DKIM was never switched on and nobody ever sent mail from that tenant in earnest - consistent with the signup-then-abandon story in [F8](#f8), and the reason deleting it is low-risk. But the GoDaddy fingerprints from [F2](#f2) still matter: the `_spfm` SPF format and a DMARC `rua` pointing at `onsecureserver.net`. **A Workspace tenant sitting under a reseller cannot take nonprofit pricing** - it has to be moved to direct Google billing or cancelled first. Jon's *Domains Only* delegate access ([C3](#track-c---domain-dns-email)) explicitly cannot see subscriptions, so Gabe has to establish this either way. It is the main argument for deleting rather than inheriting: cancellation sidesteps the reseller question entirely and leaves the tenant owned by the PTA rather than by a personal account.
+
+**F44 - The Google for Nonprofits account came through, under the state org's name, with the previous admins removed.** Approved 2026-09-11: *"Your request for administrative access to the Google for Nonprofits account for Pta Texas Congress has been approved."* The name is the group-exemption identity predicted in [F13](#f12), so it is expected and not itself a problem. The sentence worth acting on is *"The original owners have been removed from the Google for Nonprofits account."* **Confirm with Gabe that he was the original owner.** If he was, this is simply the takeover working as intended. If he was not, the removed admins belonged to Texas PTA or another local unit, and that should be raised with Google now rather than surface later as another unit losing access. Note also that GfN account admin and Workspace tenant admin are **separate**: this approval does not grant any authority over the tenant blocking [B3](#google-workspace-for-nonprofits).
+
 ## Reference
 
 - **School:** Blackshear Elementary Fine Arts Academy, 1712 E. 11th St., Austin, TX 78702 (Austin ISD)
@@ -655,7 +665,7 @@ CNAME  www                    -> blackshearpta.org
 MX     1  aspmx.l.google.com.
        5  alt1.aspmx.l.google.com. / alt2.aspmx.l.google.com.
        10 alt3.aspmx.l.google.com. / alt4.aspmx.l.google.com.
-TXT    "v=spf1 include:dc-aa8e722993._spfm.blackshearpta.org ~all"
+TXT    "v=spf1 include:dc-aa8e722993._spfm.blackshearpta.org ~all"   <-- BROKEN, see F42
 TXT    "google-site-verification=j2oZCILLgqJoY-w2X-_l1g3z3_pxHQ6-vgXFLWWVzoE"
 TXT    _dmarc  "v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
 DNSSEC unsigned
