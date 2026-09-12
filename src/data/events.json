@@ -1,18 +1,11 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-09-11",
+  "generated": "2026-09-12",
   "window": {
-    "from": "2026-09-11",
-    "to": "2027-09-11"
+    "from": "2026-09-12",
+    "to": "2027-09-12"
   },
   "events": [
-    {
-      "id": "4li4bajl4fvaccpkigesvvujbi@google.com@2026-09-11T20:10:00.000Z",
-      "title": "**POSTPONED** PTA Bake Sale (3rd grade)",
-      "start": "2026-09-11T20:10:00.000Z",
-      "end": "2026-09-11T21:00:00.000Z",
-      "allDay": false
-    },
     {
       "id": "7rr34phsk3iicu775jsa7jl996@google.com@2026-09-13T00:00:00.000Z",
       "title": "Ms. Soliz's Birthday (PK3 Teacher)",
@@ -28,20 +21,20 @@
       "allDay": true
     },
     {
-      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2026-09-15T00:00:00.000Z",
-      "title": "Ms. Earl's Birthday! (Cafeteria)",
-      "start": "2026-09-15T00:00:00.000Z",
-      "end": "2026-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
-    },
-    {
       "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2026-09-15T00:00:00.000Z",
       "title": "Ms. Virginia's Birthday! (Cafeteria)",
       "start": "2026-09-15T00:00:00.000Z",
       "end": "2026-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2026-09-15T00:00:00.000Z",
+      "title": "Ms. Earl's Birthday! (Cafeteria)",
+      "start": "2026-09-15T00:00:00.000Z",
+      "end": "2026-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
     },
     {
       "id": "0pkcpbuj7ebkbn67gpu1cbijti@google.com@2026-09-17T22:00:00.000Z",
@@ -79,15 +72,15 @@
       "allDay": false
     },
     {
-      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Ms. Wellman's Birthday! (AP)",
+      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
@@ -247,15 +240,15 @@
       "allDay": false
     },
     {
-      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Staff Pies & Sides Event",
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
@@ -569,8 +562,8 @@
       "allDay": false
     },
     {
-      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Ms. Chalida's Birthday! (Cafeteria)",
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -583,8 +576,8 @@
       "allDay": true
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
+      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Ms. Chalida's Birthday! (Cafeteria)",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
