@@ -1,18 +1,11 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-09-13",
+  "generated": "2026-09-14",
   "window": {
-    "from": "2026-09-13",
-    "to": "2027-09-13"
+    "from": "2026-09-14",
+    "to": "2027-09-14"
   },
   "events": [
-    {
-      "id": "7rr34phsk3iicu775jsa7jl996@google.com@2026-09-13T00:00:00.000Z",
-      "title": "Ms. Soliz's Birthday (PK3 Teacher)",
-      "start": "2026-09-13T00:00:00.000Z",
-      "end": "2026-09-14T00:00:00.000Z",
-      "allDay": true
-    },
     {
       "id": "24kcbgjtm071mcqpr1stamj9hc@google.com@2026-09-14T00:00:00.000Z",
       "title": "Fine Arts Starts",
@@ -21,20 +14,20 @@
       "allDay": true
     },
     {
-      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2026-09-15T00:00:00.000Z",
-      "title": "Ms. Virginia's Birthday! (Cafeteria)",
-      "start": "2026-09-15T00:00:00.000Z",
-      "end": "2026-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
-    },
-    {
       "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2026-09-15T00:00:00.000Z",
       "title": "Ms. Earl's Birthday! (Cafeteria)",
       "start": "2026-09-15T00:00:00.000Z",
       "end": "2026-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
+    },
+    {
+      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2026-09-15T00:00:00.000Z",
+      "title": "Ms. Virginia's Birthday! (Cafeteria)",
+      "start": "2026-09-15T00:00:00.000Z",
+      "end": "2026-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
     },
     {
       "id": "0pkcpbuj7ebkbn67gpu1cbijti@google.com@2026-09-17T22:00:00.000Z",
@@ -562,6 +555,13 @@
       "allDay": false
     },
     {
+      "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Buzz Grams",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
       "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
       "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
@@ -571,13 +571,6 @@
     {
       "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
       "title": "Ms. Chalida's Birthday! (Cafeteria)",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
-      "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -863,15 +856,15 @@
       "allDay": false
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
