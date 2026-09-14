@@ -626,6 +626,103 @@ therefore never run outside a session where someone invoked them by hand. All
 twelve now run, and `do_check` in `dev-control.sh` is where a new gate has to be
 registered or it does not exist.
 
+<a name="f41"></a>
+**F41 - Announcements moved from markdown files in git to Cloudflare D1, and
+the thing that made it worth doing was not the storage.** Publishing took 60-90
+seconds because every save was a commit and every commit was a full rebuild.
+Moving the content to a database without also rendering it on demand would have
+changed nothing about that number - the delay was the rebuild, not the file. So
+both halves landed together: `posts` and `edits` tables, and `prerender = false`
+on the four routes that show announcements. A save is now live before the editor
+finishes saying so.
+
+**What the old design was actually buying, and what replaced it.** It is worth
+writing down because the git-backed version was a good decision, not a mistake,
+and the reasons it was good are the reasons this had to replace them rather than
+simply drop them:
+
+| It gave us | Now |
+|---|---|
+| `git log` as the audit trail | an `edits` table, and a **History** panel on `/admin` so it can be read without a terminal |
+| `git revert` as undo | a delete stores the whole post in `edits.detail`; recovery is one `wrangler d1 execute` |
+| a backup in every clone | `npm run export:posts`, which writes markdown in the format the files had. **This is the one genuinely new obligation** - nobody has to remember a git clone |
+| one copy of the content | still one copy. The markdown files stay only until this is proven, then go |
+
+**Four things cost real time, none of them the database.**
+
+**The homepage had to move too, and that was not in the brief.** It renders the
+announcements block, so leaving it prerendered would have frozen it at the last
+*code* deploy - and with content out of git there is no longer a content deploy
+to refresh it. "Live without a rebuild" is not true if the front page is not.
+`/preview` went with it for the same reason.
+
+**Making the homepage on-demand silently un-optimized its backdrop photo, and
+nothing about the page looked different.** `getImage({ width: 1200, quality: 45,
+format: 'webp' })` runs at build time; on an on-demand route the Cloudflare
+adapter has no image service and its fallback endpoint *streams the source file
+back unchanged*. The homepage went from serving a 180KB webp to serving the
+**6,301,582-byte original JPEG**, on the page a parent opens on a phone in the
+pickup line. It was found by fetching the URL and reading `Content-Length` - it
+is invisible in the markup, invisible on screen, and invisible in review. Fixed
+by committing an already-sized `campus-front-walk-band.webp` and importing it
+directly, which removes the runtime dependency rather than configuring it;
+`check:images` now fails if that file goes missing or comes back the wrong size.
+**The general shape: moving a page from build time to request time silently
+withdraws every build-time service it was using.** The image pipeline was the
+one that mattered here; the content loader was the other.
+
+**Importing one constant from `src/content.config.ts` put a filesystem globber
+in the Worker bundle.** `GRADE_LABELS` lived there; that file imports Astro's
+`glob` loader, which reaches tinyglobby, fdir and picomatch, which call
+`createRequire(import.meta.url)`. Every announcement route answered 500 with
+`The argument 'path' ... Received 'undefined'` and a stack pointing at picomatch
+- a message with no visible connection to the import that caused it. The three
+constants now live in `src/lib/grades.ts`. **A named import is not a promise
+that the rest of the module stays behind.**
+
+**The adapter fought the gate twice, in opposite directions.**
+`@astrojs/cloudflare` builds through `@cloudflare/vite-plugin`, which treats
+wrangler's `main` as *the* Worker - so `src/worker.ts` stays the entry and hands
+off to `@astrojs/cloudflare/entrypoints/server`, which is the supported shape
+and is what the handoff asked for. But that same handler also speaks the
+protocol the adapter's **workerd prerenderer** uses at build time, over ordinary
+HTTP to this Worker. The gate answers an unauthenticated request with a
+redirect, so the build's own prerender calls got bounced to
+`/under-construction` and the build died on `Unexpected end of JSON input`.
+`prerenderEnvironment: 'node'` keeps prerendering out of the Worker entirely.
+Also: `@astrojs/cloudflare@14.3.x` declares `astro: ^7.2.0` and needs an export
+that only exists in 7.3 - npm resolves a combination that cannot build. Pinned
+to `~14.2.6`. **A peer range is a claim, not a test.**
+
+**Two quieter ones, both about verification rather than code.** `astro check`
+transforms a component to TSX and **drops a top-level `return` from the
+frontmatter**, so anything referenced only inside that return reads as unused
+and fails `noUnusedLocals` - reported as "'notFoundPage' is declared but its
+value is never read" on a line that is correct. And `Astro.rewrite('/404')` does
+not work from an on-demand route, because `/404` is prerendered and has no
+component in the server manifest; it throws, Astro's error path serves the 404
+page anyway, and the reader gets the right-looking page with **status 500**. A
+crawler is told to come back later rather than to drop the address of a deleted
+post. Both are in `src/lib/not-found.ts` and `[slug].astro` with the reasoning
+attached.
+
+**The new gate.** `npm run check:d1` runs the real migrations and the real query
+layer against real SQLite through `node:sqlite` - not a mock, the same engine D1
+is built on. It exists because moving content out of git took away a guarantee
+the build gave for free: the content schema's Zod rules ran on every build, and
+`astro build` would not finish if a post was malformed. Nothing rebuilds on a
+publish now, so that check no longer runs, and the failure moved from "red build
+nobody saw" to "live page". Both `.refine()` rules are CHECKs and triggers in
+the schema; the single-pin invariant is a partial unique index, so two pinned
+posts are unrepresentable rather than merely avoided. Registered in `do_check` -
+**fourteen gates now**, and per F40 that registration is the only thing that
+makes a gate real.
+
+**The footgun that started it is gone by construction.** A save sends only the
+fields its form owns, and the API writes only the fields it receives, so
+omitting `pinned` cannot unpin a post. The old API wrote whole documents, which
+is why removing a checkbox from a form silently changed data.
+
 ---
 
 ## Reference

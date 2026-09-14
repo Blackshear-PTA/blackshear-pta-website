@@ -33,8 +33,8 @@ charges a monthly fee for keeping it running. Our old site works that way.
 
 This one is different, and the difference is the whole point.
 
-**The words on the site live in a few plain text files.** Not in a database, not
-behind a login. Just files, the way a Word document is a file. You can read them
+**Almost all the words on the site live in a few plain text files.** Not behind
+a login. Just files, the way a Word document is a file. You can read them
 without any special software.
 
 **Changing a file republishes the site by itself.** When someone saves a change,
@@ -42,10 +42,18 @@ a service called Cloudflare notices within a few seconds, rebuilds the site, and
 puts the new version online. It takes about a minute and nobody has to do
 anything else.
 
-**There is nothing running that can break.** The site is what is called a
-*static* site, which means every page is prepared in advance and then just sat
-there being served. There is no server doing work when you visit, no database
-that can fall over, no software that needs updating for security.
+**Announcements are the one exception, on purpose.** They are the thing that
+changes weekly, and waiting a minute to find out whether a post worked is the
+kind of friction that ends with nobody posting. So those are written in an
+editor at `/admin` and stored in a small database, and they appear on the site
+the moment they are saved. Every change is listed there with who made it, and a
+deleted post is kept so it can be put back.
+
+**Nearly nothing is running that can break.** Almost every page is prepared in
+advance and then just sat there being served — no server doing work when you
+visit, nothing to update for security. The announcement pages are the exception,
+and if that database were ever unavailable it is those four pages that would be
+affected rather than the site.
 
 That gives us three things the PTA specifically needs:
 
