@@ -58,15 +58,15 @@
       "allDay": false
     },
     {
-      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Ms. Wellman's Birthday! (AP)",
+      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
@@ -226,15 +226,15 @@
       "allDay": false
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Staff Pies & Sides Event",
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
@@ -450,15 +450,15 @@
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -548,13 +548,6 @@
       "allDay": false
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
       "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
       "title": "Ms. Chalida's Birthday! (Cafeteria)",
       "start": "2027-02-12T00:00:00.000Z",
@@ -564,6 +557,13 @@
     {
       "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
       "title": "Buzz Grams",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
