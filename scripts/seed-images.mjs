@@ -8,8 +8,7 @@
  * nothing in the bucket. This puts something in it.
  *
  * WHY IT CAN FETCH OVER PLAIN HTTPS AND NEEDS NO CREDENTIALS. /images/* is
- * deliberately routed ahead of the pre-launch gate in src/worker.ts, so the
- * live site serves these objects unauthenticated. That is not an oversight -
+ * served unauthenticated by src/worker.ts. That is not an oversight -
  * the keys are 128 bits of content hash with nothing to enumerate - and it
  * means seeding needs no R2 token, no bucket permissions, and no account
  * access at all. Anyone who can clone the repo can run it.

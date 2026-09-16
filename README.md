@@ -165,7 +165,6 @@ Everything technical is in [`docs/`](docs/):
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Getting it running, project layout, the rules that will bite you |
 | [`docs/EDITING-CONTENT.md`](docs/EDITING-CONTENT.md) | The content files in detail, and how to add a page |
 | [`docs/DEPLOYS.md`](docs/DEPLOYS.md) | How deploys work, build settings, the domain watch |
-| [`docs/PRE-LAUNCH-GATE.md`](docs/PRE-LAUNCH-GATE.md) | The password gate, and how to remove it at launch |
 | [`docs/CALENDAR.md`](docs/CALENDAR.md) | How the Google Calendar sync actually works |
 | [`docs/PROJECT-BRIEF.md`](docs/PROJECT-BRIEF.md) | Architecture and the reasoning behind every locked decision |
 

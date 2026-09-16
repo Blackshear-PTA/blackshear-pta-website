@@ -268,6 +268,20 @@ const site = defineCollection({
       location: z.string(),
       fullName: z.string(),
     }),
+    /**
+     * Registration identity, rendered publicly. Required rather than optional:
+     * it is the evidence a Google for Nonprofits reviewer needs to tie this
+     * domain to the organization on the account, and a silently-absent block
+     * would fail that review without failing the build. See TASKS.md F48.
+     */
+    org: z.object({
+      legalName: z.string(),
+      irsName: z.string(),
+      ein: z.string(),
+      parent: z.string(),
+      address: z.string(),
+      school: z.string(),
+    }),
     nav: z.array(navItem).min(1),
     social: z.array(socialLink).default([]),
     primaryAction: link,

@@ -4,16 +4,6 @@
 # never runs the Worker. This file is only for the :8787 worker server.
 
 
-# ---------------------------------------------------------------- the gate ---
-# The real value is NOT in this repo and must not be - the repo is public, so a
-# committed password is no password. In production it lives in a Cloudflare
-# secret, set once with:
-#
-#   npx wrangler secret put SITE_PASSWORD
-#
-# Ask the PTA for the current value. See src/worker.ts.
-SITE_PASSWORD=replace-me
-
 
 # --------------------------------------------------------------- /admin -----
 # Cloudflare Access runs at Cloudflare's edge, which means it does not exist on

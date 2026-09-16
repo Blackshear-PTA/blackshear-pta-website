@@ -4,9 +4,16 @@ import type { HomeData, SiteData } from '../../types';
 interface Props {
   footer: HomeData['footer'];
   social?: SiteData['social'];
+  /**
+   * Registration identity. Optional so a page that has not been threaded it
+   * still renders, but every current call site passes it: a 501(c)(3)'s status
+   * and EIN belong on every page, which is where donors, grant forms and
+   * corporate matching portals expect to find them. See TASKS.md F48.
+   */
+  org?: SiteData['org'];
 }
 
-const { footer, social = [] } = Astro.props;
+const { footer, social = [], org } = Astro.props;
 const { contact } = footer;
 
 // Strip everything but digits so tel: works from a phone (§2: mobile-first).
@@ -44,6 +51,16 @@ const glyphs = {
         <a href={telHref}>{contact.phone}</a>
         <span>{contact.address}</span>
       </address>
+
+      {
+        org && (
+          <p class="registration">
+            {org.legalName} is a 501(c)(3) public charity, registered with the
+            IRS as {org.irsName}, <abbr title="Employer Identification Number">EIN</abbr>{' '}
+            {org.ein}.
+          </p>
+        )
+      }
     </div>
 
     {
@@ -93,6 +110,17 @@ const glyphs = {
     font-family: var(--pta-font-display);
     font-weight: var(--pta-display-weight);
     text-transform: var(--pta-display-transform);
+  }
+
+  .registration {
+    margin: var(--pta-gap) 0 0;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+    max-width: var(--pta-measure);
+  }
+
+  .registration abbr {
+    text-decoration: none;
   }
 
   address {

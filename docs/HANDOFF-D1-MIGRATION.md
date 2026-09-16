@@ -149,9 +149,10 @@ Every one of these cost real time to find.
   Tailwind's preflight resets `margin: 0` on everything, which drops every modal
   into the top-left corner. Do not remove it.
 
-- **`/admin` is exempt from the pre-launch gate and must stay exempt.** See the
-  router in `src/worker.ts`. The gate is temporary (TASKS.md A29) and `/admin`
-  has to keep working the day it is deleted.
+- **`/admin` is routed by `src/worker.ts` and must stay that way.** The
+  pre-launch gate that file was built for is gone (TASKS.md A33), but `main`
+  and `run_worker_first` stay in `wrangler.jsonc` precisely so `/admin/api/*`
+  keeps reaching the router. See that file's header comment.
 
 - **Local dev:** `astro dev` on :4321 proxies `/admin/api/*` and `/images/*` to
   the Worker on :8787 (see `astro.config.mjs`). `dev all` starts both.

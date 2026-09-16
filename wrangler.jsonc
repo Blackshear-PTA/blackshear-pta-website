@@ -5,14 +5,16 @@
   // Store are Workers-only, and Phase 3 depends on Durable Objects. Starting on
   // Pages would mean a later migration with a domain switchover and downtime.
   //
-  // "main" points at the hand-written Worker, which now does two jobs: it holds
-  // the pre-launch gate, and it hands everything the gate allows through to the
-  // Astro adapter's generated entry. See the long comment at the top of
-  // src/worker.ts for why it is arranged that way round.
+  // "main" points at the hand-written Worker, which routes /admin/api/*,
+  // /images/* and /_astro/*, and hands everything else to the Astro adapter's
+  // generated entry. See the long comment at the top of src/worker.ts for why
+  // it is arranged that way round.
   //
-  // TEMPORARY: only "run_worker_first" and the gate branch inside src/worker.ts
-  // belong to the pre-launch gate (TASKS.md A29). At cutover, remove those -
-  // "main" now stays, because the announcement routes render on demand.
+  // NOTHING HERE IS TEMPORARY ANY MORE. The pre-launch gate is gone (TASKS.md
+  // A33). "main" stays because the announcement routes render on demand, and
+  // "run_worker_first" stays for the reason given at its own line below - the
+  // gate is what originally needed it, but not what needs it now. A29's
+  // instruction to delete both at cutover is obsolete; see F49.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
   "compatibility_date": "2026-08-28",
@@ -32,9 +34,9 @@
     "not_found_handling": "404-page",
     // Lets the Worker reach static files once a request is allowed through.
     "binding": "ASSETS",
-    // TEMPORARY - pre-launch gate. Without this, Cloudflare serves a matching
-    // file BEFORE invoking the Worker, so the gate would never run for
-    // /index.html and would be purely decorative.
+    // Required while "not_found_handling" is "404-page": without it, a path
+    // with no matching file can be answered by the 404 page before the Worker
+    // is invoked, which would break /admin/api/*.
     "run_worker_first": true
   },
   // Announcements. Every post, and the record of who changed what.

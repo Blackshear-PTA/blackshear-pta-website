@@ -157,15 +157,19 @@ export default defineConfig({
     /**
      * Prerender in Node, not in workerd.
      *
-     * The workerd prerenderer works by starting the project's OWN Worker and
-     * talking to it over HTTP - and this project's Worker is the pre-launch
-     * gate, which answers an unauthenticated request with a redirect. The
-     * build's prerender calls therefore get bounced to /under-construction and
-     * the build dies on `Unexpected end of JSON input`, which names nothing
-     * that would lead you here. Node prerendering keeps the build out of the
-     * Worker entirely. See the long note in src/worker.ts.
+     * KEEP THIS, but know that one of its two original reasons has expired.
      *
-     * It is also what keeps sharp in the picture, which the next option needs.
+     * The workerd prerenderer works by starting the project's OWN Worker and
+     * talking to it over HTTP. That used to be fatal here: the Worker was the
+     * pre-launch gate, so the build's own prerender calls were answered with a
+     * redirect to /under-construction and the build died on `Unexpected end of
+     * JSON input`, naming nothing that would lead you here. **The gate is gone
+     * (TASKS.md A33), so that failure mode is gone with it.**
+     *
+     * The remaining reason is sufficient on its own: Node prerendering is what
+     * keeps sharp in the picture, which the next option needs. Switching to
+     * workerd would quietly move image optimization to the Cloudflare Images
+     * binding - read that note before trying it.
      */
     prerenderEnvironment: 'node',
     /**

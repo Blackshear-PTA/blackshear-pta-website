@@ -24,6 +24,7 @@ import QuickActions from '../../components/sections/QuickActions.astro';
 import Announcements from '../../components/sections/Announcements.astro';
 import GetInvolved from '../../components/sections/GetInvolved.astro';
 import Committees from '../../components/sections/Committees.astro';
+import OrgIdentity from '../../components/sections/OrgIdentity.astro';
 import Footer from '../../components/sections/Footer.astro';
 import type { HomeData, SiteData } from '../../types';
 import type { Post } from '../../lib/announcements';
@@ -109,10 +110,11 @@ const { home, site, posts, total, mainId = 'main' } = Astro.props;
 
   <div class="shell">
     <Committees committees={home.committees} />
+    <OrgIdentity org={site.org} />
   </div>
 </main>
 <div class="shell">
-  <Footer footer={home.footer} social={site.social} />
+  <Footer footer={home.footer} social={site.social} org={site.org} />
 </div>
 
 <style>
