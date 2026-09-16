@@ -1,0 +1,155 @@
+---
+import type { SiteData } from '../../types';
+
+interface Props {
+  org: SiteData['org'];
+}
+
+const { org } = Astro.props;
+
+/**
+ * Who this organization legally is, stated on the page rather than implied.
+ *
+ * This exists because Google for Nonprofits rejected the Workspace activation
+ * on 2026-09-15: it could not verify the connection between "Pta Texas
+ * Congress" - the group-exemption name its records carry - and this domain.
+ * Nothing served publicly on blackshearpta.org tied the two together. A
+ * reviewer landing on the homepage now finds the whole chain in one place: our
+ * operating name, the name the IRS actually lists against our EIN, and the
+ * parent body those two differ because of. See TASKS.md F47.
+ *
+ * It keeps earning its place after that review passes. A 501(c)(3)'s
+ * registration details are what a donor, a grant form, a corporate match
+ * portal and a sponsor's finance team all ask for, and all of it is public
+ * information the IRS already publishes.
+ */
+---
+
+<section class="org" aria-labelledby="org-heading">
+  <h2 id="org-heading">About our organization</h2>
+
+  <div class="grid">
+    <div class="prose">
+      <p>
+        <strong>{org.legalName}</strong> is the parent-teacher association of{' '}
+        {org.school}. We are a local unit of the {org.parent}, and are recognized
+        by the IRS as a <strong>501(c)(3) public charity</strong> under that
+        body's group exemption.
+      </p>
+      <p>
+        Because we are covered by that group exemption, records held under the
+        group's name may show the parent organization rather than ours. Our own
+        registration is listed as <strong>{org.irsName}</strong>.
+      </p>
+      <p class="domain">
+        <strong>blackshearpta.org</strong> is the official domain of {org.legalName},
+        and is used for our website and our email.
+      </p>
+    </div>
+
+    <dl class="facts">
+      <div>
+        <dt>Legal name</dt>
+        <dd>{org.legalName}</dd>
+      </div>
+      <div>
+        <dt>IRS-registered name</dt>
+        <dd>{org.irsName}</dd>
+      </div>
+      <div>
+        <dt><abbr title="Employer Identification Number">EIN</abbr></dt>
+        <dd>{org.ein}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>501(c)(3) public charity</dd>
+      </div>
+      <div>
+        <dt>Parent organization</dt>
+        <dd>{org.parent}</dd>
+      </div>
+      <div>
+        <dt>Address</dt>
+        <dd>{org.address}</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<style>
+  .org {
+    padding-block: var(--pta-section-y);
+    border-block-start: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+    line-height: var(--leading-snug);
+  }
+
+  /* Two columns where there is room, stacked below. The prose carries the
+     argument; the list is what someone filling in a grant form copies from. */
+  .grid {
+    display: grid;
+    gap: var(--pta-gap);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 48rem) {
+    .grid {
+      grid-template-columns: 1.3fr 1fr;
+      gap: calc(var(--pta-gap) * 2);
+    }
+  }
+
+  .prose p {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+
+  .domain {
+    padding-inline-start: var(--pta-gap);
+    border-inline-start: var(--pta-rule-width) solid var(--pta-rule);
+  }
+
+  .facts {
+    margin: 0;
+    font-size: var(--text-fine);
+  }
+
+  .facts > div {
+    display: grid;
+    gap: 0.1rem;
+    padding-block: 0.5rem;
+    border-block-end: 1px solid var(--pta-rule);
+  }
+
+  .facts > div:last-child {
+    border-block-end: 0;
+  }
+
+  dt {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--pta-ink-muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  abbr {
+    text-decoration: none;
+  }
+</style>

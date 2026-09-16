@@ -32,9 +32,7 @@ done any time; 4 onwards is the Access work.
 
 - [ ] **1.** Merge the PR that adds `/admin`. Until it is on `main` the path does
       not exist and Access would be protecting nothing.
-- [ ] **2.** Rotate `SITE_PASSWORD` if it has ever been written down anywhere
-      public.
-- [ ] **3.** Set build watch paths ([DEPLOYS.md](DEPLOYS.md)).
+- [ ] **2.** Set build watch paths ([DEPLOYS.md](DEPLOYS.md)).
 - [ ] **4.** Check <https://www.cloudflarestatus.com> for open **Access**
       incidents before touching anything. A control-plane degradation makes
       toggles do nothing and can silently discard a created application.
@@ -117,8 +115,8 @@ same and the labels are close.
 
 > **Check the path before saving.** The application must be
 > `blackshearpta.org` with path `admin`. Leave the path empty and Access
-> protects the **whole site** - every parent gets a login screen, and the
-> pre-launch gate sits unreachable behind it. `admin` covers `/admin` and
+> protects the **whole site** - every parent gets a login screen. `admin`
+> covers `/admin` and
 > everything under it, including the `/admin/api/*` calls the editor makes.
 
 ### When Google SSO arrives

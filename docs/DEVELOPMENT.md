@@ -124,12 +124,8 @@ commands without an interactive shell, so every launch goes through `fnm exec`.
 
 **`worker` is not optional when you touch `public/_headers` or `src/worker.ts`.**
 Those only exist in the Workers runtime. `astro dev` and `astro preview` know
-nothing about either, so on 4321 and 4322 **the site is ungated** and a change
-to those files looks perfectly fine locally and only fails once deployed.
-
-If you are testing the password gate, copy `.dev.vars.example` to `.dev.vars`
-and put the real password in it first, or the gate fails closed and lets nobody
-through. See [PRE-LAUNCH-GATE.md](PRE-LAUNCH-GATE.md).
+nothing about either, so on 4321 and 4322 a change to those files looks
+perfectly fine locally and only fails once deployed.
 
 ### Testing `/admin` and photos locally
 

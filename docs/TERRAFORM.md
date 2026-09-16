@@ -107,7 +107,7 @@ Wrangler's configuration reference is explicit:
 and the secrets reference says the same thing about a deploy that does not
 mention them: "Secrets not included in the file are preserved from the previous
 version." A `wrangler deploy` triggered by Workers Builds will not drop
-`SITE_PASSWORD` or `GITHUB_TOKEN` because they are absent from `wrangler.jsonc`.
+`GITHUB_TOKEN` because it is absent from `wrangler.jsonc`.
 They are absent by design and that is fine.
 
 **The collision runs the other way.** If Terraform owned
@@ -127,7 +127,7 @@ Two of these are live in `wrangler.jsonc` today:
 | Field | Declared in | Also settable by | What happens |
 |---|---|---|---|
 | `r2_buckets` → `IMAGES` | `wrangler.jsonc` | `workers_script.bindings` | Duplicate ownership of the binding whose absence took the whole build red once already ([F29](../TASKS.md#f29)) |
-| `assets.binding` → `ASSETS` | `wrangler.jsonc` | `workers_script.bindings` | Same shape. Losing it breaks the pre-launch gate |
+| `assets.binding` → `ASSETS` | `wrangler.jsonc` | `workers_script.bindings` | Same shape. Losing it breaks every route the Worker serves |
 | `observability.enabled` | `wrangler.jsonc` | `cloudflare_worker.observability` | Both would set it. It converges to the same value, so nothing flaps - which is worse, because the duplicate ownership is invisible until the values disagree |
 
 That last row is the argument against the tempting middle position. v5 splits

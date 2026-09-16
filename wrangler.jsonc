@@ -5,26 +5,28 @@
   // Store are Workers-only, and Phase 3 depends on Durable Objects. Starting on
   // Pages would mean a later migration with a domain switchover and downtime.
   //
-  // TEMPORARY: "main" and "run_worker_first" exist only for the pre-launch gate
-  // (src/worker.ts). Remove all three marked lines at cutover and this goes back
-  // to serving static assets with no JS invoked at all, which is both cheaper
-  // and simpler. See TASKS.md A29.
+  // "main" and "run_worker_first" were added for the pre-launch gate, which is
+  // gone (TASKS.md A31). They STAY: src/worker.ts still routes /admin/api/* and
+  // /images/*, and with `not_found_handling` set to "404-page" below, a Worker
+  // that does not run first risks /admin/api/* being answered with the 404 page
+  // instead of reaching the router. A29's "delete all three" note predated both
+  // routes existing. See the header comment in src/worker.ts.
   //
   // When SSR arrives for real (/api/*, /admin), swap the hand-written Worker for
   // @astrojs/cloudflare and point "main" at the adapter's generated entry.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
   "compatibility_date": "2026-08-28",
-  "main": "./src/worker.ts", // TEMPORARY - pre-launch gate
+  "main": "./src/worker.ts", // routes /admin/api/* and /images/*
   "assets": {
     "directory": "./dist",
     // Serve Astro's built 404 page for unmatched paths.
     "not_found_handling": "404-page",
     // Lets the Worker reach static files once a request is allowed through.
     "binding": "ASSETS",
-    // TEMPORARY - pre-launch gate. Without this, Cloudflare serves a matching
-    // file BEFORE invoking the Worker, so the gate would never run for
-    // /index.html and would be purely decorative.
+    // Required while "not_found_handling" is "404-page": without it, a path
+    // with no matching file can be answered by the 404 page before the Worker
+    // is invoked, which would break /admin/api/*.
     "run_worker_first": true
   },
   // Photos attached to announcements through /admin. Not temporary - this
