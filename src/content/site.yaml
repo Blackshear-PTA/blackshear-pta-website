@@ -14,6 +14,25 @@ site:
     # Longer form for the footer and anywhere the full legal-ish name is right.
     fullName: "Blackshear Elementary PTA"
 
+  # Legal / registration identity. Public information - a 501(c)(3)'s name, EIN
+  # and exemption status are all published by the IRS, and most nonprofits print
+  # them in the footer for donors.
+  #
+  # This exists because Google for Nonprofits rejected the Workspace activation
+  # on 2026-09-15: it could not verify the connection between "Pta Texas
+  # Congress" - the group-exemption name its records carry - and this domain.
+  # Nothing publicly served on blackshearpta.org tied the two together. See
+  # TASKS.md F47. Outlives the gate page: /contact and the footer want it too.
+  org:
+    legalName: "Blackshear Elementary PTA"
+    # Exactly as the IRS lists EIN 91-2015074. The leading number is the Texas
+    # PTA local unit number, which is why the name reads oddly.
+    irsName: "612 Blackshear Elementary PTA"
+    ein: "91-2015074"
+    parent: "Texas Congress of Parents and Teachers (Texas PTA)"
+    address: "1712 E. 11th St., Austin, TX 78702"
+    school: "Blackshear Elementary Fine Arts Academy, Austin ISD"
+
   # Primary navigation. Order matters - this is the order it renders.
   #
   # Destinations that are still Weebly pages or external tools are marked

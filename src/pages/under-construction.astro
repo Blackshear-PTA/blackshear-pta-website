@@ -19,7 +19,7 @@ import { siteThemeId, getTheme } from '../themes/registry';
 
 const siteEntry = await getEntry('site', 'site');
 if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
-const { identity } = siteEntry.data;
+const { identity, org } = siteEntry.data;
 
 const theme = getTheme(siteThemeId);
 
@@ -45,12 +45,47 @@ const CURRENT_SITE = 'https://blackshearpta.weebly.com/';
 
       <h1>This site is under construction</h1>
       <p class="lede">
-        We are building a new home for the Blackshear Elementary PTA. Until it is
-        ready, everything you need is on our current site.
+        <strong>blackshearpta.org</strong> is the official website of {org.legalName}.
+        We are rebuilding it. While that work finishes, our programs, events and
+        sign-ups are temporarily hosted on our older site.
       </p>
 
-      <a class="cta" href={CURRENT_SITE}>Visit our current site</a>
-      <p class="cta-note">blackshearpta.weebly.com</p>
+      <a class="cta" href={CURRENT_SITE}>Programs, events and sign-ups</a>
+      <p class="cta-note">Temporarily at blackshearpta.weebly.com</p>
+
+      <div class="rule" role="presentation"></div>
+
+      {/*
+        Registration identity, served publicly and unauthenticated.
+
+        Not decoration. Google for Nonprofits rejected the Workspace activation
+        because it could not verify the link between "Pta Texas Congress" - the
+        group-exemption name on its records - and this domain, and at the time
+        nothing on the public page connected them. A reviewer landing here now
+        gets the whole chain in one place: the operating name, the name the IRS
+        actually lists against our EIN, and the parent body those two differ
+        because of. See TASKS.md F47. Keep this when the gate is deleted at
+        cutover - move it to the footer, do not drop it.
+      */}
+      <section class="org" aria-labelledby="org-heading">
+        <h2 id="org-heading">About this organization</h2>
+        <p>
+          <strong>{org.legalName}</strong> - {org.school}<br />
+          {org.address}
+        </p>
+        <p>
+          {org.legalName} is a local unit of the {org.parent}, and is recognized
+          by the IRS as a 501(c)(3) public charity under that body's group
+          exemption. Our registration is listed as <strong>{org.irsName}</strong>,{' '}
+          <abbr title="Employer Identification Number">EIN</abbr> {org.ein}.
+          Records held under the group's name may show the parent organization
+          rather than ours.
+        </p>
+        <p>
+          <strong>blackshearpta.org</strong> is the official domain of
+          {' '}{org.legalName} and is used for our website and email.
+        </p>
+      </section>
 
       <div class="rule" role="presentation"></div>
 
@@ -195,6 +230,24 @@ const CURRENT_SITE = 'https://blackshearpta.weebly.com/';
     margin: 0.5rem 0 0;
     font-size: var(--text-fine);
     color: var(--pta-ink-muted);
+  }
+
+  .org {
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+    max-width: var(--pta-measure);
+  }
+
+  .org p {
+    margin: 0 0 0.6rem;
+  }
+
+  .org strong {
+    color: var(--pta-ink);
+  }
+
+  .org abbr {
+    text-decoration: none;
   }
 
   h2 {
