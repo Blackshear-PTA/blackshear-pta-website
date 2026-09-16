@@ -153,5 +153,76 @@ for (const [p, want] of [['/images/x.jpg', true], ['/images', false], ['/imagesx
   else fail(`isImagePath(${p})`, `got ${!want}`);
 }
 
+/**
+ * The top-band backdrop, which is a pre-sized file rather than a getImage()
+ * call - see "Why the top band is a pre-sized file" in
+ * src/assets/photos/README.md.
+ *
+ * It is checked here because nothing else can catch it. The homepage renders on
+ * demand, where Astro's image pipeline is unavailable and the adapter's
+ * fallback endpoint streams whatever it is given straight back. So if this file
+ * is regenerated at the wrong width, or replaced with the original by somebody
+ * tidying up duplicate-looking photos, the page still renders, still looks
+ * right, and quietly ships megabytes to a phone. The failure is invisible
+ * everywhere except Content-Length.
+ */
+console.log('\ntop-band backdrop (pre-sized, because / renders on demand):');
+{
+  const BAND = 'src/assets/photos/campus-front-walk-band.webp';
+  const WANT_WIDTH = 1200;
+  const WANT_HEIGHT = 800;
+  /** Generous: the real file is ~180KB. This is a tripwire, not a budget. */
+  const MAX_BYTES = 400 * 1024;
+
+  const { readFileSync, existsSync } = await import('node:fs');
+
+  if (!existsSync(BAND)) {
+    fail('the derived backdrop exists', `${BAND} is missing - regenerate it, see src/assets/photos/README.md`);
+  } else {
+    const bytes = readFileSync(BAND);
+    pass('the derived backdrop exists');
+
+    if (bytes.subarray(0, 4).toString('latin1') === 'RIFF' && bytes.subarray(8, 12).toString('latin1') === 'WEBP') {
+      pass('it is a WebP');
+    } else {
+      fail('it is a WebP', `magic bytes were ${JSON.stringify(bytes.subarray(0, 12).toString('latin1'))}`);
+    }
+
+    // Dimensions, read straight out of the container. Three shapes exist and
+    // sharp can emit any of them depending on the encode, so all three are read
+    // rather than assuming the one it happens to produce today.
+    const kind = bytes.subarray(12, 16).toString('latin1');
+    let width = 0;
+    let height = 0;
+    if (kind === 'VP8 ') {
+      width = bytes.readUInt16LE(26) & 0x3fff;
+      height = bytes.readUInt16LE(28) & 0x3fff;
+    } else if (kind === 'VP8L') {
+      const bits = bytes.readUInt32LE(21);
+      width = (bits & 0x3fff) + 1;
+      height = ((bits >> 14) & 0x3fff) + 1;
+    } else if (kind === 'VP8X') {
+      width = (bytes.readUIntLE(24, 3) & 0xffffff) + 1;
+      height = (bytes.readUIntLE(27, 3) & 0xffffff) + 1;
+    }
+
+    if (width === WANT_WIDTH && height === WANT_HEIGHT) {
+      pass(`it is ${WANT_WIDTH}x${WANT_HEIGHT}`);
+    } else {
+      fail(`it is ${WANT_WIDTH}x${WANT_HEIGHT}`, `got ${width}x${height} (container ${JSON.stringify(kind)})`);
+    }
+
+    if (bytes.length <= MAX_BYTES) {
+      pass(`it is ${Math.round(bytes.length / 1024)}KB, under the ${MAX_BYTES / 1024}KB ceiling`);
+    } else {
+      fail(
+        'it is under the size ceiling',
+        `${Math.round(bytes.length / 1024)}KB exceeds ${MAX_BYTES / 1024}KB - this is the ` +
+          'shape of the bug where the full-size original gets served as the homepage backdrop',
+      );
+    }
+  }
+}
+
 console.log(`\n${failures ? `${failures} failing` : 'all image checks passed'}.`);
 process.exit(failures ? 1 : 0);

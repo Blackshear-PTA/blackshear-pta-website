@@ -173,26 +173,16 @@ const pages = defineCollection({
  * knowing where it lived.
  */
 /**
- * Grades a post can be aimed at. Empty or absent means the whole school, which
- * is the common case - so the default costs nobody a decision.
+ * The grade slugs now live in src/lib/grades.ts and are imported here.
  *
- * Stored as slugs and rendered through GRADE_LABELS, because "1" sorts and
- * compares sanely while "1st Grade" does not, and because a later notification
- * feature will want to match on a stable value rather than display text.
+ * They were defined in this file, which made it the module every consumer
+ * imported them from - including code that runs inside the Worker. This file
+ * imports Astro's `glob` loader, and that reaches tinyglobby, fdir and
+ * picomatch, which call createRequire() and walk a filesystem. One constant
+ * pulled all of it into the Worker bundle and every on-demand announcement
+ * route answered 500. See the note in src/lib/grades.ts.
  */
-export const gradeSlugs = ['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5'] as const;
-export type GradeSlug = (typeof gradeSlugs)[number];
-
-export const GRADE_LABELS: Record<GradeSlug, string> = {
-  'pre-k-3': 'Pre-K 3',
-  'pre-k-4': 'Pre-K 4',
-  kinder: 'Kinder',
-  '1': '1st',
-  '2': '2nd',
-  '3': '3rd',
-  '4': '4th',
-  '5': '5th',
-};
+import { gradeSlugs } from './lib/grades';
 
 /** One photo. `alt` is not optional; see the refine below. */
 const postImage = z.object({

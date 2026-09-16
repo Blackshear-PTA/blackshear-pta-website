@@ -1,6 +1,23 @@
 ---
-import { getImage } from 'astro:assets';
-import backdrop from '../../assets/photos/campus-front-walk.jpg';
+/**
+ * The top band photo, ALREADY SIZED, imported rather than transformed.
+ *
+ * This was `getImage({ width: 1200, quality: 45, format: 'webp' })` on the
+ * 3000x2000, 6.3MB original. That works at build time, and both pages using
+ * this structure now render ON DEMAND - where the Cloudflare adapter has no
+ * image service and its passthrough endpoint streams the SOURCE FILE back
+ * unchanged. Measured: the homepage backdrop went from 180KB to 6,301,582
+ * bytes, on the page a parent opens on a phone in the pickup line.
+ *
+ * A plain ESM import of an already-correct file has no such failure mode -
+ * Astro emits it to _astro/ with a hash and hands back the URL, identically
+ * whether the page was prerendered or rendered a second ago.
+ *
+ * campus-front-walk-band.webp is DERIVED from campus-front-walk.jpg and is
+ * byte-for-byte what the old call produced. To regenerate it, see
+ * src/assets/photos/README.md.
+ */
+import backdrop from '../../assets/photos/campus-front-walk-band.webp';
 import SiteHeader from '../../components/sections/SiteHeader.astro';
 import Hero from '../../components/sections/Hero.astro';
 import QuickActions from '../../components/sections/QuickActions.astro';
@@ -9,10 +26,17 @@ import GetInvolved from '../../components/sections/GetInvolved.astro';
 import Committees from '../../components/sections/Committees.astro';
 import Footer from '../../components/sections/Footer.astro';
 import type { HomeData, SiteData } from '../../types';
+import type { Post } from '../../lib/announcements';
 
 interface Props {
   home: HomeData;
   site: SiteData;
+  /** Announcements to show, already filtered and ordered. Fetched by the page:
+   *  this structure is rendered by both / and /preview, and only one of them
+   *  should decide where the data comes from. */
+  posts: Post[];
+  /** Every published post, for the "see all N" link. */
+  total: number;
   /**
    * id for the <main> landmark. /preview renders both structures on one page,
    * and duplicate ids are invalid HTML and confuse assistive tech, so each
@@ -22,10 +46,9 @@ interface Props {
   /** Accepted for a uniform structure interface; this arrangement has no video slot. */
   video?: boolean;
 }
-const { home, site, mainId = 'main' } = Astro.props;
+const { home, site, posts, total, mainId = 'main' } = Astro.props;
 
 // Same reasoning as stacked-rules: heavily scrimmed, so encode it cheaply.
-const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, format: 'webp' });
 ---
 
 {/*
@@ -53,7 +76,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
     photo behind the quote and Start Here only. Same two sections as the other
     design, which is the point.
   */}
-  <div class="topband" style={`--topband-img: url(${backdropImg.src})`}>
+  <div class="topband" style={`--topband-img: url(${backdrop.src})`}>
     <div class="shell">
       <div class="lede">
         <Hero hero={home.hero} headlineId={`hero-${mainId}`} />
@@ -68,7 +91,7 @@ const backdropImg = await getImage({ src: backdrop, width: 1200, quality: 45, fo
       */}
       <div class="split">
         <aside class="rail"><QuickActions quickActions={home.quickActions} /></aside>
-        <div class="wide"><Announcements announcements={home.announcements} /></div>
+        <div class="wide"><Announcements announcements={home.announcements} posts={posts} total={total} /></div>
       </div>
     </div>
   </div>
