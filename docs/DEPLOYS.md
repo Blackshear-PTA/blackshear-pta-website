@@ -12,6 +12,26 @@ nothing to store in GitHub.
 The one GitHub Action in this repo does something else entirely: it refreshes
 the calendar snapshot daily. See [CALENDAR.md](CALENDAR.md).
 
+## Publishing an announcement is not a deploy
+
+It used to be. A post was a markdown file, saving it made a commit, and the
+commit triggered everything above — 60 to 90 seconds before a parent could see
+it. Announcements are rows in a D1 database now and the pages that show them
+render on demand, so **a save is live with no build at all**. See
+[ADMIN.md](ADMIN.md) and finding F41 in [TASKS.md](../TASKS.md).
+
+Two consequences for this document:
+
+- **A deploy no longer carries content.** Deploying old code cannot revert a
+  post, and rolling back a Worker version does not roll back an announcement.
+  The two move independently now.
+- **The database is not part of a deploy either.** Schema changes live in
+  `migrations/` and are applied deliberately, with
+  `npm run db:migrate:remote`, not by pushing. **Apply them before merging
+  code that depends on them** — a Worker whose binding names a database that
+  does not exist fails to deploy at all, which is the same hard failure
+  F29 records for the R2 bucket.
+
 ## Skipping builds that cannot change the site
 
 Some paths are documentation or source material and are never read by
@@ -46,6 +66,7 @@ docs/**            architecture and decisions
 assets/**          brand originals and the Weebly salvage - NOT src/assets
 .claude/**         local dev-server launch config
 scripts/**         the check gates; run by hand and in CI, never by astro build
+migrations/**      applied with wrangler, deliberately - never by a build
 TASKS.md
 README.md
 dev-control.sh

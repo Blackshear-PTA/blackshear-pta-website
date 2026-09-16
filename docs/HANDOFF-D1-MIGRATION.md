@@ -150,7 +150,7 @@ Every one of these cost real time to find.
   into the top-left corner. Do not remove it.
 
 - **`/admin` is routed by `src/worker.ts` and must stay that way.** The
-  pre-launch gate that file was built for is gone (TASKS.md A31), but `main`
+  pre-launch gate that file was built for is gone (TASKS.md A33), but `main`
   and `run_worker_first` stay in `wrangler.jsonc` precisely so `/admin/api/*`
   keeps reaching the router. See that file's header comment.
 

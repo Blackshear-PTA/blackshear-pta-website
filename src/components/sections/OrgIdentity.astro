@@ -16,7 +16,7 @@ const { org } = Astro.props;
  * Nothing served publicly on blackshearpta.org tied the two together. A
  * reviewer landing on the homepage now finds the whole chain in one place: our
  * operating name, the name the IRS actually lists against our EIN, and the
- * parent body those two differ because of. See TASKS.md F47.
+ * parent body those two differ because of. See TASKS.md F48.
  *
  * It keeps earning its place after that review passes. A 501(c)(3)'s
  * registration details are what a donor, a grant form, a corporate match
@@ -28,7 +28,7 @@ const { org } = Astro.props;
 <section class="org" aria-labelledby="org-heading">
   <h2 id="org-heading">About our organization</h2>
 
-  <div class="grid">
+  <div class="org-grid">
     <div class="prose">
       <p>
         <strong>{org.legalName}</strong> is the parent-teacher association of{' '}
@@ -94,14 +94,14 @@ const { org } = Astro.props;
 
   /* Two columns where there is room, stacked below. The prose carries the
      argument; the list is what someone filling in a grant form copies from. */
-  .grid {
+  .org-grid {
     display: grid;
     gap: var(--pta-gap);
     grid-template-columns: 1fr;
   }
 
   @media (min-width: 48rem) {
-    .grid {
+    .org-grid {
       grid-template-columns: 1.3fr 1fr;
       gap: calc(var(--pta-gap) * 2);
     }

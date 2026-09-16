@@ -12,6 +12,18 @@
       "port": 4321
     },
     {
+      "name": "blackshear-pta-worker",
+      "//": "The real Workers runtime, which is the ONLY way to see /, /announcements/*, and /rss.xml since those render on demand out of D1 (PR #36) - astro preview serves files and those are not files any more. Run `npm run build` first, and `npm run db:migrate` once, or the D1 binding has no tables. Restart after every build: the build replaces dist/ underneath the running server.",
+      "runtimeExecutable": "/Users/JFlowers/.local/share/fnm/node-versions/v22.22.3/installation/bin/node",
+      "runtimeArgs": [
+        "node_modules/wrangler/bin/wrangler.js",
+        "dev",
+        "--port",
+        "8787"
+      ],
+      "port": 8787
+    },
+    {
       "name": "blackshear-pta-preview",
       "//": "Serves the built output from ./dist on a second port, so it can run alongside `npm run dev` on 4321. Run `npm run build` first; this does not rebuild.",
       "runtimeExecutable": "/Users/JFlowers/.local/share/fnm/node-versions/v22.22.3/installation/bin/node",

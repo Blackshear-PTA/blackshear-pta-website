@@ -1,5 +1,11 @@
 node_modules/
 dist/
+
+# Written by `npm run export:posts`. Announcements out of D1 as markdown and
+# JSON - a backup, and the undo button for the move off files. Never committed:
+# it would be a second copy of the content going quietly stale beside the first,
+# which is the exact problem that move was meant to end.
+exports/
 .astro/
 .wrangler/
 # Generated from wrangler.jsonc by `wrangler types`; 15k lines of vendored

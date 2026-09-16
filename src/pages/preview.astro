@@ -3,6 +3,7 @@ import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { structures } from '../layouts/structures';
 import { themes, defaultThemeId } from '../themes/registry';
+import { getAnnouncements } from '../lib/announcements';
 
 /**
  * /preview - the design switcher (PROJECT-BRIEF §5.4).
@@ -35,6 +36,20 @@ import { themes, defaultThemeId } from '../themes/registry';
  * stop being wanted. Nothing else imports it.
  */
 
+/**
+ * On demand, for one reason: the structures it renders contain the
+ * announcements block, and those posts live in D1.
+ *
+ * The alternative was to hand this page an empty list and leave the block
+ * showing a heading with nothing under it. That would quietly break what the
+ * page is FOR - it exists so the two runners-up can be judged against the live
+ * design, and a section rendered empty in one of them is not a fair comparison.
+ *
+ * One query for all three panels, not one each: the read happens here and the
+ * result is passed down.
+ */
+export const prerender = false;
+
 const [homeEntry, siteEntry] = await Promise.all([
   getEntry('home', 'home'),
   getEntry('site', 'site'),
@@ -44,6 +59,8 @@ if (!siteEntry) throw new Error('Missing site entry in src/content/site.yaml.');
 
 const home = homeEntry.data;
 const site = siteEntry.data;
+
+const { posts, total } = await getAnnouncements(home.announcements.limit);
 ---
 
 <BaseLayout
@@ -110,7 +127,7 @@ const site = siteEntry.data;
           data-panel={theme.id}
           hidden={theme.id !== defaultThemeId}
         >
-          <Structure home={home} site={site} mainId={`main-${theme.id}`} video={theme.video} />
+          <Structure home={home} site={site} posts={posts} total={total} mainId={`main-${theme.id}`} video={theme.video} />
         </div>
       );
     })

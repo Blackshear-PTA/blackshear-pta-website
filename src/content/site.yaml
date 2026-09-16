@@ -22,7 +22,7 @@ site:
   # on 2026-09-15: it could not verify the connection between "Pta Texas
   # Congress" - the group-exemption name its records carry - and this domain.
   # Nothing publicly served on blackshearpta.org tied the two together. See
-  # TASKS.md F47. Outlives the gate page: /contact and the footer want it too.
+  # TASKS.md F48. Outlives the gate page: /contact and the footer want it too.
   org:
     legalName: "Blackshear Elementary PTA"
     # Exactly as the IRS lists EIN 91-2015074. The leading number is the Texas
