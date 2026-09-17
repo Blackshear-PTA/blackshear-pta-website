@@ -532,6 +532,13 @@
       "allDay": false
     },
     {
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
+      "start": "2027-02-12T00:00:00.000Z",
+      "end": "2027-02-13T00:00:00.000Z",
+      "allDay": true
+    },
+    {
       "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
       "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
@@ -541,13 +548,6 @@
     {
       "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
       "title": "Ms. Chalida's Birthday! (Cafeteria)",
-      "start": "2027-02-12T00:00:00.000Z",
-      "end": "2027-02-13T00:00:00.000Z",
-      "allDay": true
-    },
-    {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -931,20 +931,20 @@
       "allDay": true
     },
     {
-      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
-      "title": "Ms. Earl's Birthday! (Cafeteria)",
-      "start": "2027-09-15T00:00:00.000Z",
-      "end": "2027-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
-    },
-    {
       "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
       "title": "Ms. Virginia's Birthday! (Cafeteria)",
       "start": "2027-09-15T00:00:00.000Z",
       "end": "2027-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
+      "title": "Ms. Earl's Birthday! (Cafeteria)",
+      "start": "2027-09-15T00:00:00.000Z",
+      "end": "2027-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
     }
   ]
 }
