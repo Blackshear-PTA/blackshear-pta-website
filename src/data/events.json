@@ -1,9 +1,9 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-09-19",
+  "generated": "2026-09-20",
   "window": {
-    "from": "2026-09-19",
-    "to": "2027-09-19"
+    "from": "2026-09-20",
+    "to": "2027-09-20"
   },
   "events": [
     {
@@ -945,6 +945,13 @@
       "end": "2027-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2027-09-20T00:00:00.000Z",
+      "title": "Ms. Clay's Birthday (Instructional Coach)",
+      "start": "2027-09-20T00:00:00.000Z",
+      "end": "2027-09-21T00:00:00.000Z",
+      "allDay": true
     }
   ]
 }
