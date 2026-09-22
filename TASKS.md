@@ -778,25 +778,35 @@ Worth knowing for the next parallel session, because none of it is caught by a t
 
 **The one code problem the merge did surface was caught by an existing gate.** `npm run check:classnames` failed on `class="grid"` in the new `OrgIdentity.astro` - Tailwind emits a `.grid` utility, and the unscoped rule wins for any property the component does not set. It passed before the merge and failed after, because the D1 branch changed what Tailwind scans. Renamed to `.org-grid`. That check earning its keep on the first parallel merge is a decent argument for the whole family of them.
 
-**F51 - The site has not deployed since before the D1 migration, and the gate was hiding it.** `blackshearpta.org` is serving a build that predates [PR #36](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/36), which merged at 17:59Z on 2026-09-16. Confirmed three ways rather than inferred from one:
+**F51 - The deploy has been failing since the D1 migration, on a KV namespace nobody asked for.** `blackshearpta.org` served a build predating [PR #36](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/36) for six days. The build log settles it, and it is worth recording that **the first hypothesis was wrong**: this was diagnosed from outside as probably the D1 binding naming a database that did not exist, on the strength of `wrangler.jsonc`'s own warning about exactly that. D1 was never the problem. It deploys fine.
 
-- `/_astro/campus-front-walk-band.DY2lItVn.webp`, built from a photo **#36 added**, returns **404** live.
-- `/_astro/BaseLayout.Btk6IDVq.css`, which `main` builds today, returns **404**; the live HTML still references `BaseLayout.BqBFMDTc.css`, which returns **200**.
-- `/_astro/*` is served with `max-age=0, must-revalidate`, not the `immutable` header that #36's adapter build injects into `_headers`.
+`npm run build` succeeds. `npx wrangler deploy` uploads the assets, then dies at the last step:
 
-`/_astro/*` is ungated, which is what makes this testable from outside without the preview password.
+```
+The following bindings need to be provisioned:
+env.SESSION         KV Namespace
+Provisioning SESSION (KV Namespace)...
+Creating new KV Namespace "blackshear-pta-session"...
+[ERROR] a namespace with this account ID and title already exists [code: 10014]
+```
 
-**It is not the code.** A clean `git clone` of `main` followed by `npm ci` and `npm run build` - exactly what Cloudflare Workers Builds runs - succeeds: 333 packages, 0 vulnerabilities, build complete. So the failure is after the build, at `npx wrangler deploy`, or the build is not being triggered at all.
+**Where the binding came from.** Nobody wrote it. `@astrojs/cloudflare` configures Astro sessions against a KV namespace by default and expects to auto-provision it - the build log announces this at line 20, *"Enabling sessions with Cloudflare KV with the 'SESSION' KV binding"*. Nothing in this site uses sessions: there is no `Astro.session` anywhere in `src/`, and no `session` block in `astro.config.mjs`. It arrived as an adapter default when [PR #36](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/36) added `@astrojs/cloudflare`, which is precisely why the failure starts there.
 
-**Most likely cause, and it is written on the wall of the very file that introduced it.** `wrangler.jsonc` says of the new D1 binding: *"THE DATABASE MUST EXIST BEFORE THIS SHIPS. A binding naming a resource that is not there makes Cloudflare reject the Worker version outright and nothing deploys - the same hard failure a missing R2 bucket caused in finding [F29](#f29)."* Deploys broke exactly when the binding landed. Note that `npm run db:migrate` applies migrations to a **local** SQLite file and creates nothing remote, so a session that only ever ran the local form would see everything working and leave the production database absent. Second candidate: the Cloudflare build token predates D1 and lacks `D1:Edit`, which fails at the same step for a different reason.
+**Why it cannot recover on its own.** Auto-provisioning derives the namespace title from the worker and binding names, `blackshear-pta-session`. Some earlier attempt created it. Every attempt since tries to create it again, collides on the title, and fails - it never links itself to the namespace already sitting there. Left alone this repeats forever, which is what six days of silence looks like.
 
-**How to tell them apart** - dashboard, in this order:
+**The fix is the adapter's own documented escape hatch**, from `Options.sessionKVBindingName` in its type definitions: *"If you define the binding manually in your wrangler config, Astro will use your configuration instead."* Declare the existing namespace in `wrangler.jsonc` and nothing tries to create anything:
 
-1. **Workers & Pages → `blackshear-pta` → Builds.** Read the newest build. Whether it failed in `npm run build` or in `npx wrangler deploy` settles the category immediately.
-2. **Storage & Databases → D1.** Is there a database `blackshear-pta` with id `5a9a4520-9daf-4b38-859e-03ed7c50a202`? Or locally: `npx wrangler d1 list`.
-3. If it is missing: `npx wrangler d1 create blackshear-pta`, put the **returned** id in `wrangler.jsonc`, then `npm run db:migrate:remote`.
+```jsonc
+"kv_namespaces": [
+  { "binding": "SESSION", "id": "<id of the existing blackshear-pta-session>" }
+]
+```
 
-**Two things this hid, worth separating.** First, the gate was masking the whole problem: every page 302'd to the construction notice, so nobody could see that announcements were not actually live. Removing the gate is what made a stalled deploy visible. Second, **the remote migration is a separate manual step from the deploy** - `docs/DEPLOYS.md` lists `migrations/**` among the paths a build never reads. Creating the database is necessary but not sufficient; the tables still have to be applied with `db:migrate:remote`, or `/announcements/` will 500 on a page a Google reviewer may well click.
+The id comes from `npx wrangler kv namespace list`, or the dashboard under **Storage & Databases → KV**.
+
+**Two things this cost, both worth naming.** The gate hid it completely - every page 302'd to the construction notice, so six days of failed deploys looked identical to a working site, and **announcements were never actually live on D1** despite [PR #36](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/36) being merged. Removing the gate is what made it visible. And a deploy that fails *after* uploading assets leaves the account looking half-changed: the new `/_astro/*` files are uploaded, but no Worker version is ever promoted, so the site keeps serving the old bundle and nothing in its behaviour hints that a deploy was attempted at all.
+
+**Unrelated, and still open:** `npx wrangler d1 list` returns `Authentication error [code: 10000]` locally even though the token lists `d1 (write)` and the account is Super Administrator. It blocks nothing here - D1 deploys fine from CI - but if it persists, `npx wrangler logout && npx wrangler login` re-issues the OAuth token against the current scope set.
 
 ## Reference
 
