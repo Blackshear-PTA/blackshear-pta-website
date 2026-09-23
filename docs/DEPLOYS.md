@@ -12,6 +12,16 @@ nothing to store in GitHub.
 The one GitHub Action in this repo does something else entirely: it refreshes
 the calendar snapshot daily. See [CALENDAR.md](CALENDAR.md).
 
+## Which Cloudflare account
+
+`Blackshearpta@gmail.com's Account`, ID `eb3bbf021359a4399c0ddef6bc09e3c4`, and
+nothing else. The ID is pinned in `wrangler.jsonc` as `account_id` so that a run
+holding the wrong credential fails with an access error rather than deploying
+into another tenant — there is a second, personal Cloudflare account on the
+maintainer's machine, and an ambient `CLOUDFLARE_API_TOKEN` in `~/.zshenv`
+reaches every shell. `CLAUDE.md` has the full reasoning. Check with
+`npx wrangler whoami` (Node 22 or it will not run).
+
 ## Publishing an announcement is not a deploy
 
 It used to be. A post was a markdown file, saving it made a commit, and the
