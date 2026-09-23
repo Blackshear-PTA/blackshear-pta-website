@@ -17,6 +17,26 @@
   // instruction to delete both at cutover is obsolete; see F49.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
+  // PINNED DELIBERATELY - DO NOT "CLEAN THIS UP". This is the PTA's Cloudflare
+  // account (Blackshearpta@gmail.com's Account), and it is the only account
+  // this project may ever deploy into.
+  //
+  // The reason it is spelled out here rather than left to whatever credential
+  // happens to be in the environment: ~/.zshenv on the maintainer's machine
+  // exports a CLOUDFLARE_API_TOKEN, and .zshenv is read by EVERY zsh, including
+  // the non-interactive shells that tooling spawns. Wrangler prefers an API
+  // token over any OAuth session, so the account a command lands in is decided
+  // by ambient environment rather than by intent. There is a second, personal
+  // Cloudflare account on that machine.
+  //
+  // With this line present, a run holding the wrong credential fails with an
+  // access error. Without it, the same run would deploy successfully into
+  // whichever account the ambient token belongs to. The loud failure is the
+  // entire point.
+  //
+  // The same account ID appears throughout terraform/ (workers.tf, storage.tf,
+  // access.tf) and in terraform/README.md; all four must agree.
+  "account_id": "eb3bbf021359a4399c0ddef6bc09e3c4",
   "compatibility_date": "2026-08-28",
   // Required by @astrojs/cloudflare, which renders the announcement routes.
   "compatibility_flags": ["nodejs_compat"],
