@@ -1,6 +1,6 @@
 ---
-import { Font, getImage } from 'astro:assets';
-import socialSource from '../assets/photos/campus-front-walk.jpg';
+import { Font } from 'astro:assets';
+import social from '../assets/photos/campus-front-walk-social.jpg';
 import { fontFamilies } from '../font-families.mjs';
 import { getTheme } from '../themes/registry';
 
@@ -47,7 +47,7 @@ const { title, description, themeId } = Astro.props;
 const preloadFonts = new Set(themeId ? getTheme(themeId).fonts : []);
 
 /**
- * Link-preview image.
+ * Link-preview image. ALREADY SIZED, imported rather than transformed.
  *
  * Without an explicit og:image, scrapers pick something off the page
  * themselves - which is how a shared link ended up previewing with the Staff
@@ -60,17 +60,25 @@ const preloadFonts = new Set(themeId ? getTheme(themeId).fonts : []);
  *
  * 1200x630 rather than a square. Facebook, Slack, LinkedIn and X all crop
  * og:image to roughly 1.91:1, so a square would be center-cropped to this
- * anyway - by them, not by us, and without the deliberate crop. Astro
- * center-crops the 3000x2000 source to keep the building, doors and walkway.
+ * anyway - by them, not by us, and without the deliberate crop.
+ *
+ * WHY IT IS A COMMITTED FILE AND NOT getImage(). This layout renders on EVERY
+ * page, and four of them now render on demand, where the Cloudflare adapter
+ * has no image service and its fallback endpoint streams the source back
+ * untouched. So on `/`, `/announcements/`, a post page and `/preview`, this
+ * tag pointed at the 3000x2000, 6.3MB original - measured in production, not
+ * predicted. Scrapers cap what they will fetch (X at ~5MB), so sharing a link
+ * to an announcement in a group chat produced a card with no image at all.
+ *
+ * Prerendered pages were fine, which is what made it invisible: the same tag
+ * on /calendar/ resolved to a proper 207KB build-time asset. A plain import is
+ * correct on both, which is the point - there is no longer a build-time and a
+ * request-time answer that can disagree.
+ *
+ * campus-front-walk-social.jpg is DERIVED from campus-front-walk.jpg at the
+ * same 1200x630 quality-72 the old call produced. Regenerate it as described
+ * in src/assets/photos/README.md; `npm run check:images` guards it.
  */
-const social = await getImage({
-  src: socialSource,
-  width: 1200,
-  height: 630,
-  quality: 72,
-  format: 'jpg', // some scrapers still will not render webp
-});
-
 // Absolute, not relative. Scrapers fetch the image out of the page context and
 // a root-relative path resolves against their own host, so the card comes back
 // blank.
@@ -95,8 +103,8 @@ const socialAlt = 'The front walkway and entrance of Blackshear Elementary Schoo
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={socialUrl} />
-    <meta property="og:image:width" content={String(social.attributes.width ?? 1200)} />
-    <meta property="og:image:height" content={String(social.attributes.height ?? 630)} />
+    <meta property="og:image:width" content={String(social.width)} />
+    <meta property="og:image:height" content={String(social.height)} />
     <meta property="og:image:alt" content={socialAlt} />
 
     {/* X reads its own namespace and ignores og:* for the card type. */}
