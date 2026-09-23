@@ -802,6 +802,10 @@ Creating new KV Namespace "blackshear-pta-session"...
 ]
 ```
 
+**The first "the fix did not work" was a false alarm, and reading it wrong cost a day.** The build that failed on the PR was **terminated, not failed**: `running_on` is null and its entire log is two lines - `Initializing build environment...` then `Build failed to initialize and was timed out`. It never ran a command. Meanwhile a *retry* looked like confirmation but rebuilt **`main`**, which does not carry this fix, so its KV collision was the expected old failure rather than a new one. Two builds, neither testing the change. **Check `build_trigger_metadata.branch` and `build_outcome` before concluding anything from a red build** - `terminated` and `fail` mean very different things, and the GitHub check shows both as "failure".
+
+Worth knowing while reading build records: branch builds run `npx wrangler versions upload`, `main` runs `npx wrangler deploy`. Both go through the same build token.
+
 **Applied 2026-09-23** with id `33b61a676f5c45b183b0da0fcbe94728`, read off the dashboard under **Storage & Databases → KV** because `npx wrangler kv namespace list` hit the same local auth error as `d1 list`. `npx wrangler types` now emits `SESSION: KVNamespace`, which is the confirmation that wrangler is binding the existing namespace rather than planning to create one.
 
 **Two things this cost, both worth naming.** The gate hid it completely - every page 302'd to the construction notice, so six days of failed deploys looked identical to a working site, and **announcements were never actually live on D1** despite [PR #36](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/36) being merged. Removing the gate is what made it visible. And a deploy that fails *after* uploading assets leaves the account looking half-changed: the new `/_astro/*` files are uploaded, but no Worker version is ever promoted, so the site keeps serving the old bundle and nothing in its behaviour hints that a deploy was attempted at all.
