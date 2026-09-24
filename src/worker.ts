@@ -36,6 +36,13 @@
  *     sharp doing build-time image optimization. Read the note there before
  *     touching it.
  *
+ * ONE THING THIS FILE HAS TO DO THAT public/_headers CANNOT. That file is
+ * applied by Cloudflare's STATIC ASSET server, so it only reaches responses
+ * that come off the assets binding. The four on-demand routes are rendered by
+ * the Worker and never touch it, so they silently lost `X-Robots-Tag`,
+ * `X-Content-Type-Options` and `Referrer-Policy` when they stopped being files
+ * (TASKS.md F52). `withSiteHeaders` below puts them back.
+ *
  * WHY "run_worker_first" STAYS in wrangler.jsonc, though the gate is what
  * originally needed it: assets are configured `not_found_handling: "404-page"`,
  * and /admin/api/* matches no file, so a Worker that does not run first risks
@@ -61,6 +68,48 @@ function isPublicAsset(pathname: string): boolean {
 }
 
 /**
+ * The headers public/_headers sets on every static asset, restated for the
+ * responses this Worker renders itself.
+ *
+ * Kept deliberately identical to that file. If you change one, change both -
+ * and delete the `X-Robots-Tag` line from BOTH as part of the cutover (A6),
+ * along with the <meta name="robots"> in BaseLayout. Three mechanisms, and the
+ * whole point is that no single one is load-bearing.
+ */
+const SITE_HEADERS: Record<string, string> = {
+  'X-Robots-Tag': 'noindex, nofollow',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
+/**
+ * Adds those headers to a response that does not already carry them.
+ *
+ * Only when absent: a prerendered page reaches here having already been through
+ * the asset server, which applied public/_headers, and a route that sets one of
+ * these deliberately should keep its own value.
+ */
+function withSiteHeaders(response: Response): Response {
+  let missing = false;
+  for (const name of Object.keys(SITE_HEADERS)) {
+    if (!response.headers.has(name)) { missing = true; break; }
+  }
+  if (!missing) return response;
+
+  const headers = new Headers(response.headers);
+  for (const [name, value] of Object.entries(SITE_HEADERS)) {
+    if (!headers.has(name)) headers.set(name, value);
+  }
+  // A 101 or 204 has no body and rejects one; everything here is an ordinary
+  // rendered response, but constructing it this way keeps that true by shape.
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+/**
  * Hands a request to Astro: the on-demand routes get rendered, everything else
  * falls through to the static assets binding inside the adapter's entry.
  *
@@ -81,7 +130,9 @@ function toAstro(request: Request, env: Env, ctx: ExecutionContext): Promise<Res
    * Both describe the same object. Nothing is being asserted here that the
    * platform does not already guarantee.
    */
-  return astro.fetch(request, env as unknown as Parameters<typeof astro.fetch>[1], ctx);
+  return astro
+    .fetch(request, env as unknown as Parameters<typeof astro.fetch>[1], ctx)
+    .then(withSiteHeaders);
 }
 
 export default {
