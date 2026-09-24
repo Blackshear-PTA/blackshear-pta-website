@@ -92,6 +92,34 @@
       "bucket_name": "blackshear-pta-images"
     }
   ],
+  // Astro sessions. NOT something this site uses - there is no `Astro.session`
+  // anywhere in src/ and no `session` block in astro.config.mjs.
+  //
+  // DECLARED HERE ON PURPOSE, AND IT MUST STAY DECLARED. @astrojs/cloudflare
+  // configures sessions against KV by default and expects to auto-provision the
+  // namespace on deploy, deriving the title from the worker and binding names:
+  // "blackshear-pta-session". An early attempt created it; every deploy after
+  // that tried to create it AGAIN, collided on the title with
+  //
+  //   [ERROR] a namespace with this account ID and title already exists [10014]
+  //
+  // and failed - after uploading assets, so the account looked half-changed
+  // while the site quietly kept serving the previous bundle. Six days of that
+  // went unnoticed because the pre-launch gate made a broken deploy and a
+  // working site look identical from outside (TASKS.md F51).
+  //
+  // Naming the namespace explicitly is the adapter's own documented escape
+  // hatch - see `Options.sessionKVBindingName` in its type definitions: "If you
+  // define the binding manually in your wrangler config, Astro will use your
+  // configuration instead." Nothing is auto-provisioned, so nothing collides.
+  //
+  // Deleting this block does not remove sessions. It restores the failure.
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "33b61a676f5c45b183b0da0fcbe94728"
+    }
+  ],
   "observability": {
     "enabled": true
   }
