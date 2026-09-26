@@ -42,15 +42,15 @@
       "allDay": true
     },
     {
-      "id": "5t462orn4ltmr3b355qihj8qj4@google.com@2026-10-12T00:00:00.000Z",
-      "title": "Fall Family Conferences",
+      "id": "1sa9s7115qtane7407km2ogurb@google.com@2026-10-12T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-10-12T00:00:00.000Z",
       "end": "2026-10-13T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "1sa9s7115qtane7407km2ogurb@google.com@2026-10-12T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "5t462orn4ltmr3b355qihj8qj4@google.com@2026-10-12T00:00:00.000Z",
+      "title": "Fall Family Conferences",
       "start": "2026-10-12T00:00:00.000Z",
       "end": "2026-10-13T00:00:00.000Z",
       "allDay": true
@@ -406,15 +406,15 @@
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -504,8 +504,8 @@
       "allDay": false
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
+      "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Buzz Grams",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -518,8 +518,8 @@
       "allDay": true
     },
     {
-      "id": "4nr92ro3pgob4niek7rlqakau8@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Buzz Grams",
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -903,20 +903,20 @@
       "allDay": true
     },
     {
-      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
-      "title": "Ms. Earl's Birthday! (Cafeteria)",
-      "start": "2027-09-15T00:00:00.000Z",
-      "end": "2027-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
-    },
-    {
       "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
       "title": "Ms. Virginia's Birthday! (Cafeteria)",
       "start": "2027-09-15T00:00:00.000Z",
       "end": "2027-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
+      "title": "Ms. Earl's Birthday! (Cafeteria)",
+      "start": "2027-09-15T00:00:00.000Z",
+      "end": "2027-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
     },
     {
       "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2027-09-20T00:00:00.000Z",
