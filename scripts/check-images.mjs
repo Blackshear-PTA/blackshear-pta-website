@@ -154,71 +154,121 @@ for (const [p, want] of [['/images/x.jpg', true], ['/images', false], ['/imagesx
 }
 
 /**
- * The top-band backdrop, which is a pre-sized file rather than a getImage()
- * call - see "Why the top band is a pre-sized file" in
+ * The two PRE-SIZED derived photos, which are committed files rather than
+ * getImage() calls - see "Why some photos are pre-sized files" in
  * src/assets/photos/README.md.
  *
- * It is checked here because nothing else can catch it. The homepage renders on
- * demand, where Astro's image pipeline is unavailable and the adapter's
- * fallback endpoint streams whatever it is given straight back. So if this file
- * is regenerated at the wrong width, or replaced with the original by somebody
- * tidying up duplicate-looking photos, the page still renders, still looks
- * right, and quietly ships megabytes to a phone. The failure is invisible
- * everywhere except Content-Length.
+ * They are checked here because nothing else can catch them. Four routes render
+ * on demand, where Astro's image pipeline is unavailable and the adapter's
+ * fallback endpoint streams whatever it is handed straight back. If one of
+ * these is regenerated at the wrong size, or replaced with the original by
+ * somebody tidying up duplicate-looking photos, the page still renders, still
+ * looks right, and quietly ships megabytes. The failure is invisible everywhere
+ * except Content-Length - which is exactly how BOTH of them got shipped once.
+ *
+ * The backdrop was caught before release. The social card was not: it went to
+ * production, where sharing a link produced a card with no image because
+ * scrapers refuse a 6.3MB fetch. One of the two was guarded and the other was
+ * not, so this now covers every derived photo rather than the one that bit
+ * first.
  */
-console.log('\ntop-band backdrop (pre-sized, because / renders on demand):');
-{
-  const BAND = 'src/assets/photos/campus-front-walk-band.webp';
-  const WANT_WIDTH = 1200;
-  const WANT_HEIGHT = 800;
-  /** Generous: the real file is ~180KB. This is a tripwire, not a budget. */
-  const MAX_BYTES = 400 * 1024;
 
+/** Dimensions straight out of a WebP container. */
+function webpSize(b) {
+  const kind = b.subarray(12, 16).toString('latin1');
+  // sharp can emit any of three shapes depending on the encode, so all three
+  // are read rather than assuming the one it happens to produce today.
+  if (kind === 'VP8 ') return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff, kind };
+  if (kind === 'VP8L') {
+    const bits = b.readUInt32LE(21);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1, kind };
+  }
+  if (kind === 'VP8X') {
+    return {
+      width: (b.readUIntLE(24, 3) & 0xffffff) + 1,
+      height: (b.readUIntLE(27, 3) & 0xffffff) + 1,
+      kind,
+    };
+  }
+  return { width: 0, height: 0, kind };
+}
+
+/** Dimensions from a JPEG's first SOF marker. */
+function jpegSize(b) {
+  let i = 2; // past SOI
+  while (i < b.length - 9) {
+    if (b[i] !== 0xff) { i += 1; continue; }
+    const marker = b[i + 1];
+    // Standalone markers carry no length segment to skip over.
+    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd9)) { i += 2; continue; }
+    const length = b.readUInt16BE(i + 2);
+    // SOF0..SOF15, except DHT (c4), JPG (c8) and DAC (cc), which are not frames.
+    const isFrame = marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+    if (isFrame) return { width: b.readUInt16BE(i + 7), height: b.readUInt16BE(i + 5), kind: 'JPEG' };
+    i += 2 + length;
+  }
+  return { width: 0, height: 0, kind: 'JPEG' };
+}
+
+console.log('\npre-sized derived photos (because four routes render on demand):');
+{
   const { readFileSync, existsSync } = await import('node:fs');
 
-  if (!existsSync(BAND)) {
-    fail('the derived backdrop exists', `${BAND} is missing - regenerate it, see src/assets/photos/README.md`);
-  } else {
-    const bytes = readFileSync(BAND);
-    pass('the derived backdrop exists');
+  const DERIVED = [
+    {
+      what: 'top-band backdrop',
+      path: 'src/assets/photos/campus-front-walk-band.webp',
+      width: 1200,
+      height: 800,
+      /** Generous: the real file is ~180KB. A tripwire, not a budget. */
+      maxBytes: 400 * 1024,
+      magic: (b) => b.subarray(0, 4).toString('latin1') === 'RIFF' && b.subarray(8, 12).toString('latin1') === 'WEBP',
+      format: 'WebP',
+      size: webpSize,
+    },
+    {
+      what: 'social card (og:image)',
+      path: 'src/assets/photos/campus-front-walk-social.jpg',
+      width: 1200,
+      height: 630,
+      /**
+       * Tighter than a tripwire on purpose. X refuses an og:image over about
+       * 5MB and other scrapers have their own caps, but a card is also fetched
+       * on every share - 400KB is already generous for 1200x630.
+       */
+      maxBytes: 400 * 1024,
+      magic: (b) => b[0] === 0xff && b[1] === 0xd8,
+      format: 'JPEG',
+      size: jpegSize,
+    },
+  ];
 
-    if (bytes.subarray(0, 4).toString('latin1') === 'RIFF' && bytes.subarray(8, 12).toString('latin1') === 'WEBP') {
-      pass('it is a WebP');
+  for (const asset of DERIVED) {
+    if (!existsSync(asset.path)) {
+      fail(`${asset.what} exists`, `${asset.path} is missing - regenerate it, see src/assets/photos/README.md`);
+      continue;
+    }
+    const bytes = readFileSync(asset.path);
+    pass(`${asset.what} exists`);
+
+    if (asset.magic(bytes)) pass(`  it is a ${asset.format}`);
+    else fail(`  it is a ${asset.format}`, `magic bytes were ${JSON.stringify(bytes.subarray(0, 12).toString('latin1'))}`);
+
+    const { width, height, kind } = asset.size(bytes);
+    if (width === asset.width && height === asset.height) {
+      pass(`  it is ${asset.width}x${asset.height}`);
     } else {
-      fail('it is a WebP', `magic bytes were ${JSON.stringify(bytes.subarray(0, 12).toString('latin1'))}`);
+      fail(`  it is ${asset.width}x${asset.height}`, `got ${width}x${height} (container ${JSON.stringify(kind)})`);
     }
 
-    // Dimensions, read straight out of the container. Three shapes exist and
-    // sharp can emit any of them depending on the encode, so all three are read
-    // rather than assuming the one it happens to produce today.
-    const kind = bytes.subarray(12, 16).toString('latin1');
-    let width = 0;
-    let height = 0;
-    if (kind === 'VP8 ') {
-      width = bytes.readUInt16LE(26) & 0x3fff;
-      height = bytes.readUInt16LE(28) & 0x3fff;
-    } else if (kind === 'VP8L') {
-      const bits = bytes.readUInt32LE(21);
-      width = (bits & 0x3fff) + 1;
-      height = ((bits >> 14) & 0x3fff) + 1;
-    } else if (kind === 'VP8X') {
-      width = (bytes.readUIntLE(24, 3) & 0xffffff) + 1;
-      height = (bytes.readUIntLE(27, 3) & 0xffffff) + 1;
-    }
-
-    if (width === WANT_WIDTH && height === WANT_HEIGHT) {
-      pass(`it is ${WANT_WIDTH}x${WANT_HEIGHT}`);
-    } else {
-      fail(`it is ${WANT_WIDTH}x${WANT_HEIGHT}`, `got ${width}x${height} (container ${JSON.stringify(kind)})`);
-    }
-
-    if (bytes.length <= MAX_BYTES) {
-      pass(`it is ${Math.round(bytes.length / 1024)}KB, under the ${MAX_BYTES / 1024}KB ceiling`);
+    const kb = Math.round(bytes.length / 1024);
+    if (bytes.length <= asset.maxBytes) {
+      pass(`  it is ${kb}KB, under the ${asset.maxBytes / 1024}KB ceiling`);
     } else {
       fail(
-        'it is under the size ceiling',
-        `${Math.round(bytes.length / 1024)}KB exceeds ${MAX_BYTES / 1024}KB - this is the ` +
-          'shape of the bug where the full-size original gets served as the homepage backdrop',
+        '  it is under the size ceiling',
+        `${kb}KB exceeds ${asset.maxBytes / 1024}KB - this is the shape of the bug where the ` +
+          'full-size original gets shipped in place of the derived file',
       );
     }
   }
