@@ -1,6 +1,8 @@
-# DNS for blackshearpta.org - the real zone. 12 records.
+# DNS for blackshearpta.org - the real zone. 13 records.
 #
 # Generated 2026-09-03 by cf-terraforming 0.29.0, provider 5.24.0.
+# Hand-updated 2026-09-30 for B12: SPF edited in place, DKIM added. See the
+# MAIL AUTHENTICATION block for why the DKIM label is not cf-terraforming's.
 # A RECORD, NOT LIVE INFRASTRUCTURE. See README.md before running anything.
 # Resource labels are cf-terraforming's; comments carry the meaning.
 #
@@ -16,11 +18,11 @@
 # SPF, google-site-verification and _dmarc. Workspace for Nonprofits has been
 # live on this domain since 2026-09-30 (F53), so the MX records now carry real
 # mail. Never enable Cloudflare Email Routing on this zone, because it overwrites
-# MX (C7). SPF, DKIM and DMARC are being corrected under B12; refresh this file
-# once that is done, as it still shows the pre-B12 values.
+# MX (C7). SPF and DKIM were corrected under B12 on 2026-09-30. DMARC's report
+# address still points at GoDaddy and is the last B12 step.
 #
 # ---------------------------------------------------------------------------
-# ORDER OF RECORDS BELOW: two GoDaddy leftovers, five MX, three TXT, two AAAA.
+# ORDER OF RECORDS BELOW: two GoDaddy leftovers, five MX, four TXT, two AAAA.
 # ---------------------------------------------------------------------------
 
 # GODADDY LEFTOVERS. Neither is used by this site.
@@ -119,10 +121,17 @@ resource "cloudflare_dns_record" "terraform_managed_resource_d46e6f56b38c332ce3d
   settings = {}
 }
 
-# MAIL AUTHENTICATION. SPF uses GoDaddy's _spfm merge format and DMARC reports
-# go to onsecureserver.net - both GoDaddy-managed, both from the same era (F2).
+# MAIL AUTHENTICATION (B12).
+#
+# SPF was GoDaddy's `include:dc-aa8e722993._spfm.blackshearpta.org`, a target
+# GoDaddy's nameservers generated on the fly. It has returned NXDOMAIN since the
+# move to Cloudflare, which made SPF a permerror (F43). Replaced 2026-09-30 by
+# editing the same record, so the record ID and this label are unchanged.
+#
+# DMARC reports still go to GoDaddy's onsecureserver.net (F2). Moving `rua` to a
+# PTA-owned `dmarc@` group is the last B12 step.
 resource "cloudflare_dns_record" "terraform_managed_resource_30f8cb541737d45c421e0a6dc7ed9427_7" {
-  content  = "\"v=spf1 include:dc-aa8e722993._spfm.blackshearpta.org ~all\""
+  content  = "\"v=spf1 include:_spf.google.com ~all\""
   name     = "blackshearpta.org"
   proxied  = false
   tags     = []
@@ -146,6 +155,28 @@ resource "cloudflare_dns_record" "terraform_managed_resource_9852d286f919177735b
 resource "cloudflare_dns_record" "terraform_managed_resource_4675f49573545f64c829b214d4a83d2c_9" {
   content  = "\"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;\""
   name     = "_dmarc.blackshearpta.org"
+  proxied  = false
+  tags     = []
+  ttl      = 1
+  type     = "TXT"
+  zone_id  = "da49f29eb0a8de139c3129a80995045f"
+  settings = {}
+
+}
+
+# DKIM, added 2026-09-30. 2048-bit key, selector `google`, generated in the
+# Admin console under Apps > Google Workspace > Gmail > Authenticate email.
+# Checked against the console value, and resolving on 1.1.1.1 and 8.8.8.8.
+#
+# The label is hand-written: cf-terraforming labels embed the record ID, and the
+# API token cannot read DNS, so the ID was not captured. The next full
+# cf-terraforming run will emit this record under its canonical label.
+#
+# Rotating the key means generating a new one in the console and replacing this
+# value. A DKIM public key is public by design; nothing here is secret.
+resource "cloudflare_dns_record" "google_dkim" {
+  content  = "\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtWB/njy6S7XoExu+KBwOv/vER3D+skLuxzeTBYXrkEzLk9XoPtuCZ5x7QLZ5vqH+VT2HIVs6Z6tE2iOk84JOHO2/hIDFSn/VilMGKuX9GssrAkrm8xM76H2J7HlTgyaLvcT/Ozhhn9mFP+peoZWfT/NJ5vnRTStc6s3TvanH8ipyJWICrDrwtYZLAxJDCYWqRzhHVgDCUhHQ6rJPQ6B28OeFMGXgLoKTvNfE+0EIbWKRWstkMeTMgPnM3JR8JoVDmH74x0vq7K2WysLdG3lWOO0iQlqLcbDKDxniROZ2s6oY3LiH+/29lhpOIiOlOuz7u2/DSfQcl4zOUc4S0sR/iQIDAQAB\""
+  name     = "google._domainkey.blackshearpta.org"
   proxied  = false
   tags     = []
   ttl      = 1
