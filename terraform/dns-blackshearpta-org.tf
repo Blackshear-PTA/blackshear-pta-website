@@ -13,10 +13,11 @@
 #   - The `www` CNAME is GONE, replaced the same way.
 #
 # What is unchanged, and is the load-bearing part: the five Google MX records,
-# SPF, google-site-verification and _dmarc. Those are what B2/B3 (the Workspace
-# for Nonprofits application) depends on. Do not let anything touch them - and
-# in particular do not enable Cloudflare Email Routing while that application
-# is open, because it overwrites MX. That is C7, blocked for this reason.
+# SPF, google-site-verification and _dmarc. Workspace for Nonprofits has been
+# live on this domain since 2026-09-30 (F53), so the MX records now carry real
+# mail. Never enable Cloudflare Email Routing on this zone, because it overwrites
+# MX (C7). SPF, DKIM and DMARC are being corrected under B12; refresh this file
+# once that is done, as it still shows the pre-B12 values.
 #
 # ---------------------------------------------------------------------------
 # ORDER OF RECORDS BELOW: two GoDaddy leftovers, five MX, three TXT, two AAAA.
@@ -55,9 +56,9 @@ resource "cloudflare_dns_record" "terraform_managed_resource_1a2c807f8ccae12e516
 }
 
 # GOOGLE MAIL. Five MX records, priorities 1/5/5/10/10.
-# Leftovers from a Workspace attempt about a year ago (F8) that also left the
-# google-site-verification record - which is why the domain is already verified
-# with Google and B2 does not have to redo that step.
+# From the 2020 G Suite signup (F53), not the 2025 attempt F8 assumed. That
+# signup also left the google-site-verification record. The legacy five-record
+# set is still supported by Google and does not need changing.
 resource "cloudflare_dns_record" "terraform_managed_resource_9c3218181f51d9a727ef4fad8389251c_2" {
   content  = "alt4.aspmx.l.google.com"
   name     = "blackshearpta.org"
