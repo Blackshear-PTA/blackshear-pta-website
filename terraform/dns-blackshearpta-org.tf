@@ -1,8 +1,9 @@
 # DNS for blackshearpta.org - the real zone. 13 records.
 #
 # Generated 2026-09-03 by cf-terraforming 0.29.0, provider 5.24.0.
-# Hand-updated 2026-09-30 for B12: SPF edited in place, DKIM added. See the
-# MAIL AUTHENTICATION block for why the DKIM label is not cf-terraforming's.
+# Hand-updated for B12: SPF edited in place and DKIM added 2026-09-30, DMARC
+# edited in place 2026-10-01. See the MAIL AUTHENTICATION block for why the
+# DKIM label is not cf-terraforming's.
 # A RECORD, NOT LIVE INFRASTRUCTURE. See README.md before running anything.
 # Resource labels are cf-terraforming's; comments carry the meaning.
 #
@@ -18,8 +19,8 @@
 # SPF, google-site-verification and _dmarc. Workspace for Nonprofits has been
 # live on this domain since 2026-09-30 (F53), so the MX records now carry real
 # mail. Never enable Cloudflare Email Routing on this zone, because it overwrites
-# MX (C7). SPF and DKIM were corrected under B12 on 2026-09-30. DMARC's report
-# address still points at GoDaddy and is the last B12 step.
+# MX (C7). SPF, DKIM and DMARC were all corrected under B12 (2026-09-30 and
+# 2026-10-01) and verified on two public resolvers.
 #
 # ---------------------------------------------------------------------------
 # ORDER OF RECORDS BELOW: two GoDaddy leftovers, five MX, four TXT, two AAAA.
@@ -128,8 +129,9 @@ resource "cloudflare_dns_record" "terraform_managed_resource_d46e6f56b38c332ce3d
 # move to Cloudflare, which made SPF a permerror (F43). Replaced 2026-09-30 by
 # editing the same record, so the record ID and this label are unchanged.
 #
-# DMARC reports still go to GoDaddy's onsecureserver.net (F2). Moving `rua` to a
-# PTA-owned `dmarc@` group is the last B12 step.
+# DMARC reports went to GoDaddy's onsecureserver.net (F2). On 2026-10-01 `rua`
+# moved to `dmarc@`, a Google Group that accepts outside senders. Same-domain
+# reporting needs no _report._dmarc authorization record. Policy is unchanged.
 resource "cloudflare_dns_record" "terraform_managed_resource_30f8cb541737d45c421e0a6dc7ed9427_7" {
   content  = "\"v=spf1 include:_spf.google.com ~all\""
   name     = "blackshearpta.org"
@@ -153,7 +155,7 @@ resource "cloudflare_dns_record" "terraform_managed_resource_9852d286f919177735b
 }
 
 resource "cloudflare_dns_record" "terraform_managed_resource_4675f49573545f64c829b214d4a83d2c_9" {
-  content  = "\"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;\""
+  content  = "\"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc@blackshearpta.org\""
   name     = "_dmarc.blackshearpta.org"
   proxied  = false
   tags     = []
