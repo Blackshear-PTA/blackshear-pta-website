@@ -1,21 +1,21 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-10-03",
+  "generated": "2026-10-04",
   "window": {
-    "from": "2026-10-03",
-    "to": "2027-10-03"
+    "from": "2026-10-04",
+    "to": "2027-10-04"
   },
   "events": [
     {
-      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2026-10-05T00:00:00.000Z",
-      "title": "Ms. Wellman's Birthday! (AP)",
+      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2026-10-05T00:00:00.000Z",
+      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
       "start": "2026-10-05T00:00:00.000Z",
       "end": "2026-10-06T00:00:00.000Z",
       "allDay": true
@@ -60,13 +60,6 @@
       "title": "PTA Meeting - extra (VIRTUAL)",
       "start": "2026-10-13T23:00:00.000Z",
       "end": "2026-10-14T00:00:00.000Z",
-      "allDay": false
-    },
-    {
-      "id": "32tvh5u7fcvpv1l0oe9g4asf62@google.com@2026-10-16T20:10:00.000Z",
-      "title": "PTA Bake Sale (4th Grade)",
-      "start": "2026-10-16T20:10:00.000Z",
-      "end": "2026-10-16T21:00:00.000Z",
       "allDay": false
     },
     {
@@ -182,15 +175,15 @@
       "allDay": false
     },
     {
-      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Staff Pies & Sides Event",
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
+      "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true
@@ -406,15 +399,15 @@
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -903,20 +896,20 @@
       "allDay": true
     },
     {
-      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
-      "title": "Ms. Virginia's Birthday! (Cafeteria)",
-      "start": "2027-09-15T00:00:00.000Z",
-      "end": "2027-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
-    },
-    {
       "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
       "title": "Ms. Earl's Birthday! (Cafeteria)",
       "start": "2027-09-15T00:00:00.000Z",
       "end": "2027-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
+    },
+    {
+      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
+      "title": "Ms. Virginia's Birthday! (Cafeteria)",
+      "start": "2027-09-15T00:00:00.000Z",
+      "end": "2027-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
     },
     {
       "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2027-09-20T00:00:00.000Z",
