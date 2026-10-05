@@ -69,7 +69,7 @@ little-east:
           note: "Opens YouTube"
       names: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "Ryann Matthews chairs this committee. Email the PTA and we will put you in touch."
 
 sponsors:
@@ -157,7 +157,7 @@ sponsors:
   contact:
     name: "Lennie King"
     role: "PTA Fundraising Chair"
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "The current site lists a direct address for Lennie that is obfuscated and could not be read. Using the PTA address until we have it."
 
 staff-appreciation:
@@ -189,7 +189,7 @@ staff-appreciation:
           note: "PDF on Google Drive"
       names: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "This committee is looking for a chair. Email us if you are interested."
 
 campus-beautification:
@@ -219,7 +219,7 @@ campus-beautification:
           note: "Required once a year for all campus volunteers"
       names: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "Email the PTA and we will point you at the next work day."
 
 volunteer:
@@ -272,7 +272,7 @@ volunteer:
           note: "No activity sheet yet. See the committee page"
       names: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "Not sure where you would fit? Email us and we will find something."
 
 contact:
@@ -287,7 +287,7 @@ contact:
     - "We also run a WhatsApp community. Email us if you would like to be added."
   cta:
     label: "Email the PTA"
-    href: "mailto:blackshearpta@gmail.com"
+    href: "mailto:hello@blackshearpta.org"
   sections:
     # Reproduces the current Weebly roster, children and grades included. See
     # F22 in TASKS.md: this becomes searchable at cutover, and is worth a
@@ -316,7 +316,7 @@ contact:
           note: "Every teacher and staff email"
       names: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "PTA phone: (512) 402-2023. Individual board addresses are obfuscated on the current site and could not be read, so everything routes through the PTA address for now."
 
 gallery:
@@ -333,7 +333,7 @@ gallery:
     - "A few photos from around Blackshear. There will be more here soon."
   sections: []
   contact:
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "Got a photo we should use? Send it over. Please make sure anyone recognizable is happy to be on the site."
 
 calendar:
