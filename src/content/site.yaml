@@ -69,7 +69,7 @@ site:
       href: "https://www.facebook.com/BlackshearArtsPTA"
     - platform: email
       label: "Email the PTA"
-      href: "mailto:blackshearpta@gmail.com"
+      href: "mailto:hello@blackshearpta.org"
 
   # Single most important action. Rendered apart from the nav in every theme.
   primaryAction:

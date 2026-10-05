@@ -78,7 +78,7 @@ home:
         description: "Join a committee, or just get in touch and tell us what you're good at. We will find something."
         cta:
           label: "Email the PTA"
-          href: "mailto:blackshearpta@gmail.com"
+          href: "mailto:hello@blackshearpta.org"
 
   committees:
     heading: "Committees"
@@ -105,6 +105,6 @@ home:
   footer:
     orgName: "Blackshear Elementary PTA"
     contact:
-      email: "blackshearpta@gmail.com"
+      email: "hello@blackshearpta.org"
       phone: "(512) 402-2023"
       address: "1712 E. 11th St., Austin, TX 78702"

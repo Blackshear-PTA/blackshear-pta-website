@@ -122,7 +122,7 @@ Two rules we hold to:
   work and it is the difference between the site working for someone and not.
 
 We are short of photos. If you have good ones from an event, send them to
-`blackshearpta@gmail.com`.
+`hello@blackshearpta.org`.
 
 ---
 
@@ -151,7 +151,7 @@ Flowers**. The GitHub organization and every account are owned by the PTA's own
 `blackshearpta@gmail.com`, not by any individual, so nothing is lost when a
 volunteer moves on.
 
-Questions, corrections, or an offer to help: **blackshearpta@gmail.com**
+Questions, corrections, or an offer to help: **hello@blackshearpta.org**
 
 ---
 

@@ -71,7 +71,7 @@ book-fair:
           note: "Opens SignUpGenius"     # optional small print
       names: []                   # plain names, no links: sponsor lists
   contact:                        # optional
-    email: "blackshearpta@gmail.com"
+    email: "hello@blackshearpta.org"
     note: "Anything else worth saying."
 ```
 
