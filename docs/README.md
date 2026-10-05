@@ -26,6 +26,9 @@ For reading rather than editing, `npm run tasks:board` renders it as one HTML pa
 filterable by owner and status, and the findings log. It is a view, not a second
 copy. It holds nothing of its own, so regenerate it after editing TASKS.md.
 
+[`BOARD-AGENDA.md`](BOARD-AGENDA.md) is the talking points for the next exec board meeting.
+The task board shows it as a second *Board meeting* tab. Replace it before each meeting.
+
 ## Documentation that lives next to the thing it describes
 
 Some notes are more useful sitting beside the files they are about than

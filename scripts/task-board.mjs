@@ -87,7 +87,15 @@ function blocks(lines, ctx) {
   const isList = (l) => /^\s*(?:[-*]|\d+\.)\s+/.test(l);
   while (i < lines.length) {
     const line = lines[i];
-    if (!line.trim() || /^<a name="[^"]+"><\/a>$/.test(line.trim()) || line.trim() === '---') {
+    if (!line.trim() || /^<a name="[^"]+"><\/a>$/.test(line.trim()) || /^<!--.*-->$/.test(line.trim()) || line.trim() === '---') {
+      i++;
+      continue;
+    }
+    const heading = line.match(/^(#{2,4})\s+(.+)$/);
+    if (heading) {
+      // ## is a section inside a panel, so it renders one level below the panel's own h2.
+      const level = Math.min(heading[1].length + 1, 5);
+      out.push(`<h${level}>${inline(heading[2], ctx)}</h${level}>`);
       i++;
       continue;
     }
@@ -269,6 +277,12 @@ function git(...a) {
 }
 
 const md = fs.readFileSync(path.join(root, 'TASKS.md'), 'utf8');
+
+// The second tab: talking points for the next exec board meeting, kept in their
+// own file so they are not a second copy of anything in TASKS.md. Optional; the
+// tab only appears when the file exists.
+const AGENDA_FILE = path.join(root, 'docs/BOARD-AGENDA.md');
+const agendaMd = fs.existsSync(AGENDA_FILE) ? fs.readFileSync(AGENDA_FILE, 'utf8') : '';
 const data = parse(md);
 const ctx = {
   branch: git('rev-parse', '--abbrev-ref', 'HEAD') || 'main',
@@ -319,6 +333,21 @@ function taskRow(t, ctx) {
   <div class="task-head">${stateBadge(t.state)}<a class="tid" href="#${t.id.toLowerCase()}">${t.id}</a><span class="ttitle">${inline(t.title, ctx)}</span>${ownerChips(t.owner)}</div>
   ${detail}
 </li>`;
+}
+
+/** The Board meeting tab, from docs/BOARD-AGENDA.md: "# Title", then sections. */
+function agendaPanel(ctx) {
+  if (!agendaMd) return '';
+  const lines = agendaMd.split('\n');
+  const titleAt = lines.findIndex((l) => /^# /.test(l));
+  const title = titleAt >= 0 ? lines[titleAt].replace(/^# /, '').trim() : 'Board meeting';
+  const body = blocks(lines.filter((_, i) => i !== titleAt), ctx);
+  const src = `${REPO_URL}/blob/${ctx.branch}/docs/BOARD-AGENDA.md`;
+  return `<div class="wrap panel agenda" id="board-meeting" role="tabpanel" aria-labelledby="tab-meeting" hidden>
+  <h2>${inline(title, ctx)}</h2>
+  <div class="prose agenda-body">${body}</div>
+  <footer>From <a href="${esc(src)}" target="_blank" rel="noopener">docs/BOARD-AGENDA.md</a>. Task numbers link to their place on the Tasks tab.</footer>
+</div>`;
 }
 
 function splitTitle(title) {
@@ -471,7 +500,23 @@ h1 { font-family: var(--font-display); text-transform: uppercase; letter-spacing
 .meta { font-size: var(--small); color: var(--band-muted); }
 .meta a { color: var(--band-ink); }
 
-main.wrap { display: grid; gap: 2.25rem; padding-block: 1.5rem 3rem; }
+[hidden] { display: none !important; }
+.panel { display: grid; gap: 2.25rem; padding-block: 1.5rem 3rem; }
+
+/* Tabs: Tasks | Board meeting. Plain text tabs on a rule, ink underline when selected. */
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--rule); }
+.tabs [role="tab"] { font: inherit; font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; padding: 0.9rem 0.85rem 0.7rem; cursor: pointer; }
+.tabs [role="tab"]:hover { color: var(--ink); }
+.tabs [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* The meeting tab is read aloud from a shared screen, so it runs a size up. */
+.agenda { font-size: 1.08rem; gap: 1rem; }
+.agenda-body { max-width: 68ch; }
+.agenda-body h3 { font-family: var(--font-display); text-transform: uppercase; font-weight: 400; letter-spacing: 0.01em; font-size: var(--step-2); margin: 1.75rem 0 0.5rem; padding-bottom: 0.35rem; border-bottom: 3px solid var(--ink); }
+.agenda-body h3:first-child { margin-top: 0.5rem; }
+.agenda-body ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
+.agenda-body li::marker { color: var(--accent); }
+.agenda-body > p { color: var(--muted); }
 h2 { font-family: var(--font-display); text-transform: uppercase; font-weight: 400; letter-spacing: 0.01em; font-size: var(--step-2); line-height: 1.15; margin: 0; text-wrap: balance; }
 h3 { font-family: var(--font-body); font-weight: 700; font-size: var(--step-3); margin: 0; text-wrap: balance; }
 .eyebrow { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -588,7 +633,13 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   </div>
 </header>
 
-<main class="wrap">
+${agendaMd ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
+  <button type="button" role="tab" id="tab-tasks" aria-controls="panel-tasks" aria-selected="true">Tasks</button>
+  <button type="button" role="tab" id="tab-meeting" aria-controls="board-meeting" aria-selected="false" tabindex="-1">Board meeting</button>
+</nav>` : ''}
+
+<main>
+<div class="wrap panel" id="panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
   <ul class="tallies" aria-label="Task counts">
     <li><strong>${count('todo') + count('doing') + count('blocked')}</strong> open</li>
     <li>${stateBadge('doing')}<strong>${count('doing')}</strong></li>
@@ -631,6 +682,8 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   </section>
 
   <footer>Generated from <a href="${esc(fileUrl)}" target="_blank" rel="noopener">TASKS.md</a> by <code>scripts/task-board.mjs</code>${ctx.sha ? `, at ${esc(ctx.branch)} ${esc(ctx.sha)}` : ''}. TASKS.md is the source of truth; this page is a read-only view of it.</footer>
+</div>
+${agendaPanel(ctx)}
 </main>
 
 <script>
@@ -673,10 +726,34 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   document.querySelectorAll('button[data-owner]').forEach((b) => b.addEventListener('click', () => { state.owner = b.dataset.owner; save(); apply(); }));
   search.addEventListener('input', () => { state.q = search.value; apply(); });
 
-  // A link to a task or finding that the filters are hiding: show it anyway, and open it.
+  // Tabs. The panel id is the tab's identity, so #board-meeting deep-links to it.
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function showTab(panelId) {
+    for (const t of tabs) {
+      const on = t.getAttribute('aria-controls') === panelId;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    }
+    try { localStorage.setItem(KEY + '-tab', panelId); } catch (e) {}
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => showTab(t.getAttribute('aria-controls')));
+    t.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus();
+      showTab(next.getAttribute('aria-controls'));
+    });
+  });
+
+  // A link to a task or finding that the filters, a fold or the other tab is hiding: show it, and open it.
   function reveal(id) {
     const el = id && document.getElementById(id);
     if (!el) return;
+    if (el.getAttribute('role') === 'tabpanel') { showTab(id); return; }
+    const panel = el.closest('[role="tabpanel"]');
+    if (panel && panel.hidden && tabs.length) showTab(panel.id);
     if (el.hidden) { el.classList.add('forced'); apply(); }
     const d = el.matches('details') ? el : el.querySelector('details');
     if (d && (el.classList.contains('finding') || el.classList.contains('task'))) d.open = true;
@@ -687,6 +764,11 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
     const a = e.target.closest('a[href^="#"]');
     if (a) reveal(decodeURIComponent(a.getAttribute('href').slice(1)));
   });
+  if (tabs.length) {
+    let start = 'panel-tasks';
+    try { const saved = localStorage.getItem(KEY + '-tab'); if (saved && document.getElementById(saved)) start = saved; } catch (e) {}
+    showTab(start);
+  }
   if (location.hash) reveal(location.hash.slice(1));
   apply();
 })();
