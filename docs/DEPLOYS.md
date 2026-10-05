@@ -14,7 +14,7 @@ the calendar snapshot daily. See [CALENDAR.md](CALENDAR.md).
 
 ## Which Cloudflare account
 
-`Blackshearpta@gmail.com's Account`, ID `eb3bbf021359a4399c0ddef6bc09e3c4`, and
+`Blackshear PTA` (named `Blackshearpta@gmail.com's Account` until 2026-10-05), ID `eb3bbf021359a4399c0ddef6bc09e3c4`, and
 nothing else. The ID is pinned in `wrangler.jsonc` as `account_id` so that a run
 holding the wrong credential fails with an access error rather than deploying
 into another tenant — there is a second, personal Cloudflare account on the
