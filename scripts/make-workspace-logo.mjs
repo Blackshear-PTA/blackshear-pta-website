@@ -22,6 +22,14 @@
  *                                   in dark themes, which are per-user and
  *                                   common. Use it only if nobody does.
  *
+ * And one account photo:
+ *   buzz-profile-color.jpg          800 x 800, for hello@ (the PTA's public
+ *                                   mailbox). Color Buzz in the same disc, on
+ *                                   brand blue. Google crops account photos to a
+ *                                   circle, so the disc sits inside that circle
+ *                                   with a blue band around it. JPEG has no
+ *                                   transparency, hence the solid ground.
+ *
  * Bevan comes from Astro's font cache, which exists after one build:
  *   npm run build && node scripts/make-workspace-logo.mjs
  */
@@ -141,3 +149,31 @@ async function render(name, opts) {
 
 await render('workspace-logo.png', { background: BLACK, ink: WHITE });
 await render('workspace-logo-transparent.png', { background: null, ink: BLACK });
+
+/** The account photo: the BuzzMascot disc, centred on brand blue. */
+async function renderProfile(name) {
+  const SIZE = 800;
+  const BLUE = '#0048A8';
+  // The disc (r=46 of 100) spans 85% of the frame, so the circle Google crops
+  // to (the inscribed circle) leaves a blue band of about 7% all round.
+  const markSize = Math.round(SIZE * 0.925);
+  const offset = (SIZE - markSize) / 2;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
+  <rect width="${SIZE}" height="${SIZE}" fill="${BLUE}"/>
+  <svg x="${offset}" y="${offset}" width="${markSize}" height="${markSize}" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="${WHITE}" stroke="${BLACK}" stroke-width="3"/>
+    <svg x="23.77" y="15.00" width="52.45" height="70.00" viewBox="228 111 574 766" overflow="visible">${mascotInner()}</svg>
+  </svg>
+</svg>`;
+  const jpg = await sharp(Buffer.from(svg), { density: 72 * 2 })
+    .resize(SIZE, SIZE)
+    .flatten({ background: BLUE })
+    .jpeg({ quality: 90, mozjpeg: true, chromaSubsampling: '4:4:4' })
+    .toBuffer();
+  const meta = await sharp(jpg).metadata();
+  if (meta.width !== SIZE || meta.height !== SIZE || meta.format !== 'jpeg') throw new Error(`${name}: ${meta.format} ${meta.width}x${meta.height}`);
+  fs.writeFileSync(path.join(OUT_DIR, name), jpg);
+  console.log(`${name}: ${meta.width}x${meta.height} JPEG, ${(jpg.length / 1024).toFixed(1)} KB`);
+}
+
+await renderProfile('buzz-profile-color.jpg');
