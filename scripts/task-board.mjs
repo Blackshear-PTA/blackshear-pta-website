@@ -287,6 +287,19 @@ const EXTRA_TABS = [
 ]
   .map((t) => ({ ...t, md: fs.existsSync(path.join(root, t.file)) ? fs.readFileSync(path.join(root, t.file), 'utf8') : '' }))
   .filter((t) => t.md);
+
+// The Archive tab: every markdown file in docs/archive/, newest first by file
+// name (date-prefixed, so 2026-10-06-exec-board.md sorts by date). Each becomes
+// a collapsible entry with its own deep link, #archive-<file name>.
+const ARCHIVE_DIR = path.join(root, 'docs/archive');
+const ARCHIVE = fs.existsSync(ARCHIVE_DIR)
+  ? fs
+      .readdirSync(ARCHIVE_DIR)
+      .filter((f) => f.endsWith('.md'))
+      .sort()
+      .reverse()
+      .map((f) => ({ file: `docs/archive/${f}`, slug: f.replace(/\.md$/, ''), md: fs.readFileSync(path.join(ARCHIVE_DIR, f), 'utf8') }))
+  : [];
 const data = parse(md);
 const ctx = {
   branch: git('rev-parse', '--abbrev-ref', 'HEAD') || 'main',
@@ -337,6 +350,24 @@ function taskRow(t, ctx) {
   <div class="task-head">${stateBadge(t.state)}<a class="tid" href="#${t.id.toLowerCase()}">${t.id}</a><span class="ttitle">${inline(t.title, ctx)}</span>${ownerChips(t.owner)}</div>
   ${detail}
 </li>`;
+}
+
+/** The Archive tab: one collapsible entry per archived page. */
+function archivePanel(ctx) {
+  if (!ARCHIVE.length) return '';
+  const entries = ARCHIVE.map((a) => {
+    const lines = a.md.split('\n');
+    const titleAt = lines.findIndex((l) => /^# /.test(l));
+    const title = titleAt >= 0 ? lines[titleAt].replace(/^# /, '').trim() : a.slug;
+    const body = blocks(lines.filter((_, i) => i !== titleAt), ctx);
+    const src = `${REPO_URL}/blob/${ctx.branch}/${a.file}`;
+    return `<details class="archive-entry" id="archive-${esc(a.slug)}"><summary>${inline(title, ctx)}</summary><div class="prose agenda-body">${body}<p class="archive-src">From <a href="${esc(src)}" target="_blank" rel="noopener">${esc(a.file)}</a></p></div></details>`;
+  }).join('\n');
+  return `<div class="wrap panel agenda" id="archive" role="tabpanel" aria-labelledby="tab-archive" hidden>
+  <h2>Archive</h2>
+  <p class="intro">Past meeting notes and other pages that are no longer current, newest first. Anything still open from them is on the Tasks tab.</p>
+  <div class="archive-list">${entries}</div>
+</div>`;
 }
 
 /** One extra tab's panel, from its markdown file: "# Title", then sections. */
@@ -522,6 +553,11 @@ h1 { font-family: var(--font-display); text-transform: uppercase; letter-spacing
 .agenda-body h3:first-child { margin-top: 0.5rem; }
 .agenda-body ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
 .agenda-body li::marker { color: var(--accent); }
+.archive-list { display: grid; border-top: 1px solid var(--rule); }
+.archive-entry { border-bottom: 1px solid var(--rule); padding-block: 0.6rem; scroll-margin-top: 5rem; }
+.archive-entry > summary { cursor: pointer; font-weight: 700; font-size: var(--step-3); }
+.archive-entry[open] > summary { margin-bottom: 0.5rem; }
+.archive-src { font-size: var(--small); color: var(--muted); }
 .agenda-body > p { color: var(--muted); }
 h2 { font-family: var(--font-display); text-transform: uppercase; font-weight: 400; letter-spacing: 0.01em; font-size: var(--step-2); line-height: 1.15; margin: 0; text-wrap: balance; }
 h3 { font-family: var(--font-body); font-weight: 700; font-size: var(--step-3); margin: 0; text-wrap: balance; }
@@ -639,9 +675,10 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   </div>
 </header>
 
-${EXTRA_TABS.length ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
+${EXTRA_TABS.length || ARCHIVE.length ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
   <button type="button" role="tab" id="tab-tasks" aria-controls="panel-tasks" aria-selected="true">Tasks</button>
   ${EXTRA_TABS.map((t) => `<button type="button" role="tab" id="tab-${t.id}" aria-controls="${t.id}" aria-selected="false" tabindex="-1">${esc(t.label)}</button>`).join('\n  ')}
+  ${ARCHIVE.length ? `<button type="button" role="tab" id="tab-archive" aria-controls="archive" aria-selected="false" tabindex="-1">Archive</button>` : ''}
 </nav>` : ''}
 
 <main>
@@ -690,6 +727,7 @@ ${EXTRA_TABS.length ? `<nav class="wrap tabs" role="tablist" aria-label="Board v
   <footer>Generated from <a href="${esc(fileUrl)}" target="_blank" rel="noopener">TASKS.md</a> by <code>scripts/task-board.mjs</code>${ctx.sha ? `, at ${esc(ctx.branch)} ${esc(ctx.sha)}` : ''}. TASKS.md is the source of truth; this page is a read-only view of it.</footer>
 </div>
 ${EXTRA_TABS.map((t) => docPanel(t, ctx)).join('\n')}
+${archivePanel(ctx)}
 </main>
 
 <script>
@@ -762,7 +800,7 @@ ${EXTRA_TABS.map((t) => docPanel(t, ctx)).join('\n')}
     if (panel && panel.hidden && tabs.length) showTab(panel.id);
     if (el.hidden) { el.classList.add('forced'); apply(); }
     const d = el.matches('details') ? el : el.querySelector('details');
-    if (d && (el.classList.contains('finding') || el.classList.contains('task'))) d.open = true;
+    if (d && (el.classList.contains('finding') || el.classList.contains('task') || el.classList.contains('archive-entry'))) d.open = true;
     const fold = el.closest('details.done-fold');
     if (fold) fold.open = true;
   }

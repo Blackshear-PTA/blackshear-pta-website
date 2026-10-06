@@ -14,18 +14,19 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | **GitHub**, organization Blackshear-PTA | The website's code (public). A merge to main deploys it, and a daily job refreshes the calendar. | Owners: the PTA account (`blackshearpta-legacy`), Communications, the break-glass account, and Jon's personal account | Require two-factor org-wide ([A37](#a37)); GitHub for Nonprofits ([B7](#b7)) |
 | **GoDaddy** | The domain's registrar today | Gabe's personal account; Jon has delegate access to the domain only | Transfer to Cloudflare after Oct 11 ([C9](#c9)) |
 | **Google for Nonprofits** (program account "Pta Texas Congress") | Keeps the PTA eligible for Workspace for Nonprofits and other Google programs | Admins: the break-glass account (primary), Communications, the PTA Gmail | None |
-| **PTA Gmail**, blackshearpta@gmail.com | The old central account. It forwards to hello@, is the recovery address for the break-glass account and hello@, owns the parents' calendar until the transfer, and is the login for older services. | Communications | Keep it forever; its history moves in [B30](#b30) |
-| **Fundraising Gmail** | The fundraising committee's old account | Fundraising chair | Moves into fundraising@ ([B26](#b26)) |
-| **Blackshear Parents calendar** (Google Calendar) | The public calendar parents subscribe to; the website reads it daily | Owner: the PTA Gmail. Edit: Communications. View: the Fundraising Gmail. | Transfer ownership into Workspace ([B27](#b27)) |
+| **PTA Gmail**, blackshearpta@gmail.com | The old central account. It forwards to hello@, is the recovery address for the break-glass account and hello@, owns the parents' calendar until the transfer, and is the login for older services. | Communications | **Everything in it moves to hello@** (decided 2026-10-06, [B30](#b30)); the account itself stays, as a recovery address |
+| **Fundraising Gmail** | The fundraising committee's old account | Fundraising chair | **Everything in it moves to fundraising@** (decided 2026-10-06, [B26](#b26)); the account itself stays, as a recovery address |
+| **Blackshear Parents calendar** (Google Calendar) | The public calendar parents subscribe to; the website reads it daily | Owner: the PTA Gmail. Edit: Communications. View: the Fundraising Gmail. | **Transfer ownership to communications@** (decided 2026-10-06, [B27](#b27)); the link and subscriptions stay the same |
 | **Weebly** | The old website | Login holder unknown | Retire ([A29](#a29)) |
 | **Social media and other tools**: Instagram, Facebook, sign-up and payment tools, Animoto, TinyURL, HelloSign | Various | Mostly signed up under the two old Gmails | Inventory, then move the logins to PTA addresses ([A38](#a38)) |
+| **Passwd** (password manager) | A shared vault for the PTA's central logins. Free Starter plan, up to 15 logins. | Installed by a Workspace admin; access by role group | Set up ([B33](#b33)) |
 | **Claude Code automation** | A scoped Cloudflare API token on Jon's machine (read-only except the database), plus GitHub through Jon's account | Jon | Revoke at handoff |
 
 ## Email addresses
 
 | Address | Type | Who uses it | Notes |
 |---|---|---|---|
-| hello@ | User account, delegated | Communications holds the login. Delegates: Communications, President, VP, Fundraising. | The PTA's public address; replaces the PTA Gmail ([B25](#b25)) |
+| hello@ | User account, delegated | Communications holds the login. Delegates, confirmed 2026-10-06: Communications, President, VP, Fundraising. | The PTA's public address; replaces the PTA Gmail ([B25](#b25)) |
 | members@ | Group, announcement-only | Posted to by hello@, Communications and the President | All 83 current PTA members; replies go to hello@ ([B28](#b28)) |
 | president@, vp@, secretary@, treasurer@, fundraising@, roomparents@, garden@, staffappreciation@, communications@ | User accounts | The officer holding each role | They pass with the role; at turnover an admin resets the password ([D14](#d14)) |
 | littleeast@ | User account | The Little EAST chair | Created 2026-10-06 ([B31](#b31)); may become the Little EAST page's contact ([A40](#a40)) |
