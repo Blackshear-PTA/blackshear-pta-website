@@ -28,6 +28,8 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | hello@ | User account, delegated | Communications holds the login. Delegates: Communications, President, VP, Fundraising. | The PTA's public address; replaces the PTA Gmail ([B25](#b25)) |
 | members@ | Group, announcement-only | Posted to by hello@, Communications and the President | All 83 current PTA members; replies go to hello@ ([B28](#b28)) |
 | president@, vp@, secretary@, treasurer@, fundraising@, roomparents@, garden@, staffappreciation@, communications@ | User accounts | The officer holding each role | They pass with the role; at turnover an admin resets the password ([D14](#d14)) |
+| littleeast@ | User account (being created) | The Little EAST chair | Decided 2026-10-06 ([B31](#b31)) |
+| community@ | Group, used as a shared mailbox (being created) | Several members, worked as a Collaborative Inbox | Decided 2026-10-06; purpose to be settled so it does not overlap with hello@ ([B32](#b32)) |
 | webmaster@ | Group | Communications plus a backup | Login address for outside services |
 | dmarc@ | Group | Communications plus a backup | Email-authentication reports |
 | The break-glass account | User account, emergency super admin | Sealed credentials | Also the central IT contact for billing and admin notices, and forwards to Communications ([B16](#b16), [B22](#b22)) |

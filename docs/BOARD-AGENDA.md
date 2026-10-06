@@ -4,6 +4,15 @@
 
 Google Workspace, the new website, and other tools. Each task number links to its details on the Tasks tab; the Systems & accounts tab has the full picture.
 
+## Decided at the meeting
+
+- **Little EAST gets a user account, littleeast@**, held by the chair and passed on with the role ([D16](#d16), [B31](#b31)).
+- **community@ will be a Google Group with several members**, run as a shared mailbox through Collaborative Inbox ([D17](#d17), [B32](#b32)).
+- **A room parent dashboard is wanted.** Details to come from Bree before anything is built ([A39](#a39)).
+- **GitHub for Nonprofits:** applied the same day; waiting on approval ([B7](#b7)).
+
+The other open items below carry over to the next meeting.
+
 ## What's live
 
 - **Google Workspace for Nonprofits is approved and free.** The PTA now has its own email at blackshearpta.org.
@@ -24,8 +33,8 @@ Google Workspace, the new website, and other tools. Each task number links to it
 - **Parents' calendar:** transfer its ownership into Workspace. The calendar stays the same one, so the website's link and every parent's subscription keep working with nothing to re-subscribe. Decide the new owner: hello@ is suggested, or communications@. One Admin console setting comes first, and Claude checks the public feed straight after ([B27](#b27)).
 - **hello@ access:** Communications, President, VP and Fundraising can read and send as hello@ today. Should anyone else? ([B25](#b25))
 - **Passwords and emergency access:** which two officers know where the sealed backup admin login is kept, and whether to adopt a password manager. Free options that fit Workspace: **Passwd**, free for unlimited users and up to 15 saved logins, with Google sign-in; or **Bitwarden**, free for two people sharing. Paid options, with nonprofit discounts on request: Bitwarden Teams, about $4 per user a month, or 1Password Teams, about $20 a month for up to 10 people ([D2](#d2)).
-- **Little EAST address:** its own user account, a group, or a collaborative inbox? ([D16](#d16))
-- **community@, Lennie's idea:** what is it for, and which kind of address: a group, a collaborative inbox, or a shared account with delegation? ([D17](#d17))
+- ~~**Little EAST address**~~: decided, a user account ([D16](#d16)).
+- ~~**community@**~~: decided, a group used as a shared mailbox. Still to settle: exactly what it is for, so it does not overlap with hello@ ([D17](#d17)).
 - **Domain transfer:** either Gabe and Jon do it together (Gabe unlocks the domain at GoDaddy, gets the transfer code and approves GoDaddy's email; Jon starts it in Cloudflare and pays), or Gabe does all of it with Cloudflare access on secretary@ and a step-by-step checklist. Either way, **change nothing on the domain's registration details at GoDaddy first**, because that restarts a 60-day lock ([C9](#c9)).
 - **Open roles:** a Parliamentarian address once someone is appointed ([B14](#b14)).
 - **Mailing to members:** who sends, and how often. Start with small sends while the new domain builds a reputation ([B28](#b28)).
