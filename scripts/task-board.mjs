@@ -278,11 +278,15 @@ function git(...a) {
 
 const md = fs.readFileSync(path.join(root, 'TASKS.md'), 'utf8');
 
-// The second tab: talking points for the next exec board meeting, kept in their
-// own file so they are not a second copy of anything in TASKS.md. Optional; the
-// tab only appears when the file exists.
-const AGENDA_FILE = path.join(root, 'docs/BOARD-AGENDA.md');
-const agendaMd = fs.existsSync(AGENDA_FILE) ? fs.readFileSync(AGENDA_FILE, 'utf8') : '';
+// Extra tabs beside the task list, each rendered from its own markdown file so
+// none of them is a second copy of anything in TASKS.md. A tab appears only when
+// its file exists. The id is the deep link (#board-meeting, #systems).
+const EXTRA_TABS = [
+  { file: 'docs/BOARD-AGENDA.md', id: 'board-meeting', label: 'Board meeting' },
+  { file: 'docs/ACCOUNTS.md', id: 'systems', label: 'Systems & accounts' },
+]
+  .map((t) => ({ ...t, md: fs.existsSync(path.join(root, t.file)) ? fs.readFileSync(path.join(root, t.file), 'utf8') : '' }))
+  .filter((t) => t.md);
 const data = parse(md);
 const ctx = {
   branch: git('rev-parse', '--abbrev-ref', 'HEAD') || 'main',
@@ -335,18 +339,17 @@ function taskRow(t, ctx) {
 </li>`;
 }
 
-/** The Board meeting tab, from docs/BOARD-AGENDA.md: "# Title", then sections. */
-function agendaPanel(ctx) {
-  if (!agendaMd) return '';
-  const lines = agendaMd.split('\n');
+/** One extra tab's panel, from its markdown file: "# Title", then sections. */
+function docPanel(tab, ctx) {
+  const lines = tab.md.split('\n');
   const titleAt = lines.findIndex((l) => /^# /.test(l));
-  const title = titleAt >= 0 ? lines[titleAt].replace(/^# /, '').trim() : 'Board meeting';
+  const title = titleAt >= 0 ? lines[titleAt].replace(/^# /, '').trim() : tab.label;
   const body = blocks(lines.filter((_, i) => i !== titleAt), ctx);
-  const src = `${REPO_URL}/blob/${ctx.branch}/docs/BOARD-AGENDA.md`;
-  return `<div class="wrap panel agenda" id="board-meeting" role="tabpanel" aria-labelledby="tab-meeting" hidden>
+  const src = `${REPO_URL}/blob/${ctx.branch}/${tab.file}`;
+  return `<div class="wrap panel agenda" id="${tab.id}" role="tabpanel" aria-labelledby="tab-${tab.id}" hidden>
   <h2>${inline(title, ctx)}</h2>
   <div class="prose agenda-body">${body}</div>
-  <footer>From <a href="${esc(src)}" target="_blank" rel="noopener">docs/BOARD-AGENDA.md</a>. Task numbers link to their place on the Tasks tab.</footer>
+  <footer>From <a href="${esc(src)}" target="_blank" rel="noopener">${esc(tab.file)}</a>. Task numbers link to their place on the Tasks tab.</footer>
 </div>`;
 }
 
@@ -511,7 +514,10 @@ h1 { font-family: var(--font-display); text-transform: uppercase; letter-spacing
 
 /* The meeting tab is read aloud from a shared screen, so it runs a size up. */
 .agenda { font-size: 1.08rem; gap: 1rem; }
-.agenda-body { max-width: 68ch; }
+/* Text runs at reading width; tables (the Systems tab) get the full column. */
+.prose.agenda-body { max-width: none; }
+.agenda-body > p, .agenda-body > ul { max-width: 68ch; }
+.agenda-body table { width: 100%; }
 .agenda-body h3 { font-family: var(--font-display); text-transform: uppercase; font-weight: 400; letter-spacing: 0.01em; font-size: var(--step-2); margin: 1.75rem 0 0.5rem; padding-bottom: 0.35rem; border-bottom: 3px solid var(--ink); }
 .agenda-body h3:first-child { margin-top: 0.5rem; }
 .agenda-body ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
@@ -633,9 +639,9 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   </div>
 </header>
 
-${agendaMd ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
+${EXTRA_TABS.length ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
   <button type="button" role="tab" id="tab-tasks" aria-controls="panel-tasks" aria-selected="true">Tasks</button>
-  <button type="button" role="tab" id="tab-meeting" aria-controls="board-meeting" aria-selected="false" tabindex="-1">Board meeting</button>
+  ${EXTRA_TABS.map((t) => `<button type="button" role="tab" id="tab-${t.id}" aria-controls="${t.id}" aria-selected="false" tabindex="-1">${esc(t.label)}</button>`).join('\n  ')}
 </nav>` : ''}
 
 <main>
@@ -683,7 +689,7 @@ ${agendaMd ? `<nav class="wrap tabs" role="tablist" aria-label="Board views">
 
   <footer>Generated from <a href="${esc(fileUrl)}" target="_blank" rel="noopener">TASKS.md</a> by <code>scripts/task-board.mjs</code>${ctx.sha ? `, at ${esc(ctx.branch)} ${esc(ctx.sha)}` : ''}. TASKS.md is the source of truth; this page is a read-only view of it.</footer>
 </div>
-${agendaPanel(ctx)}
+${EXTRA_TABS.map((t) => docPanel(t, ctx)).join('\n')}
 </main>
 
 <script>
@@ -726,7 +732,7 @@ ${agendaPanel(ctx)}
   document.querySelectorAll('button[data-owner]').forEach((b) => b.addEventListener('click', () => { state.owner = b.dataset.owner; save(); apply(); }));
   search.addEventListener('input', () => { state.q = search.value; apply(); });
 
-  // Tabs. The panel id is the tab's identity, so #board-meeting deep-links to it.
+  // Tabs. The panel id is the tab's identity, so #board-meeting or #systems deep-links to it.
   const tabs = [...document.querySelectorAll('[role="tab"]')];
   function showTab(panelId) {
     for (const t of tabs) {

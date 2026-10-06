@@ -2,7 +2,7 @@
 
 <!-- Shown as the "Board meeting" tab of the task board (npm run tasks:board). Replace it before each meeting. -->
 
-Google Workspace, the new website, and other tools. Each task number links to its details on the Tasks tab.
+Google Workspace, the new website, and other tools. Each task number links to its details on the Tasks tab; the Systems & accounts tab has the full picture.
 
 ## What's live
 
@@ -21,9 +21,13 @@ Google Workspace, the new website, and other tools. Each task number links to it
 ## Decisions needed
 
 - **Data migration:** how much old email, files and contacts to move from the PTA Gmail and the Fundraising Gmail, how to organize a shared PTA Drive, and when. Lennie is needed for the fundraising half ([B30](#b30)).
-- **Parents' calendar:** moving it into Workspace means everyone subscribed must re-subscribe. Pick a quiet week, plan the announcement, and decide who owns it; hello@ is suggested ([B27](#b27)).
-- **Emergency access:** which two officers know where the sealed backup admin login is kept ([D2](#d2)).
-- **Open roles:** a Parliamentarian address once someone is appointed, and whether the Little EAST chair gets one ([B14](#b14)).
+- **Parents' calendar:** transfer its ownership into Workspace. The calendar stays the same one, so the website's link and every parent's subscription keep working with nothing to re-subscribe. Decide the new owner: hello@ is suggested, or communications@. One Admin console setting comes first, and Claude checks the public feed straight after ([B27](#b27)).
+- **hello@ access:** Communications, President, VP and Fundraising can read and send as hello@ today. Should anyone else? ([B25](#b25))
+- **Passwords and emergency access:** which two officers know where the sealed backup admin login is kept, and whether to adopt a password manager. Free options that fit Workspace: **Passwd**, free for unlimited users and up to 15 saved logins, with Google sign-in; or **Bitwarden**, free for two people sharing. Paid options, with nonprofit discounts on request: Bitwarden Teams, about $4 per user a month, or 1Password Teams, about $20 a month for up to 10 people ([D2](#d2)).
+- **Little EAST address:** its own user account, a group, or a collaborative inbox? ([D16](#d16))
+- **community@, Lennie's idea:** what is it for, and which kind of address: a group, a collaborative inbox, or a shared account with delegation? ([D17](#d17))
+- **Domain transfer:** either Gabe and Jon do it together (Gabe unlocks the domain at GoDaddy, gets the transfer code and approves GoDaddy's email; Jon starts it in Cloudflare and pays), or Gabe does all of it with Cloudflare access on secretary@ and a step-by-step checklist. Either way, **change nothing on the domain's registration details at GoDaddy first**, because that restarts a 60-day lock ([C9](#c9)).
+- **Open roles:** a Parliamentarian address once someone is appointed ([B14](#b14)).
 - **Mailing to members:** who sends, and how often. Start with small sends while the new domain builds a reputation ([B28](#b28)).
 
 ## Website
@@ -31,8 +35,8 @@ Google Workspace, the new website, and other tools. Each task number links to it
 - **Retire the old Weebly site:** we need its login and the board's OK. Then the new site can appear in Google search ([A29](#a29)).
 - **Help wanted:** owners for the committee pages, photos (with family permission), and announcements posted through the site's editor. Google sign-in for the editor is coming soon ([B6](#b6)).
 
-## Other tools and accounts
+## Systems and accounts
 
-- **Domain:** after October 11, blackshearpta.org moves from Gabe's personal GoDaddy account into the PTA's own account. Gabe may need to approve it ([C9](#c9)).
-- **Hosting and code:** Cloudflare (hosting) and GitHub (site code) now run under PTA role accounts, not personal ones. GitHub's nonprofit program sign-up is next ([A36](#a36), [A37](#a37), [B7](#b7)).
+- **Walk through the Systems & accounts tab:** every service, what it does, who controls it, and what is changing.
+- **Cloudflare (hosting) and GitHub (site code) now run under PTA role accounts, not personal ones.** GitHub's nonprofit program sign-up is next ([A36](#a36), [A37](#a37), [B7](#b7)).
 - **Tool inventory:** list anything signed up under the old Gmail accounts, such as sign-up and payment tools, Animoto, TinyURL, HelloSign and social media, so their logins can move to PTA addresses ([A38](#a38)).
