@@ -16,7 +16,8 @@ Date to be set. Items collect here as they come up; the October 6 notes are on t
 ## To report back on
 
 - **Board sign-ins and 2-Step Verification:** who is still pending ([B29](#b29)).
-- **Data migration and the calendar transfer:** progress ([B30](#b30), [B27](#b27)).
+- **Data migration:** progress ([B30](#b30)).
+- **Parents' calendar:** Google will not transfer it from the PTA Gmail to communications@, so the October 6 decision needs remaking. Either keep it with the PTA Gmail and run it from Workspace (recommended: nothing changes for parents), or start a new calendar and ask parents to re-subscribe ([B27](#b27)).
 - **Password manager:** Passwd set up, and who has access ([B33](#b33)).
 - **Domain transfer:** Gabe is running it himself from October 12; done yet? ([C9](#c9)).
 - **Room parent dashboard:** what Bree needs ([A39](#a39)).
