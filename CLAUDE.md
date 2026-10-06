@@ -12,7 +12,7 @@ This project deploys to **one** Cloudflare account and no other:
 
 | | |
 |---|---|
-| **Account** | `Blackshearpta@gmail.com's Account` (the PTA account) |
+| **Account** | `Blackshear PTA` (the PTA account; named `Blackshearpta@gmail.com's Account` until 2026-10-05) |
 | **Account ID** | `eb3bbf021359a4399c0ddef6bc09e3c4` |
 
 That ID is written into [`wrangler.jsonc`](wrangler.jsonc) as `account_id`, and

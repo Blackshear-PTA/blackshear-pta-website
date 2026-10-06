@@ -18,7 +18,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blackshear-pta",
   // PINNED DELIBERATELY - DO NOT "CLEAN THIS UP". This is the PTA's Cloudflare
-  // account (Blackshearpta@gmail.com's Account), and it is the only account
+  // account (Blackshear PTA, formerly Blackshearpta@gmail.com's Account), and it is the only account
   // this project may ever deploy into.
   //
   // The reason it is spelled out here rather than left to whatever credential
