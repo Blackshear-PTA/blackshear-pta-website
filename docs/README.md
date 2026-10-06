@@ -21,6 +21,19 @@ before the details.
 decisions, and numbered findings that other documents cite as `F12`, `D3` and so
 on. It is updated every working session. **Read it before planning anything.**
 
+For reading rather than editing, `npm run tasks:board` renders it as one HTML page at
+`.task-board/index.html`: what is urgent, the Workspace rollout, every task
+filterable by owner and status, and the findings log. It is a view, not a second
+copy. It holds nothing of its own, so regenerate it after editing TASKS.md.
+
+[`BOARD-AGENDA.md`](BOARD-AGENDA.md) is the talking points for the next exec board meeting.
+The task board shows it as a second *Board meeting* tab. Replace it before each meeting,
+moving the old one into [`archive/`](archive/) with a date-prefixed name; the board shows
+that folder as its *Archive* tab, newest first.
+
+[`ACCOUNTS.md`](ACCOUNTS.md) is the map of every service the PTA runs, who controls each one, and what is changing.
+The task board shows it as the *Systems & accounts* tab. Keep it current as access changes.
+
 ## Documentation that lives next to the thing it describes
 
 Some notes are more useful sitting beside the files they are about than
