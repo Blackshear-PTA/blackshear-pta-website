@@ -341,8 +341,42 @@ const bodyHtml = renderMarkdown(post.body);
     margin: 0 0 var(--pta-gap);
   }
 
+  /*
+   * Lists and links have to be restored here. Tailwind's base layer strips
+   * list markers and link styling from every element on the site, and a post
+   * body is the one place where markdown, not a component, decides the markup.
+   * Until 2026-10-15 a bulleted list in a post rendered as plain lines, and a
+   * link looked like the text around it.
+   */
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 var(--pta-gap);
+    padding-inline-start: 1.5em;
+  }
+
+  .prose :global(ul) {
+    list-style: disc;
+  }
+
+  .prose :global(ol) {
+    list-style: decimal;
+  }
+
+  .prose :global(li + li) {
+    margin-block-start: 0.35em;
+  }
+
+  /* Link blue on the page, and underlined, so a link reads as one without
+     relying on colour alone. --pta-link is held to 4.5:1 by check:contrast. */
   .prose :global(a) {
-    color: var(--pta-ink);
+    color: var(--pta-link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .prose :global(a:hover) {
+    text-decoration-thickness: 2px;
   }
 
   .cta-row {
