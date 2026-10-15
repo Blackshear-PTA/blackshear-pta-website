@@ -229,7 +229,7 @@
 - [~] **B6**: Google sign-in for `/admin` - `JON` + `CLAUDE` - Board members sign in to `/admin` with their PTA Google accounts instead of an emailed code. Settings only, no code change: the site checks the sign-in itself, not which method produced it. [A42](#phase-2---real-site) waits on this.
 
   - **Who can get in** (Jon, 2026-10-15): `communications@`, `president@`, `vp@`, `secretary@` and `fundraising@`.
-  - **Progress:** steps 1 to 6 done 2026-10-15; step 7 under way.
+  - **Progress:** steps 1 to 9 done 2026-10-15. The Test showed `communications@` with its groups, so Google sign-in works.
   - **Two phases,** so nobody is locked out: Google sign-in goes in beside the emailed code and is tested first; the code is turned off only once the board accounts have signed in ([B29](#google-workspace-for-nonprofits)).
 
   **Google Cloud** (console.cloud.google.com, signed in as `communications@`)
@@ -246,16 +246,16 @@
 
   **Cloudflare** (the Blackshear PTA account → Zero Trust)
 
-  7. [ ] **Integrations → Identity providers → Add new → Google Workspace**: App ID = the Client ID, then the Client secret, and `blackshearpta.org` as the domain. Save.
-  8. [ ] **Open the link Cloudflare then shows**, signed in as `communications@`, and click **Allow**. The next step fails without it.
-  9. [ ] Click **Test** beside Google Workspace. It should show your identity.
-  10. [ ] **Access controls → Policies →** the board policy: add the five role addresses above. Leave the current addresses in for now.
-  11. [ ] **Access controls → Applications → Blackshear PTA Admin → Configure:** select **Google Workspace** as well as One-time PIN. Instant authentication has to come off while two methods are selected.
+  7. [x] **Integrations → Identity providers → Add new → Google Workspace**: App ID = the Client ID, then the Client secret, and `blackshearpta.org` as the domain. Name it *Blackshear PTA Google Workspace*, set **Google prompt** to *Select account* so people pick their PTA account rather than whichever Google account the browser has open, and leave PKCE and SCIM off. Save.
+  8. [x] **Open the link Cloudflare then shows**, signed in as `communications@`, and click **Allow**. The next step fails without it.
+  9. [x] Click **Test** beside Google Workspace. It should show your identity.
+  10. [ ] **Access controls → Policies → Add a policy**, a new one beside the legacy policy rather than an edit to it (Jon, 2026-10-15): name *Blackshear PTA Website - Board (Google Workspace)*, action **Allow**, **Include → Emails** → the five role addresses above, and **Require → Login Methods → Blackshear PTA Google Workspace**.
+  11. [ ] **Access controls → Applications → Blackshear PTA Admin → Configure:** add the new policy beside the legacy one, and select **Blackshear PTA Google Workspace** as a login method as well as One-time PIN. Instant authentication has to come off while two methods are selected.
   12. [ ] Test in a private window: `blackshearpta.org/admin` → Google → sign in as `communications@`. The editor should load. Then run [A42](#phase-2---real-site).
 
   **Phase 2, once the board accounts have signed in**
 
-  13. [ ] On the application, deselect One-time PIN and turn **Apply instant authentication** back on. In the policy, take out the personal addresses and add **Require → Login Methods → Google Workspace**. Keep One-time PIN defined under Integrations as an emergency fallback.
+  13. [ ] On the application, remove the legacy policy, deselect One-time PIN and turn **Apply instant authentication** back on. Then delete the legacy policy. Keep One-time PIN defined under Integrations: in an emergency, re-select it and attach a small policy naming one admin address.
 
   **Afterwards**
 
