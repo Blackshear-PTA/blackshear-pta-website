@@ -65,9 +65,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         <div class="guide-body">
           <p>
             This is where announcements on the PTA website are written. Anything you
-            post here appears on the
-            <a href="/announcements">announcements page</a>, on the homepage, and in
-            the RSS feed.
+            post here appears on the <a href="/announcements">announcements page</a>,
+            on the homepage, and in the RSS feed.
           </p>
           <ul>
             <li>
@@ -78,7 +77,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
             <li>
               <b>Nothing is ever really lost.</b> Every save, pin and delete is
               recorded below with your name and the time on it, and a deleted post is
-              kept in that record so it can be put back. Do not be afraid of this page.
+              kept in that record so it can be put back.
             </li>
             <li>
               <b>Use <i>Draft</i> to write something now and publish it later.</b> A
@@ -86,17 +85,11 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
             </li>
             <li>
               <b><i>Pin</i> keeps a post at the top</b> of the list, above newer ones.
-              Use it sparingly; if everything is pinned, nothing is.
-            </li>
-            <li>
-              <b>Photos are shrunk in your browser before uploading.</b> That is what
-              keeps the site fast on a phone, and it removes the location tag your
-              phone puts in the file.
+              Use it sparingly for very critical information.
             </li>
           </ul>
           <p class="guide-help">
-            Something looks wrong? The most common cause is a typo in an email address
-            at sign-in. Ask Jon before assuming the site is broken.
+            Reach out to Jon if you have questions or run into problems.
           </p>
         </div>
       </details>
@@ -283,7 +276,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           </div>
           <p class="hint">
             A few short paragraphs. Leave a blank line between them. Select words
-            and use the buttons above to make them bold or italic.
+            and use the buttons above to make them bold or italic. For a list,
+            press the list button; Enter starts the next item, and Enter on an
+            empty item ends the list.
           </p>
         </div>
 
@@ -1493,13 +1488,26 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       bodyField.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    /** Prefixes every selected line, so a list can be made in one go. */
+    /**
+     * Prefixes every selected line, so a list can be made in one go.
+     *
+     * On an empty line it STARTS a list instead: "- " with the caret after it,
+     * ready to type, the way bold and italic leave the caret between their
+     * markers. Until 2026-10-15 an empty line did nothing at all, because blank
+     * lines are skipped below so a list never gets a bullet on its gaps.
+     */
     function bulletList() {
       const { selectionStart: from, selectionEnd: to, value } = bodyField;
       // Grow the range to whole lines - half a line is not a list item.
       const lineStart = value.lastIndexOf('\n', from - 1) + 1;
       const lineEndIndex = value.indexOf('\n', to);
       const lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex;
+      if (!value.slice(lineStart, lineEnd).trim()) {
+        bodyField.setRangeText('- ', lineStart, lineEnd, 'end');
+        bodyField.focus();
+        bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
       const lines = value.slice(lineStart, lineEnd).split('\n');
       const allBulleted = lines.every((line) => /^\s*-\s/.test(line) || !line.trim());
       const next = lines
@@ -1536,9 +1544,43 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       button.addEventListener('click', () => apply(button.dataset.fmt!));
     }
 
-    // The shortcuts people already have in their fingers. Without these the
-    // browser would apply its own bold to a textarea, which does nothing.
+    /**
+     * Enter on a list item starts the next item, as every word processor does,
+     * and numbered items count up. Enter on an EMPTY item ends the list.
+     * Shift+Enter is still a plain new line.
+     *
+     * Ending a list leaves a blank line before the caret, not just a new one.
+     * In markdown a line of text straight after a list item is read as more of
+     * that item, so without the gap the next paragraph would become part of the
+     * last bullet.
+     */
+    function continueList(event: KeyboardEvent) {
+      const { selectionStart: from, selectionEnd: to, value } = bodyField;
+      if (from !== to) return;
+      const lineStart = value.lastIndexOf('\n', from - 1) + 1;
+      const lineEndIndex = value.indexOf('\n', from);
+      const lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex;
+      const line = value.slice(lineStart, lineEnd);
+      const item = line.match(/^(\s*)([-*+]|(\d+)([.)]))\s+/);
+      // Not a list item, or the caret is inside the marker itself.
+      if (!item || from < lineStart + item[0].length) return;
+      event.preventDefault();
+      if (!line.slice(item[0].length).trim()) {
+        bodyField.setRangeText('\n', lineStart, lineEnd, 'end');
+      } else {
+        const marker = item[3] ? `${Number(item[3]) + 1}${item[4]}` : item[2];
+        bodyField.setRangeText(`\n${item[1]}${marker} `, from, from, 'end');
+      }
+      bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
     bodyField.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.isComposing && !(event.shiftKey || event.metaKey || event.ctrlKey || event.altKey)) {
+        continueList(event);
+        return;
+      }
+      // The shortcuts people already have in their fingers. Without these the
+      // browser would apply its own bold to a textarea, which does nothing.
       if (!(event.metaKey || event.ctrlKey)) return;
       const key = event.key.toLowerCase();
       if (key === 'b') { event.preventDefault(); wrap('**'); }
