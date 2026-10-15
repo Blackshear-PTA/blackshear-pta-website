@@ -85,10 +85,8 @@ function bucketName() {
  * Every image key referenced by a post - gallery images and covers alike.
  *
  * Read from the LOCAL D1 database, which is where announcements live now.
- * It used to read src/content/announcements/*.md. Those files are still in the
- * repository, deliberately, until the database path has proven itself in
- * production - but they are already a frozen copy, so seeding from them would
- * quietly stop fetching photos for anything posted after the migration. The
+ * It used to read src/content/announcements/*.md. Those files were a frozen
+ * copy from before the move to D1, and were deleted on 2026-10-15 (A43). The
  * database is the thing the dev server will actually render.
  *
  * Returns an empty set rather than failing when the database is not there yet.
