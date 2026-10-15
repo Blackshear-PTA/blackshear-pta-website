@@ -23,6 +23,7 @@
     "check:instagram": "node scripts/check-instagram.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:domain": "node scripts/check-domain.mjs",
+    "check:mail": "node scripts/check-mail.mjs",
     "check:d1": "node --experimental-sqlite scripts/check-d1.mjs",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && wrangler deploy",
@@ -31,7 +32,6 @@
     "refresh:events": "node scripts/refresh-events.mjs",
     "export:posts": "node scripts/export-posts.mjs",
     "tasks:board": "node scripts/task-board.mjs",
-    "build:import": "node scripts/build-import-migration.mjs",
     "db:migrate": "wrangler d1 migrations apply blackshear-pta --local",
     "db:migrate:remote": "wrangler d1 migrations apply blackshear-pta --remote"
   },

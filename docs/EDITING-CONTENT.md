@@ -137,10 +137,10 @@ Nothing is lost by that. Every change is listed under **History** at the bottom
 of the editor, with who made it and when, and a deleted post is kept there in
 full so it can be put back. You do not need git or a terminal to read it.
 
-`src/content/announcements/*.md` still exists and holds the five posts as they
-were before the move. It is a frozen copy kept until the new path has proven
-itself, and **editing those files changes nothing on the site**. They will be
-deleted.
+The markdown files the posts used to live in, `src/content/announcements/*.md`,
+were deleted on 2026-10-15, once saving through the editor had been proven on
+the live site. For a copy of the current posts as markdown, run
+`npm run export:posts -- --remote`.
 
 Setup and troubleshooting are in [ADMIN.md](ADMIN.md).
 

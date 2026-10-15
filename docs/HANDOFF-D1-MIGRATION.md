@@ -102,7 +102,7 @@ images. They are also checked server-side in `validate()` in `admin.ts`.
    unique index or a transaction makes it impossible to get wrong.
 
 3. **A migration that imports the five existing markdown files** and is safe to
-   re-run. Keep `src/content/announcements/*.md` in the repo, untouched, until
+   re-run. *(Done: the files were deleted on 2026-10-15, A43.)* Keep `src/content/announcements/*.md` in the repo, untouched, until
    the new path is proven — then remove them in a separate commit.
 
 4. **On-demand rendering for the announcement routes only.** Add

@@ -1,6 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
-import { file, glob } from 'astro/loaders';
+import { file } from 'astro/loaders';
 import { POST_URL, MAX_POSTS } from './worker/instagram.mjs';
 
 /**
@@ -157,78 +157,6 @@ const pages = defineCollection({
 });
 
 /**
- * Announcements - one markdown file per post, src/content/announcements/.
- *
- * A file each, rather than a list inside one YAML file, for three reasons that
- * all point the same way: two people adding posts in the same week cannot
- * conflict, /admin can create and delete a post by writing or removing one
- * file, and `git log` on that directory is a readable history of what the PTA
- * announced and when.
- *
- * Filenames are `YYYY-MM-DD-slug.md`. The date in the name is for humans
- * sorting a directory listing; the `date` field is what the site actually uses.
- *
- * These replaced a hand-maintained `news.items` list in home.yaml. That list
- * went stale for the same reason the Weebly site did (F18): editing it meant
- * knowing where it lived.
- */
-/**
- * The grade slugs now live in src/lib/grades.ts and are imported here.
- *
- * They were defined in this file, which made it the module every consumer
- * imported them from - including code that runs inside the Worker. This file
- * imports Astro's `glob` loader, and that reaches tinyglobby, fdir and
- * picomatch, which call createRequire() and walk a filesystem. One constant
- * pulled all of it into the Worker bundle and every on-demand announcement
- * route answered 500. See the note in src/lib/grades.ts.
- */
-import { gradeSlugs } from './lib/grades';
-
-/** One photo. `alt` is not optional; see the refine below. */
-const postImage = z.object({
-  /** R2 object key as returned by /admin. Not a path - the URL prefix is a
-      serving detail and belongs in the component. */
-  key: z.string(),
-  alt: z.string(),
-});
-
-const announcements = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/announcements' }),
-  schema: z
-    .object({
-      title: z.string(),
-      /** Publication date. Drives ordering and the RSS pubDate. */
-      date: z.coerce.date(),
-      /** Optional destination for a "read more" link on the post's own page. */
-      href: z.string().optional(),
-      /** Link text. Defaults in the component, so most posts never set it. */
-      linkLabel: z.string().optional(),
-      /** Ordered gallery. The whole set renders on the post's own page. */
-      images: z.array(postImage).default([]),
-      /**
-       * Which image represents the post in a list. Defaults to the first, so a
-       * single-photo post never has to think about it.
-       */
-      cover: z.string().optional(),
-      /** Empty means the whole school. */
-      grades: z.array(z.enum(gradeSlugs)).default([]),
-      /** Sorts above everything else regardless of date. Use sparingly. */
-      pinned: z.boolean().default(false),
-      /** Written but not published. Excluded from the site and the feed. */
-      draft: z.boolean().default(false),
-    })
-    .refine((data) => data.images.every((image) => image.alt.trim().length > 0), {
-      message:
-        'Every image needs alt text: describe the photo for anyone who cannot see it.',
-      path: ['images'],
-    })
-    .refine((data) => !data.cover || data.images.some((image) => image.key === data.cover), {
-      message: 'cover must be the key of one of this post\'s images.',
-      path: ['cover'],
-    }),
-});
-
-/**
  * Instagram post embeds - src/content/instagram.yaml.
  *
  * Managed from /admin; that file explains why it is a chosen list rather than a
@@ -314,8 +242,8 @@ const home = defineCollection({
       items: z.array(quickAction),
     }),
     /**
-     * Only the heading now. The posts live in the announcements collection so
-     * they can be edited one file at a time from /admin.
+     * Only the heading now. The posts themselves are rows in the D1 database,
+     * edited at /admin (A41 in TASKS.md).
      */
     announcements: z.object({
       heading: z.string(),
@@ -339,4 +267,4 @@ const home = defineCollection({
   }),
 });
 
-export const collections = { announcements, home, instagram, pages, site };
+export const collections = { home, instagram, pages, site };

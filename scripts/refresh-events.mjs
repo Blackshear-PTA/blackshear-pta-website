@@ -80,6 +80,23 @@ if (events.length === 0) {
   process.exit(1);
 }
 
+/*
+ * A feed that has gone free/busy-only still has events - every one of them
+ * titled "Busy". That happens if the calendar's public access is changed to
+ * "See only free/busy", or if its owner's organization restricts outside
+ * sharing (F56, B27). The check above lets it straight through, and the next
+ * hourly run would publish a page of "Busy" entries. The real calendar never
+ * has more than a stray one, so half is a safe line.
+ */
+const busy = events.filter((e) => /^busy$/i.test(String(e.title).trim())).length;
+if (busy >= events.length / 2) {
+  console.error(
+    `${busy} of ${events.length} events are titled "Busy": the feed is showing free/busy only. ` +
+      'Refusing to overwrite the snapshot. Check the calendar\'s "Make available to public" setting.',
+  );
+  process.exit(1);
+}
+
 const snapshot = {
   source: CALENDAR_ID,
   /**
