@@ -484,6 +484,10 @@ do_check() {
   $NODE_RUNNER npm run check:ical || { printf '%s  ical gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ domain references%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:domain || { printf '%s  domain gate failed%s\n' "$RED" "$RESET"; failed=1; }
+  # SPF, DKIM, DMARC and MX, read from public resolvers. F43 went unnoticed for
+  # a month because nothing looked; this is the looking (A35).
+  printf '\n%s▶ mail authentication%s\n' "$BOLD" "$RESET"
+  $NODE_RUNNER npm run check:mail || { printf '%s  mail gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n%s▶ Instagram post list%s\n' "$BOLD" "$RESET"
   $NODE_RUNNER npm run check:instagram || { printf '%s  Instagram gate failed%s\n' "$RED" "$RESET"; failed=1; }
   # The announcements database: the migrations, the single-pin index, both
@@ -495,7 +499,7 @@ do_check() {
   $NODE_RUNNER npm run check:d1 || { printf '%s  D1 gate failed%s\n' "$RED" "$RESET"; failed=1; }
   printf '\n'
   if [[ "$failed" == "0" ]]; then
-    printf '%s✓ All fourteen green.%s\n' "$GREEN" "$RESET"
+    printf '%s✓ All fifteen green.%s\n' "$GREEN" "$RESET"
   else
     printf '%s✗ Something failed above.%s\n' "$RED" "$RESET"
   fi

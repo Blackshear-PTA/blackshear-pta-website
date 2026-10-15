@@ -38,6 +38,7 @@ npm run check:crop      # what you see in the crop frame is what gets stored
 npm run check:images    # only real images reach the bucket, on their bytes
 npm run check:secrets   # no recognizable credential committed to a public repo
 npm run check:domain    # registration status for all three domains
+npm run check:mail      # SPF, DKIM, DMARC and MX for blackshearpta.org
 npm run check:d1        # the announcements database, against real SQLite
 ```
 
@@ -229,7 +230,7 @@ someone uploads a photo through the real `/admin`, or to re-fetch after clearing
 dev check
 ```
 
-Fourteen of them: build, `astro check`, and the twelve `check:*` scripts. **Nothing
+Fifteen of them: build, `astro check`, and the thirteen `check:*` scripts. **Nothing
 else runs these** — there is no CI workflow for them, and Cloudflare Workers
 Builds only runs `npm run build` — so a gate missing from `do_check` in
 `dev-control.sh` is a gate that never runs. Add new ones there.
