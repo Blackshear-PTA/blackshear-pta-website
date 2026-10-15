@@ -122,6 +122,8 @@ function blocks(lines, ctx) {
     }
     if (isList(line)) {
       const ordered = /^\s*\d+\./.test(line);
+      // A numbered list that carries on after a heading ("4. ...") keeps its numbers.
+      const start = ordered ? Number(line.match(/^\s*(\d+)\./)[1]) : 1;
       const items = [];
       while (i < lines.length && (isList(lines[i]) || (/^\s+\S/.test(lines[i]) && items.length))) {
         if (isList(lines[i])) items.push(lines[i].replace(/^\s*(?:[-*]|\d+\.)\s+/, ''));
@@ -129,7 +131,7 @@ function blocks(lines, ctx) {
         i++;
       }
       const tag = ordered ? 'ol' : 'ul';
-      out.push(`<${tag}>${items.map((t) => `<li>${inline(t, ctx)}</li>`).join('')}</${tag}>`);
+      out.push(`<${tag}${start > 1 ? ` start="${start}"` : ''}>${items.map((t) => `<li>${inline(t, ctx)}</li>`).join('')}</${tag}>`);
       continue;
     }
     const para = [];
@@ -171,8 +173,26 @@ function parse(md) {
     finding = null;
   };
 
+  let lastTask = null;
   for (let n = 0; n < lines.length; n++) {
     const line = lines[n];
+    // A task's steps and notes are the indented lines under it, including blank
+    // lines between them as long as more indented lines follow.
+    if (lastTask) {
+      if (/^\s{2,}\S/.test(line)) {
+        lastTask.body.push(line);
+        continue;
+      }
+      if (!line.trim()) {
+        let k = n + 1;
+        while (k < lines.length && !lines[k].trim()) k++;
+        if (k < lines.length && /^\s{2,}\S/.test(lines[k])) {
+          lastTask.body.push('');
+          continue;
+        }
+      }
+      lastTask = null;
+    }
     const heading = line.match(/^(#{2,3}) (.+)$/);
     if (heading) {
       if (heading[1] === '##') {
@@ -245,7 +265,8 @@ function parse(md) {
         detail = [m[2], ...segs.slice(k + 1)].filter(Boolean).join(' - ');
         break;
       }
-      current.tasks.push({ id, state: STATE[mark], title, owner: who, detail });
+      lastTask = { id, state: STATE[mark], title, owner: who, detail, body: [] };
+      current.tasks.push(lastTask);
       continue;
     }
     if (current && !current.lead && line.trim() && !line.startsWith('|') && !line.startsWith('- ') && !line.startsWith('**')) {
@@ -341,10 +362,23 @@ function ownerChips(list) {
   return list.length ? `<span class="owners">${list.map((o) => `<span class="owner">${esc(o)}</span>`).join('')}</span>` : '';
 }
 
+// A step's checkbox (`1. [x] ...` under a task) shows as a mark, by shape as well as color.
+const CHECK = { ' ': '⬜', x: '✅', X: '✅', '~': '◐', '!': '⛔' };
+
+/** The indented steps and notes under a task, dedented and rendered like any other markdown. */
+function taskBody(t, ctx) {
+  const used = (t.body || []).filter((l) => l.trim());
+  if (!used.length) return '';
+  const indent = Math.min(...used.map((l) => l.match(/^\s*/)[0].length));
+  const lines = t.body.map((l) => l.slice(indent).replace(/^(\s*(?:[-*]|\d+\.)\s+)\[([ xX~!])\]\s+/, (_, lead, m) => `${lead}${CHECK[m]} `));
+  return blocks(lines, ctx);
+}
+
 function taskRow(t, ctx) {
-  const text = `${t.id} ${plain(t.title)} ${plain(t.detail)} ${t.owner.join(' ')}`.toLowerCase();
-  const detail = t.detail.trim()
-    ? `<details class="detail"><summary>Details</summary><div class="prose"><p>${inline(t.detail, ctx)}</p></div></details>`
+  const text = `${t.id} ${plain(t.title)} ${plain(t.detail)} ${plain((t.body || []).join(' '))} ${t.owner.join(' ')}`.toLowerCase();
+  const body = taskBody(t, ctx);
+  const detail = t.detail.trim() || body
+    ? `<details class="detail"><summary>Details</summary><div class="prose">${t.detail.trim() ? `<p>${inline(t.detail, ctx)}</p>` : ''}${body}</div></details>`
     : '';
   return `<li class="task" id="${t.id.toLowerCase()}" data-state="${t.state}" data-owner="${t.owner.join(' ').toLowerCase()}" data-text="${esc(text)}">
   <div class="task-head">${stateBadge(t.state)}<a class="tid" href="#${t.id.toLowerCase()}">${t.id}</a><span class="ttitle">${inline(t.title, ctx)}</span>${ownerChips(t.owner)}</div>
@@ -593,6 +627,9 @@ a.tid:hover { color: var(--accent); }
 .why { margin-left: 11.25rem; }
 .prose { min-width: 0; max-width: 72ch; overflow-wrap: anywhere; }
 .prose p { margin: 0.4rem 0; }
+/* A task's steps: one per line, a little air between, numbers and ticks aligned. */
+.detail .prose ol, .detail .prose ul { margin: 0.4rem 0 0.6rem; padding-left: 1.6rem; display: grid; gap: 0.35rem; }
+.detail .prose li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
 .prose code, .ttitle code, .step code { background: var(--code); border-radius: 3px; padding: 0.05em 0.3em; font-size: 0.88em; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
 .prose pre { background: var(--code); padding: 0.75rem; border-radius: var(--radius); overflow-x: auto; }
 .prose pre code { background: none; padding: 0; }

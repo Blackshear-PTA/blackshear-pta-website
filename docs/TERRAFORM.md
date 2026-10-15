@@ -74,7 +74,7 @@ is worth managing.
 | Access application `/admin` | dashboard | `cloudflare_zero_trust_access_application` | ✅ | ✅ **Yes** - worst thing to lose |
 | Access policy, email allowlist | dashboard | `cloudflare_zero_trust_access_policy`, or inline | ✅ | ✅ **Yes**, inline. See [one policy, two ways](#one-policy-two-ways) |
 | R2 bucket `blackshear-pta-images` | `wrangler` CLI | `cloudflare_r2_bucket` | ✅ | ⚠️ **Optional**, with `prevent_destroy` |
-| One-time PIN identity provider | dashboard | `cloudflare_zero_trust_access_identity_provider` | ✅ | ⚠️ **Yes today, caution at B6.** See [state and secrets](#state-and-secrets) |
+| Google Workspace identity provider (one-time PIN until 2026-10-15) | dashboard | `cloudflare_zero_trust_access_identity_provider` | ✅ | ⚠️ **No, since B6:** its client secret would sit in state in plaintext. See [state and secrets](#state-and-secrets) |
 | Custom domains on the Worker | dashboard | `cloudflare_workers_custom_domain` | ✅ | ⚠️ **Possible**, and the one real boundary case |
 | Web Analytics | auto, with the zone | `cloudflare_web_analytics_site` | ✅ | ❌ **Leave it.** Zero configuration, nothing to protect, and it re-enables with a toggle |
 | Workers Builds Git integration | dashboard | **none** | - | 🚫 **Not possible.** See [what Terraform cannot reach](#what-terraform-cannot-reach) |
@@ -258,7 +258,7 @@ Move to real state for exactly these:
 
 ```
 cloudflare_zero_trust_access_application   # the /admin app, policy inline
-cloudflare_zero_trust_access_identity_provider  # one-time PIN
+cloudflare_zero_trust_access_identity_provider  # Google Workspace since B6 - but see State and secrets
 cloudflare_dns_record                      # all of them except the Worker's own
 cloudflare_ruleset                         # the .com/.net dynamic redirects
 ```
@@ -301,8 +301,8 @@ Access application, its policy, DNS records, rulesets and the R2 bucket are all
 configuration. `cloudflare_web_analytics_site.site_token` is a public beacon
 token and is not in the recommended set anyway.
 
-**B6 changes that.** When Google SSO replaces one-time PIN, the identity provider
-resource gains `config.client_secret`, which the schema marks `Sensitive`.
+**B6 changed that** on 2026-10-15. Google Workspace replaced one-time PIN, and the identity provider
+resource gained `config.client_secret`, which the schema marks `Sensitive`.
 Sensitive means redacted in plan output - it is still **plaintext in the state
 file**. At that point the state file becomes a credential store, and the hard
 constraint from the brief ("no state file containing secrets anywhere in the

@@ -63,8 +63,8 @@ done any time; 4 onwards is the Access work.
 - [ ] **4.** Check <https://www.cloudflarestatus.com> for open **Access**
       incidents before touching anything. A control-plane degradation makes
       toggles do nothing and can silently discard a created application.
-- [ ] **5.** Enable **One-time PIN** as an identity provider (section 1, step 0).
-      Not on by default; skip it and the login page asks board members for a
+- [ ] **5.** Add **Google Workspace** as the identity provider (section 1, step 0).
+      With no identity provider, the login page asks board members for a
       Cloudflare account.
 - [ ] **6.** Create the Access application (section 1 below).
 - [ ] **7.** **Reload the Applications list and confirm it is still there.**
@@ -82,9 +82,8 @@ done any time; 4 onwards is the Access work.
 - [ ] **13.** Open `/admin`, sign in, and post something with a photo. Delete it
       afterwards, then check it is in **History** at the bottom of the page.
 
-If sign-in never arrives, check the status page again before assuming
-misconfiguration - one-time PIN delivery has its own failure mode independent of
-anything here.
+If sign-in fails, check the status page again before assuming
+misconfiguration, then [When something goes wrong](#when-something-goes-wrong).
 
 ## Setup
 
@@ -97,49 +96,81 @@ Zero Trust **Free covers 50 seats**, and a seat is consumed by someone who
 Access, so the count is board members who sign in to post, not parents reading
 announcements.
 
-**Verified against the dashboard flow on 2026-09-01.** Cloudflare moves this UI
+**Verified against the dashboard on 2026-09-01, and again on 2026-10-15 when
+Google sign-in replaced the emailed code.** Cloudflare moves this UI
 regularly; if the wording below does not match, the shape of the task is the
 same and the labels are close.
 
-0. **Enable One-time PIN first.** Zero Trust -> **Integrations** -> **Identity
-   providers** -> **Add new identity provider** -> **One-time PIN** -> Save.
+0. **Add Google Workspace as the identity provider first.** It takes three
+   places. Do all of them signed in as a super admin role account
+   (`communications@`), never a personal one, so the result belongs to the role.
 
-   Do this before creating the application. It is not on by default, and every
-   confusing thing about the Authentication step downstream traces back to
-   having no identity provider configured.
+   **Google Cloud** (console.cloud.google.com)
+
+   1. Create a project under the **blackshearpta.org organization**, not "No
+      organization". Ours is `blackshear-pta-access`. No billing account.
+   2. **APIs & Services**: enable **Admin SDK API**.
+   3. **Google Auth Platform -> Branding**: app name `Blackshear PTA Admin`,
+      support and contact email `communications@blackshearpta.org`,
+      **Audience: Internal**. Internal is what limits sign-in to PTA accounts:
+      nobody outside the organization can sign in at all. Add no scopes.
+   4. **Clients -> Create client**, type **Web application**, with Authorized
+      JavaScript origin `https://tight-cell-8e63.cloudflareaccess.com` and
+      Authorized redirect URI
+      `https://tight-cell-8e63.cloudflareaccess.com/cdn-cgi/access/callback`.
+   5. **Copy the client secret straight away.** Google shows it once. It lives
+      in the password manager and nowhere else.
+
+   **Google Admin console** (admin.google.com)
+
+   6. Security -> Access and data control -> API controls -> Settings ->
+      Internal apps -> **Trust internal apps** -> Save. It can take up to 24
+      hours to apply.
+
+   **Cloudflare** (Zero Trust)
+
+   7. **Integrations -> Identity providers -> Add new -> Google Workspace**:
+      the Client ID as *App ID*, the client secret, and `blackshearpta.org` as
+      the domain. Name it *Blackshear PTA Google Workspace*. Set **Google
+      prompt** to *Select account*, so people choose their PTA account instead
+      of whichever Google account the browser has open. Leave PKCE and SCIM off.
+   8. **Open the link Cloudflare shows after saving**, as a super admin, and
+      click **Allow**. That lets it read group membership, and **Test** fails
+      until it is done.
+   9. **Test.** It should show your identity and your groups.
+
+   Do this before creating the application. With no identity provider at all,
+   every confusing thing about the Authentication step downstream follows (F30).
 
 1. Cloudflare dashboard -> **Zero Trust** -> **Access controls** ->
    **Applications**
 2. **Create new application** -> **Self-hosted and private**
 3. **Add public hostname**
 4. **Domain**: pick `blackshearpta.org` from the dropdown, path `admin`
-5. **Access policies**: add one, action **Allow**, and for the rule choose
-   **Include** -> **Emails**, listing each board member's address.
+5. **Access policies**: add one, *Blackshear PTA Website - Board (Google
+   Workspace)*, action **Allow**:
+   - **Include** -> **Emails**, listing each role address that should post.
+     Today: `communications@`, `president@`, `vp@`, `secretary@` and
+     `fundraising@`.
+   - **Require** -> **Login Methods** -> *Blackshear PTA Google Workspace*, so
+     only a Google sign-in satisfies it.
 
-   > Prefer the explicit list over **Emails ending in** `@blackshearpta.org`,
-   > even after Workspace lands. It bounds the seat count to people you named,
-   > so the free-tier limit cannot be drifted into, and on one-time PIN it is
-   > the difference between "the board" and "anyone who can receive mail at a
-   > domain".
+   > Prefer the explicit list over **Emails ending in** `@blackshearpta.org`.
+   > The domain would admit every PTA account, the break-glass account,
+   > `hello@` and every committee address included. Role addresses pass to the
+   > next volunteer with the role, so the list rarely changes, and it bounds
+   > the seat count to the people you named.
 
-6. **Authentication**: select **One-time PIN**, and nothing else.
+6. **Authentication**: select the **Google Workspace** provider, and nothing
+   else. Then turn **Apply instant authentication** ON: with one method, Access
+   skips its own login page and sends people straight to Google's account
+   picker.
 
-   > This only works if you did step 0. **One-time PIN is not enabled by
-   > default** - Cloudflare's docs are explicit that "OTP is no longer added
-   > automatically". A Zero Trust account with no identity provider configured
-   > has an *empty* provider list, and Access falls back to making people sign
-   > in with a **Cloudflare account**, which no board member has. The login page
-   > then offers exactly one option, "Sign in with Cloudflare", and looks
-   > nothing like what you set out to build.
-   >
-   > Two symptoms of the same cause, both of which read as bugs: toggling
-   > **Accept all available identity providers** off reveals an empty dropdown,
-   > and **Apply instant authentication** is greyed out. Instant auth needs
-   > exactly one login method, and zero is not one.
-
-   Then turn **Apply instant authentication** ON. With one method it skips the
-   provider chooser entirely, so a board member goes straight to "enter your
-   email, get a code".
+   > If the provider list is empty, Access falls back to making people sign in
+   > with a **Cloudflare account**, which no board member has. The login page
+   > then offers only "Sign in with Cloudflare", and **Apply instant
+   > authentication** is greyed out, because it needs exactly one login method
+   > and zero is not one (F30).
 
 7. **Session Duration**: 24 hours is reasonable
 8. **Create**
@@ -149,14 +180,6 @@ same and the labels are close.
 > protects the **whole site** - every parent gets a login screen. `admin`
 > covers `/admin` and
 > everything under it, including the `/admin/api/*` calls the editor makes.
-
-### When Google SSO arrives
-
-Add it the same way, at Zero Trust -> Integrations -> Identity providers, then
-select it on the application. Adding Google does not remove one-time PIN. With **Accept all
-available identity providers** still on, someone on the allowlist could sign in
-with an emailed PIN instead of Google - the allowlist still bounds who that is,
-but that is the moment to turn the toggle off and select Google specifically.
 
 Then collect the value the Worker needs: select the application ->
 **Configure** -> **Additional settings** -> **Application Audience (AUD) Tag**.
@@ -178,6 +201,28 @@ redirect, which is why this works.
 The Worker fetches its signing keys from
 `https://<team-domain>/cdn-cgi/access/certs`, so the team domain has to be
 exact: bare hostname, no scheme, no trailing slash.
+
+### Who owns the sign-in, and the emergency fallback
+
+**The Google sign-in client belongs to the PTA, not a person.** The project
+`blackshear-pta-access` sits under the PTA's Google organization, so it survives
+turnover, and any super admin can manage it. Google deletes an OAuth client
+that goes unused for six months, and emails a warning 30 days before. If
+`/admin` sits unused that long, sign-in fails with `Error 401: deleted_client`:
+create a new client (step 0, steps 4-5) and paste it into the Cloudflare
+provider (step 7).
+
+**How it worked before.** Until 2026-10-15 the only method was one-time PIN, a
+code emailed to an allowlisted address, which included personal Gmail
+addresses. Google Workspace replaced it (B6 in [TASKS.md](../TASKS.md)), and the
+old policy and one-time PIN were both removed, so those addresses no longer get
+in.
+
+**If Google sign-in ever breaks,** a Cloudflare Super Administrator can restore
+access in minutes: Integrations -> Identity providers -> add **One-time PIN**;
+on the application, select it and turn instant authentication off; attach a
+small policy naming one admin address with **Require -> Login Methods ->
+One-time PIN**. Remove all of it again afterwards.
 
 ### 2. A GitHub token for the Instagram list
 
@@ -453,7 +498,10 @@ payloads are all refused.
 | `Local development cannot change the Instagram list.` | Expected. That list is still a file in the repo. Announcements write to your local database and are unaffected. Below. |
 | Photos 404 on **localhost** | `wrangler dev` uses an empty local bucket. `npm run dev:images` fills it. |
 | `The announcements database is not connected.` | The D1 binding is missing, or the migrations have never been applied. Section 5. |
-| "A code has been emailed to you" and no code ever arrives | Almost always a typo, or an address that is not in the policy. See below - this is by design and gives no feedback. |
+| Google says access is blocked, or that the app can only be used within its organization | A personal Google account was chosen. Sign in again and pick the `@blackshearpta.org` account. See below. |
+| Cloudflare says the account does not have access | A PTA account that is not in the policy. Add it under Access controls -> Policies, if it should post. |
+| Google says the app is blocked by the administrator | **Trust internal apps** is off, or not yet applied. Section 1, step 0, step 6. |
+| Google shows `Error 401: deleted_client` | The sign-in client was deleted after six months unused. See "Who owns the sign-in" above. |
 
 ## Running it locally
 
@@ -511,33 +559,23 @@ if you really mean to commit to it from a dev server.
 
 ## The one confusing thing a board member will hit
 
-**An address that is not in the Access policy still gets told a code was sent.**
-Cloudflare's docs are explicit about it:
-
-> By design, blocked users will not receive an email. The login page will always
-> say **A code has been emailed to you**, regardless of whether or not an email
-> was sent.
-
-That is the right behavior - it stops anyone probing the login form to work out
-which board members' addresses are configured. But it has a support cost, and
-you will be the one answering it: **someone who mistypes their email waits
-forever for a code that was never sent, and the screen told them it was on its
-way.**
+**Being signed in to the wrong Google account.** Most board members have a
+personal Google account open in the same browser as their PTA one. The sign-in
+shows Google's account picker every time, but choosing the personal account
+gets an error from Google, and choosing a PTA account that is not on the list
+gets a refusal from Cloudflare. Neither says "you picked the wrong account" in
+so many words.
 
 When someone says the editor is broken, check in this order:
 
-1. Is the address they typed *exactly* one of the addresses in the policy?
-   Zero Trust -> Access controls -> Policies -> the board policy. A typo, or
-   signing in with a work address instead of the one on the list, produces
-   exactly this symptom.
-2. Add them to the policy if they should have access, then have them try again.
-3. Only then look at spam filters or
-   [cloudflarestatus.com](https://www.cloudflarestatus.com). PIN delivery has
-   had its own outages, twice at the end of August 2026, both involving
-   corporate email gateways rejecting the mail.
-
-A useful side effect: entering an address that is *not* on the list and getting
-no code is a positive confirmation that the allowlist is being enforced.
+1. Did they choose their `@blackshearpta.org` account in Google's picker?
+2. Is that address in the policy? Zero Trust -> Access controls -> Policies ->
+   *Blackshear PTA Website - Board (Google Workspace)*. Add it if they should be
+   able to post.
+3. Have they signed in to that PTA account before, and set up 2-Step
+   Verification? A brand-new account has to do that first.
+4. Only then look at [cloudflarestatus.com](https://www.cloudflarestatus.com)
+   or Google Workspace's status page.
 
 ## Seats and billing
 
@@ -547,6 +585,8 @@ site visitors, because only `/admin` is behind Access.
 
 With an explicit email allowlist (step 1.5) the ceiling is the length of that
 list, which is the simplest way to be certain the free tier is never exceeded.
+And because the Google client's audience is Internal, nobody outside the PTA's
+Google organization can sign in at all.
 Current usage is under **Zero Trust -> Settings -> Subscription**.
 
 ## Adding more than announcements later
