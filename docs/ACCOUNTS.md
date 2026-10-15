@@ -9,7 +9,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | Service | What it does | Who controls it | Next |
 |---|---|---|---|
 | **Google Workspace for Nonprofits** (blackshearpta.org) | Email, Drive, Calendar and Groups for the board. Free edition. | Super admins: Communications, Secretary, the break-glass account | Board sign-ins ([B29](#b29)); data migration ([B30](#b30)) |
-| **Website**, blackshearpta.org | The public site. The calendar refreshes hourly, and announcements are edited at /admin. | Code in GitHub, running on Cloudflare | Google sign-in for the editor ([B6](#b6)); retire Weebly ([A29](#a29)) |
+| **Website**, blackshearpta.org | The public site. The calendar refreshes hourly, and announcements are edited at /admin. | Code in GitHub, running on Cloudflare. The editor at /admin is open to five role accounts signing in with Google | Retire Weebly ([A29](#a29)) |
 | **Cloudflare**, account "Blackshear PTA" | DNS, website hosting, the announcements database, photo storage, /admin access control and analytics. Domain registration too, after the transfer. | Super Administrators: Communications, the break-glass account, and the original PTA Gmail login. The Secretary is invited too, for the domain transfer only, and is scaled back afterwards. Billing contact: the central IT address. | Domain transfer ([C9](#c9)); two-factor on the new logins ([A36](#a36)) |
 | **GitHub**, organization Blackshear-PTA | The website's code (public). A merge to main deploys it, and an hourly job refreshes the calendar. | Owners: the PTA account (`blackshearpta-legacy`), Communications, the break-glass account, and Jon's personal account | Require two-factor org-wide ([A37](#a37)); GitHub for Nonprofits ([B7](#b7)) |
 | **GoDaddy** | The domain's registrar today | Gabe's personal account; Jon has delegate access to the domain only | **Gabe transfers it into Cloudflare himself** on or after Oct 12, using Cloudflare access on secretary@ (invited, and steps sent, 2026-10-06; [C9](#c9)) |
@@ -19,6 +19,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | **Blackshear Parents calendar** (Google Calendar) | The public calendar parents subscribe to; the website reads it hourly | Owner: the PTA Gmail. Make changes and manage sharing: Communications, President, VP, Fundraising and Secretary. See event details: the Fundraising Gmail, and every PTA account through all@. | **Stays with the PTA Gmail, run from Workspace** (Jon, 2026-10-06; Google will not transfer a personal Gmail's calendar into Workspace). Moving it may be revisited between school years ([B27](#b27)) |
 | **Weebly** | The old website | Login holder unknown | Retire ([A29](#a29)) |
 | **Social media and other tools**: Instagram, Facebook, sign-up and payment tools, Animoto, TinyURL, HelloSign | Various | Mostly signed up under the two old Gmails | Inventory, then move the logins to PTA addresses ([A38](#a38)) |
+| **Google Cloud project** `blackshear-pta-access` | The Google sign-in client for /admin | The PTA's Google organization; any super admin | Nothing; Google deletes the client after six months unused; see `docs/ADMIN.md` |
 | **Passwd** (password manager) | A shared vault for the PTA's central logins. Free Starter plan, up to 15 logins. | Installed by a Workspace admin; access by role group | Set up ([B33](#b33)) |
 | **Claude Code automation** | A scoped Cloudflare API token on Jon's machine (read-only except the database), plus GitHub through Jon's account | Jon | Revoke at handoff |
 
@@ -49,4 +50,5 @@ What the PTA runs, who can get into each service, and what is changing. It names
 - **Secretary:** Workspace super admin. Invited as a Cloudflare Super Administrator for the domain transfer, to be scaled back afterwards ([C9](#c9)).
 - **The break-glass account:** Workspace super admin, Cloudflare Super Administrator, GitHub owner, primary Google for Nonprofits admin. Its credentials are sealed. Which two officers know where they are kept is an open decision ([D2](#d2)).
 - **President, VP, Fundraising:** delegates of hello@. The President also posts to members@.
+- **The website editor (/admin):** Communications, President, VP, Secretary and Fundraising, each signing in with their PTA Google account.
 - **Every officer:** their own role account, with 2-Step Verification required.
