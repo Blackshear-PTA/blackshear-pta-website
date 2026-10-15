@@ -226,22 +226,23 @@
   3. [ ] Then use it as the login email for services: Cloudflare's original login ([A36](#phase-0---accounts--scaffold)) and the PTA's GitHub account ([A37](#phase-0---accounts--scaffold)).
 
   - **Keep the member list short**, the Communications role plus one backup, because anyone in it can reset every service that logs in as `webmaster@`.
-- [ ] **B6**: Google sign-in for `/admin` - `JON` + `CLAUDE` - Board members sign in to `/admin` with their PTA Google accounts instead of an emailed code. Settings only, no code change: the site checks the sign-in itself, not which method produced it. [A42](#phase-2---real-site) waits on this.
+- [~] **B6**: Google sign-in for `/admin` - `JON` + `CLAUDE` - Board members sign in to `/admin` with their PTA Google accounts instead of an emailed code. Settings only, no code change: the site checks the sign-in itself, not which method produced it. [A42](#phase-2---real-site) waits on this.
 
   - **Who can get in** (Jon, 2026-10-15): `communications@`, `president@`, `vp@`, `secretary@` and `fundraising@`.
+  - **Progress:** steps 1 to 6 done 2026-10-15; step 7 under way.
   - **Two phases,** so nobody is locked out: Google sign-in goes in beside the emailed code and is tested first; the code is turned off only once the board accounts have signed in ([B29](#google-workspace-for-nonprofits)).
 
   **Google Cloud** (console.cloud.google.com, signed in as `communications@`)
 
-  1. [ ] Accept the terms if asked. **Manage resources → Create project**: name `blackshear-pta-access`, location **the blackshearpta.org organization**, not "No organization". No billing account is needed.
-  2. [ ] **APIs & Services → Enable APIs and Services**: enable **Admin SDK API**.
-  3. [ ] **Google Auth Platform → Branding → Get started**: app name `Blackshear PTA Admin`; support and contact email `communications@blackshearpta.org`; **Audience: Internal**, which limits sign-in to PTA accounts. Add no scopes.
-  4. [ ] **Clients → Create client**: type **Web application**, name `Cloudflare Access - /admin`, Authorized JavaScript origin `https://tight-cell-8e63.cloudflareaccess.com`, Authorized redirect URI `https://tight-cell-8e63.cloudflareaccess.com/cdn-cgi/access/callback`.
-  5. [ ] **Copy the Client ID and Client secret straight away**, or download the JSON. Google shows the secret only once. Keep it only in the password manager ([B33](#google-workspace-for-nonprofits)).
+  1. [x] Accept the terms if asked. **Manage resources → Create project**: name `blackshear-pta-access`, location **the blackshearpta.org organization**, not "No organization". No billing account is needed.
+  2. [x] **APIs & Services → Enable APIs and Services**: enable **Admin SDK API**.
+  3. [x] **Google Auth Platform → Branding → Get started**: app name `Blackshear PTA Admin`; support and contact email `communications@blackshearpta.org`; **Audience: Internal**, which limits sign-in to PTA accounts. Add no scopes.
+  4. [x] **Clients → Create client**: type **Web application**, name `Cloudflare Access - /admin`, Authorized JavaScript origin `https://tight-cell-8e63.cloudflareaccess.com`, Authorized redirect URI `https://tight-cell-8e63.cloudflareaccess.com/cdn-cgi/access/callback`.
+  5. [x] **Copy the Client ID and Client secret straight away**, or download the JSON. Google shows the secret only once. Keep it only in the password manager ([B33](#google-workspace-for-nonprofits)).
 
   **Google Admin console** (admin.google.com)
 
-  6. [ ] **Security → Access and data control → API controls → Settings → Internal apps → Trust internal apps → Save.** It can take up to 24 hours to apply.
+  6. [x] **Security → Access and data control → API controls → Settings → Internal apps → Trust internal apps → Save.** It can take up to 24 hours to apply.
 
   **Cloudflare** (the Blackshear PTA account → Zero Trust)
 
