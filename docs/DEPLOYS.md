@@ -18,9 +18,13 @@ the calendar snapshot daily. See [CALENDAR.md](CALENDAR.md).
 nothing else. The ID is pinned in `wrangler.jsonc` as `account_id` so that a run
 holding the wrong credential fails with an access error rather than deploying
 into another tenant — there is a second, personal Cloudflare account on the
-maintainer's machine, and an ambient `CLOUDFLARE_API_TOKEN` in `~/.zshenv`
-reaches every shell. `CLAUDE.md` has the full reasoning. Check with
-`npx wrangler whoami` (Node 22 or it will not run).
+maintainer's machine. `CLAUDE.md` has the full reasoning. Check with
+`npm run cf:whoami` (Node 22 or it will not run).
+
+Local commands that reach Cloudflare get the PTA's API token from the macOS
+Keychain through `scripts/cf.sh`, for that one command only; it is no longer in
+any shell profile. `cf:deploy` and `db:migrate:remote` already go through it.
+Workers Builds needs none of this.
 
 ## Publishing an announcement is not a deploy
 
