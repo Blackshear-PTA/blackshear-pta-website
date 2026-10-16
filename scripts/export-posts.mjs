@@ -35,6 +35,11 @@ const DATABASE = 'blackshear-pta';
 
 const remote = process.argv.includes('--remote');
 const where = remote ? '--remote' : '--local';
+// The live database goes through scripts/cf.sh, which hands wrangler the PTA's
+// API token from the Keychain for this one command. The local one needs none.
+const [wrangler, ...wranglerArgs] = remote
+  ? ['sh', join(root, 'scripts', 'cf.sh'), 'npx', 'wrangler']
+  : ['npx', 'wrangler'];
 
 /**
  * One query, through wrangler.
@@ -48,15 +53,16 @@ function query(sql) {
   let raw;
   try {
     raw = execFileSync(
-      'npx',
-      ['wrangler', 'd1', 'execute', DATABASE, where, '--json', '--command', sql],
+      wrangler,
+      [...wranglerArgs, 'd1', 'execute', DATABASE, where, '--json', '--command', sql],
       { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] },
     );
   } catch (error) {
     console.error(`\nwrangler failed. Its output:\n${error.stderr || error.stdout || error.message}`);
     if (remote) {
       console.error(
-        '\nFor the live database you need to be logged in: npx wrangler login',
+        '\nFor the live database wrangler needs a login: the Keychain token that\n' +
+          'scripts/cf.sh reads (see its header), or npx wrangler login.',
       );
     } else {
       console.error(

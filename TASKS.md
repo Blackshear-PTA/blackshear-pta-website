@@ -303,7 +303,7 @@
   3. [ ] **Two-factor on both new logins** (My Profile → Authentication), with authenticator apps. The break-glass one's setup key and backup codes go in the envelope ([B22](#google-workspace-for-nonprofits)).
   4. [ ] Once [B5](#google-workspace-for-nonprofits)'s delivery test passes, change the original login's email from the PTA Gmail to `webmaster@`.
 
-  - **Change that login's email; never delete the user.** The local API token in `~/.zshenv` and the Workers Builds connection were made under it, and an email change keeps them. The account **ID** pinned in [CLAUDE.md](CLAUDE.md) does not change.
+  - **Change that login's email; never delete the user.** The local API token (in the Keychain, read by `scripts/cf.sh`; in `~/.zshenv` until 2026-10-16) and the Workers Builds connection were made under it, and an email change keeps them. The account **ID** pinned in [CLAUDE.md](CLAUDE.md) does not change.
   - **Nonprofit pricing:** none applies, and the free plan covers everything this site uses.
   - After [C9](#track-c---domain-dns-email), the domain registration lives in this account too.
 - [~] **A37**: GitHub organization ownership - `JON` - `Blackshear-PTA` has four owners: the PTA's own account (`blackshearpta-legacy`), the Communications and break-glass role accounts, and Jon's personal `jon-flowers`. The repository belongs to the organization, so nothing needs transferring.
