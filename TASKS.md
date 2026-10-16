@@ -198,7 +198,7 @@
   **PTA Gmail → `hello@`**
 
   1. [x] **Mail:** the Admin console's data import started 2026-10-15, taking all mail since 1999-12-31, without Spam or Trash, and excluding no labels.
-  2. [ ] When Google's "import finished" email arrives, spot-check `hello@`: the labels, Sent mail, and an old message from 2020. Some of the ~77 messages already forwarded may appear twice; accepted (Jon).
+  2. [ ] **Finished 2026-10-15**, in 4 hours: 16,961 messages found, 16,960 copied, 0 skipped, 1 failed. The attached report names the failed one. Spot-check `hello@`: the labels, Sent mail, and an old message from 2020. Some of the ~77 messages already forwarded may appear twice; accepted (Jon).
   3. [ ] Then **Exit import → Exit and delete import**, which removes the tool's access to the PTA Gmail.
   4. [x] **Contacts:** exported as Google CSV and imported into `hello@` (2026-10-15). Delete the CSV from Downloads.
   5. [ ] **Drive files:** into the Shared Drive ([B15](#google-workspace-for-nonprofits), [B18](#google-workspace-for-nonprofits)).
