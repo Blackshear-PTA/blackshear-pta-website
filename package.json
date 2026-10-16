@@ -25,15 +25,17 @@
     "check:domain": "node scripts/check-domain.mjs",
     "check:mail": "node scripts/check-mail.mjs",
     "check:d1": "node --experimental-sqlite scripts/check-d1.mjs",
+    "cf": "sh scripts/cf.sh",
     "cf:dev": "wrangler dev",
-    "cf:deploy": "astro build && wrangler deploy",
+    "cf:deploy": "astro build && sh scripts/cf.sh wrangler deploy",
+    "cf:whoami": "sh scripts/cf.sh wrangler whoami",
     "astro": "astro",
     "types": "wrangler types",
     "refresh:events": "node scripts/refresh-events.mjs",
     "export:posts": "node scripts/export-posts.mjs",
     "tasks:board": "node scripts/task-board.mjs",
     "db:migrate": "wrangler d1 migrations apply blackshear-pta --local",
-    "db:migrate:remote": "wrangler d1 migrations apply blackshear-pta --remote"
+    "db:migrate:remote": "sh scripts/cf.sh wrangler d1 migrations apply blackshear-pta --remote"
   },
   "dependencies": {
     "@astrojs/cloudflare": "~14.2.6",
