@@ -18,7 +18,7 @@ Date to be set. Items collect here as they come up; the October 6 notes are on t
 - **Board sign-ins and 2-Step Verification:** who is still pending ([B29](#b29)).
 - **Data migration:** progress ([B30](#b30)).
 - **Parents' calendar:** Google would not transfer it from the PTA Gmail to communications@, so it stays owned by the PTA Gmail, with the board's PTA accounts given full access. Nothing changes for parents. Moving it into Workspace can wait for the break between school years ([B27](#b27)).
-- **Password manager:** Passwd set up, and who has access ([B33](#b33)).
+- **Password manager:** Passwd's free plan turned out to be for test data only and cannot share between people, so Jon chose **KeePassXC** instead: one encrypted file in a Shared Drive the PTA owns. It is free and open source, with no subscription to lapse ([D2](#d2), [B33](#b33)).
 - **Domain transfer:** Gabe is running it himself from October 12; done yet? ([C9](#c9)).
 - **Room parent dashboard:** what Bree needs ([A39](#a39)).
 - **GitHub for Nonprofits:** approved or not ([B7](#b7)).
