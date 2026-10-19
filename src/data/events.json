@@ -14,6 +14,13 @@
       "allDay": true
     },
     {
+      "id": "69jhfq95v8gfrmdi2rj0otbdl6@google.com@2026-10-20T00:00:00.000Z",
+      "title": "Mr. T's Birthday",
+      "start": "2026-10-20T00:00:00.000Z",
+      "end": "2026-10-21T00:00:00.000Z",
+      "allDay": true
+    },
+    {
       "id": "13d8ebc48i20sf8u52he4l6au6@google.com@2026-10-20T00:00:00.000Z",
       "title": "Fall Picture Day",
       "start": "2026-10-20T00:00:00.000Z",
@@ -56,15 +63,15 @@
       "allDay": true
     },
     {
-      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
-      "title": "PTA E-board Meeting #2",
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
@@ -113,19 +120,19 @@
       "allDay": false
     },
     {
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
+      "start": "2026-11-19T00:00:00.000Z",
+      "end": "2026-11-20T00:00:00.000Z",
+      "allDay": true
+    },
+    {
       "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
       "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true,
       "description": "<a href=\"https://tinyurl.com/BlackshearBuffet\">https://tinyurl.com/BlackshearBuffet</a>"
-    },
-    {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
-      "start": "2026-11-19T00:00:00.000Z",
-      "end": "2026-11-20T00:00:00.000Z",
-      "allDay": true
     },
     {
       "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-11-19T13:40:00.000Z",
@@ -443,15 +450,15 @@
       "allDay": true
     },
     {
-      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Lunar New Year Performance",
+      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Ms. Chalida's Birthday! (Cafeteria)",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4vnmj1s65djt36qg649f1vdbvn_R20270212@google.com@2027-02-12T00:00:00.000Z",
-      "title": "Ms. Chalida's Birthday! (Cafeteria)",
+      "id": "0vsmrv5def8hv6scomeq9jr78r@google.com@2027-02-12T00:00:00.000Z",
+      "title": "Lunar New Year Performance",
       "start": "2027-02-12T00:00:00.000Z",
       "end": "2027-02-13T00:00:00.000Z",
       "allDay": true
@@ -737,15 +744,15 @@
       "allDay": false
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
