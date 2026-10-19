@@ -1,18 +1,11 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-10-18",
+  "generated": "2026-10-19",
   "window": {
-    "from": "2026-10-18",
-    "to": "2027-10-18"
+    "from": "2026-10-19",
+    "to": "2027-10-19"
   },
   "events": [
-    {
-      "id": "42cqc2l5u8fh66kt0o1fgm2bcg@google.com@2026-10-18T00:00:00.000Z",
-      "title": "Garden Work Day",
-      "start": "2026-10-18T00:00:00.000Z",
-      "end": "2026-10-19T00:00:00.000Z",
-      "allDay": true
-    },
     {
       "id": "65gro2h7s61u5b5anauh5dllka@google.com@2026-10-19T00:00:00.000Z",
       "title": "Ms. Zaroba's Birthday (Interventionist)",
@@ -63,15 +56,15 @@
       "allDay": true
     },
     {
-      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
-      "title": "PTA E-board Meeting #2",
+      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
+      "title": "Student Holiday",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4vqiqis331epkkjr0h9f7q92o4@google.com@2026-11-03T00:00:00.000Z",
-      "title": "Student Holiday",
+      "id": "4i8ftio7b3rndgnjkk85usjf71@google.com@2026-11-03T00:00:00.000Z",
+      "title": "PTA E-board Meeting #2",
       "start": "2026-11-03T00:00:00.000Z",
       "end": "2026-11-04T00:00:00.000Z",
       "allDay": true
@@ -177,15 +170,15 @@
       "allDay": true
     },
     {
-      "id": "1461a6fp3jh7hi363ctect6tkj@google.com@2026-12-07T00:00:00.000Z",
-      "title": "Dr. Hunt's Birthday (AP)",
+      "id": "25177qf28m6fe8qmd1qnkukib9@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Mrs. Ward's 1/2 Birthday (ECSE)",
       "start": "2026-12-07T00:00:00.000Z",
       "end": "2026-12-08T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "25177qf28m6fe8qmd1qnkukib9@google.com@2026-12-07T00:00:00.000Z",
-      "title": "Mrs. Ward's 1/2 Birthday (ECSE)",
+      "id": "1461a6fp3jh7hi363ctect6tkj@google.com@2026-12-07T00:00:00.000Z",
+      "title": "Dr. Hunt's Birthday (AP)",
       "start": "2026-12-07T00:00:00.000Z",
       "end": "2026-12-08T00:00:00.000Z",
       "allDay": true
@@ -842,14 +835,6 @@
       "allDay": true
     },
     {
-      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
-      "title": "Ms. Virginia's Birthday! (Cafeteria)",
-      "start": "2027-09-15T00:00:00.000Z",
-      "end": "2027-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
-    },
-    {
       "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
       "title": "Ms. Earl's Birthday! (Cafeteria)",
       "start": "2027-09-15T00:00:00.000Z",
@@ -858,10 +843,25 @@
       "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
     },
     {
+      "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
+      "title": "Ms. Virginia's Birthday! (Cafeteria)",
+      "start": "2027-09-15T00:00:00.000Z",
+      "end": "2027-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
       "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2027-09-20T00:00:00.000Z",
       "title": "Ms. Clay's Birthday (Instructional Coach)",
       "start": "2027-09-20T00:00:00.000Z",
       "end": "2027-09-21T00:00:00.000Z",
+      "allDay": true
+    },
+    {
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2027-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
+      "start": "2027-10-05T00:00:00.000Z",
+      "end": "2027-10-06T00:00:00.000Z",
       "allDay": true
     },
     {
@@ -872,10 +872,10 @@
       "allDay": true
     },
     {
-      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2027-10-05T00:00:00.000Z",
-      "title": "Ms. Wellman's Birthday! (AP)",
-      "start": "2027-10-05T00:00:00.000Z",
-      "end": "2027-10-06T00:00:00.000Z",
+      "id": "65gro2h7s61u5b5anauh5dllka@google.com@2027-10-19T00:00:00.000Z",
+      "title": "Ms. Zaroba's Birthday (Interventionist)",
+      "start": "2027-10-19T00:00:00.000Z",
+      "end": "2027-10-20T00:00:00.000Z",
       "allDay": true
     }
   ]
