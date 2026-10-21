@@ -493,7 +493,7 @@
   11. [ ] **`members@`:** keep the group matched to paid members, adding newcomers and removing lapsed ones, which replaces B28's yearly refresh by hand. Automatic once [D15](#open-decisions) is settled; until then the page writes the bulk-upload CSV.
   12. [ ] **Texas PTA:** an export in whatever form step 4 finds.
   13. [ ] **Treasurer:** a payments export to reconcile against the bank, or a Sheet in the PTA Shared Drive kept current.
-  14. [ ] **Room parents:** class lists by teacher, if step 6 keeps children.
+  14. [ ] **Room parents:** class lists by teacher for the room parent dashboard ([A39](#phase-0---accounts--scaffold)), if step 6 keeps children.
 
   - **Parent data never goes in this repo**, which is public. It lives only in the database or in Workspace, as B28's addresses do.
   - **Back it up** the way [A44](#phase-2---real-site) backs up posts, and decide how long a lapsed member's record is kept.
