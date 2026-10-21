@@ -9,6 +9,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | Service | What it does | Who controls it | Next |
 |---|---|---|---|
 | **Google Workspace for Nonprofits** (blackshearpta.org) | Email, Drive, Calendar and Groups for the board. Free edition. | Super admins: Communications, Secretary, the break-glass account | Board sign-ins ([B29](#b29)); data migration ([B30](#b30)) |
+| **Shared Drives**: one for documents, and *PTA Vault* | Where the PTA's files live. Files in a Shared Drive belong to the PTA, not to whoever added them. | Members by role account. Every member of a drive sees everything in it, so the vault's members are only the officers who may open it | Copy documents in ([B18](#b18)); themes ([B35](#b35)) |
 | **Website**, blackshearpta.org | The public site. The calendar refreshes hourly, and announcements are edited at /admin. | Code in GitHub, running on Cloudflare. The editor at /admin is open to five role accounts signing in with Google | Retire Weebly ([A29](#a29)) |
 | **Cloudflare**, account "Blackshear PTA" | DNS, website hosting, the announcements database, photo storage, /admin access control and analytics. Domain registration too, after the transfer. | Super Administrators: Communications, the break-glass account, and the original PTA Gmail login. The Secretary is invited too, for the domain transfer only, and is scaled back afterwards. Billing contact: the central IT address. | Domain transfer ([C9](#c9)); two-factor on the new logins ([A36](#a36)) |
 | **GitHub**, organization Blackshear-PTA | The website's code (public). A merge to main deploys it, and an hourly job refreshes the calendar. | Owners: the PTA account (`blackshearpta-legacy`), Communications, the break-glass account, and Jon's personal account | Require two-factor org-wide ([A37](#a37)); GitHub for Nonprofits ([B7](#b7)) |
@@ -20,7 +21,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | **Weebly** | The old website | Login holder unknown | Retire ([A29](#a29)) |
 | **Social media and other tools**: Instagram, Facebook, sign-up and payment tools, Animoto, TinyURL, HelloSign | Various | Mostly signed up under the two old Gmails | Inventory, then move the logins to PTA addresses ([A38](#a38)) |
 | **Google Cloud project** `blackshear-pta-access` | The Google sign-in client for /admin | The PTA's Google organization; any super admin | Nothing; Google deletes the client after six months unused; see `docs/ADMIN.md` |
-| **KeePassXC vault** (password manager) | One encrypted file holding the PTA's central logins, in a Shared Drive only its members can open. Free and open source. | The officers who are members of that Shared Drive; the master password is also in the sealed envelope | Set up ([B33](#b33)) |
+| **KeePassXC vault** (password manager) | One encrypted file holding the PTA's central logins, in the *PTA Vault* Shared Drive, which only its members can open. Free and open source. | The officers who are members of that Shared Drive; the master password is also in the sealed envelope | Set up ([B33](#b33)) |
 | **Claude Code automation** | A scoped Cloudflare API token on Jon's machine (read-only except the database), plus GitHub through Jon's account | Jon | Revoke at handoff |
 
 ## Email addresses
