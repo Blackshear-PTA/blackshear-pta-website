@@ -13,17 +13,21 @@
  * keeps him. Rendered at twice the minimum, 2560 x 288, so it stays sharp on
  * high-density screens.
  *
- *   drive-theme-documents.png  the documents drive: brand blue, a faint white
- *                              honeycomb, Buzz in the site's disc.
- *   drive-theme-vault.png      PTA Vault: black, a yellow honeycomb, the same
- *                              disc. Different enough to tell the two apart at
- *                              a glance, which matters for the drive that holds
- *                              the passwords.
+ *   drive-theme-documents.png  the documents drive: brand blue, Buzz in the
+ *                              site's disc, and the lemon rule from the foot of
+ *                              the site's masthead.
+ *   drive-theme-vault.png      PTA Vault: black, like the masthead itself, with
+ *                              the same disc and rule. Different enough to tell
+ *                              the two apart at a glance, which matters for the
+ *                              drive that holds the passwords.
+ *
+ * No honeycomb or hive pattern: Buzz is a yellow jacket, not a honeybee (F7 in
+ * TASKS.md). A first draft of these had one.
  *
  * PROVENANCE. As in make-workspace-logo.mjs, nothing is redrawn: the mark is
  * assets/brand/buzz-mascot-color.svg inside the disc and ring of
  * src/components/BuzzMascot.astro, and the colours are the palette in
- * assets/brand/README.md. The honeycomb is plain geometry.
+ * assets/brand/README.md.
  *
  *   node scripts/make-drive-themes.mjs
  */
@@ -50,36 +54,20 @@ function mascotInner() {
   return src.slice(open, src.lastIndexOf('</svg>')).replace(/<title>[\s\S]*?<\/title>/, '');
 }
 
-/** Flat-topped hexagon outlines covering the whole band, one path. */
-function honeycomb(radius) {
-  const rowH = Math.sqrt(3) * radius;
-  const colW = 1.5 * radius;
-  const corners = [0, 1, 2, 3, 4, 5].map((i) => [Math.cos((Math.PI / 3) * i), Math.sin((Math.PI / 3) * i)]);
-  const parts = [];
-  for (let col = -1; col * colW < W + radius; col++) {
-    const cx = col * colW;
-    const offset = col % 2 === 0 ? 0 : rowH / 2;
-    for (let row = -1; row * rowH < H + rowH; row++) {
-      const cy = row * rowH + offset;
-      const pts = corners.map(([x, y]) => `${(cx + x * radius).toFixed(1)},${(cy + y * radius).toFixed(1)}`);
-      parts.push(`M${pts.join('L')}Z`);
-    }
-  }
-  return parts.join('');
-}
-
-function compose({ ground, comb, combOpacity }) {
+function compose({ ground }) {
+  // The masthead's lemon rule (6px under a band about 100px tall), scaled to
+  // this height.
+  const RULE = 16;
   // BuzzMascot.astro's geometry (100-unit box, disc r=46, ring 3, mascot at
-  // 23.77,15 sized 52.45 x 70), scaled so the disc nearly fills the height.
-  const markSize = H - 24;
+  // 23.77,15 sized 52.45 x 70), scaled so the disc nearly fills the band above
+  // the rule.
+  const band = H - RULE;
+  const markSize = band - 24;
   const markX = (W - markSize) / 2;
-  const markY = (H - markSize) / 2;
-  // A ring of plain ground around the disc, so the honeycomb never touches it.
-  const clearR = (markSize * 0.49) + 18;
+  const markY = (band - markSize) / 2;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="${ground}"/>
-  <path d="${honeycomb(44)}" fill="none" stroke="${comb}" stroke-opacity="${combOpacity}" stroke-width="3"/>
-  <circle cx="${W / 2}" cy="${H / 2}" r="${clearR.toFixed(1)}" fill="${ground}"/>
+  <rect y="${band}" width="${W}" height="${RULE}" fill="${YELLOW}"/>
   <svg x="${markX}" y="${markY}" width="${markSize}" height="${markSize}" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="46" fill="${WHITE}" stroke="${BLACK}" stroke-width="3"/>
     <svg x="23.77" y="15.00" width="52.45" height="70.00" viewBox="228 111 574 766" overflow="visible">${mascotInner()}</svg>
@@ -100,5 +88,5 @@ async function render(name, opts) {
   console.log(`${name}: ${meta.width}x${meta.height}, ${(png.length / 1024).toFixed(1)} KB`);
 }
 
-await render('drive-theme-documents.png', { ground: BLUE, comb: WHITE, combOpacity: 0.12 });
-await render('drive-theme-vault.png', { ground: BLACK, comb: YELLOW, combOpacity: 0.3 });
+await render('drive-theme-documents.png', { ground: BLUE });
+await render('drive-theme-vault.png', { ground: BLACK });
