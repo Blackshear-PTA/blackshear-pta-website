@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (an Inbox on the task board for quick ideas; the Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47)
+**Last updated:** 2026-10-21 (Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
