@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (an Inbox on the task board for quick ideas; the Little EAST page prioritized, U21; announcements catch-up, A45; Ms. Bell and the campus website, A46)
+**Last updated:** 2026-10-21 (an Inbox on the task board for quick ideas; the Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
@@ -470,14 +470,14 @@
   2. [ ] Keep a copy off this computer.
 
   - Worth automating later, for example with a monthly GitHub Action committing to a private repository, but the habit matters first.
-- [ ] **A45**: Catch the announcements up with what the PTA has already published - `JON` + `CLAUDE` - Recent news has gone out as the Weekly Buzz, Instagram posts and newsletters, but not as announcements on the site. Added 2026-10-21.
+- [ ] **A46**: Catch the announcements up with what the PTA has already published - `JON` + `CLAUDE` - Recent news has gone out as the Weekly Buzz, Instagram posts and newsletters, but not as announcements on the site. Added 2026-10-21.
 
   1. [ ] Jon points `CLAUDE` at the recent pieces: Weekly Buzz issues, Instagram posts, newsletters and anything else sent since the site went live.
   2. [ ] `CLAUDE` drafts one announcement for each piece worth keeping: a title, a few sentences and a link to the original.
   3. [ ] Jon publishes them through `/admin`, which `CLAUDE` cannot reach ([U12](#-do-this-week)).
 
   - Worth making a habit afterwards: each new Buzz or newsletter gets a short announcement the same week.
-- [ ] **A46**: Talk to Ms. Bell about helping her with the campus website - `JON` - The school's own website, which is separate from this PTA site and run through AISD. Added 2026-10-21.
+- [ ] **A47**: Talk to Ms. Bell about helping her with the campus website - `JON` - The school's own website, which is separate from this PTA site and run through AISD. Added 2026-10-21.
 
   1. [ ] Ask Ms. Bell what help she wants with it.
   2. [ ] Find out what AISD access that takes, and who at the district grants it.

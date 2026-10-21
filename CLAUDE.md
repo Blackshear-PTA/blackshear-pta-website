@@ -69,7 +69,7 @@ header of [`scripts/task-board.mjs`](scripts/task-board.mjs).
   ideas are waiting.
 - **When Jon asks you to triage it:** for each idea with `status: "new"`, add a
   task to TASKS.md, or a step to an existing task. Then update the idea to
-  `status: "filed"` with `tasks: ["A45"]`, or to `status: "dropped"` with a
+  `status: "filed"` with the new task IDs in `tasks`, or to `status: "dropped"` with a
   `note` saying why (a duplicate, say). Rebuild and republish the board in the
   same turn. Never delete an idea: the record of what it became is the point.
 - **Republish without passing `capabilities`**, so the page keeps its `db` and
