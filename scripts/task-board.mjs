@@ -7,6 +7,14 @@
  * changes nothing and holds no data of its own, so it cannot drift. Regenerate
  * it after editing TASKS.md.
  *
+ * The one exception is the Inbox at the top: a box for jotting down a task idea
+ * the moment it comes up, without opening a session. Ideas are stored in the
+ * published artifact's own database (the `db` capability, collection `inbox`),
+ * never in TASKS.md, until Claude files them as tasks. Each is
+ *   { text, status: "new" | "filed" | "dropped", createdAt, by?, tasks?, note? }
+ * where `tasks` lists the task IDs an idea became and `note` says why one was
+ * dropped. Opened from disk, the page has no database and the Inbox says so.
+ *
  *   node scripts/task-board.mjs                 writes .task-board/index.html
  *   node scripts/task-board.mjs --out FILE      writes FILE
  *   node scripts/task-board.mjs --json          prints the parsed data instead
@@ -688,6 +696,24 @@ a.tid:hover { color: var(--accent); }
 .finding .prose { margin-left: 4rem; }
 footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var(--rule); padding-top: 1rem; }
 
+/* Inbox: quick capture above everything else, with the lemon rule to set it apart. */
+.inbox { background: var(--card); border: 1px solid var(--rule); border-left: 6px solid var(--lemon); border-radius: var(--radius); padding: 1rem 1.1rem; scroll-margin-top: 1rem; }
+.inbox-form { display: flex; gap: 0.5rem; }
+#inbox-text { flex: 1; min-width: 0; font: inherit; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); color: var(--ink); }
+.inbox-form button { font: inherit; font-weight: 700; border: 0; border-radius: var(--radius); background: var(--ink); color: var(--paper); padding: 0.6rem 1.2rem; cursor: pointer; }
+#inbox-text:disabled, .inbox-form button:disabled { opacity: 0.55; cursor: not-allowed; }
+.inbox-status { margin: 0; color: var(--muted); font-size: var(--small); }
+.inbox-status button { font: inherit; font-weight: 700; color: var(--accent); background: none; border: 0; padding: 0.5rem 0.25rem; cursor: pointer; text-decoration: underline; text-underline-offset: 0.15em; }
+.ideas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.idea { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.15rem 0.75rem; padding-block: 0.45rem; border-bottom: 1px solid var(--rule); }
+.idea-text { overflow-wrap: anywhere; font-weight: 600; }
+.idea-when { color: var(--muted); font-size: var(--small); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.idea-outcome { grid-column: 1 / -1; color: var(--muted); font-size: var(--small); }
+.idea-remove { width: 44px; height: 44px; margin-block: -0.4rem; border: 0; border-radius: 50%; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+.idea-remove:hover { color: var(--blocked); background: var(--chip); }
+#inbox-filed .idea-text { color: var(--muted); font-weight: 400; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
 @media (max-width: 640px) {
   .task-head, .decision .task-head { grid-template-columns: auto minmax(0, 1fr); }
   .task-head .ttitle { grid-column: 1 / -1; }
@@ -697,6 +723,13 @@ footer { color: var(--muted); font-size: var(--small); border-top: 1px solid var
   .step-state { grid-column: 2; }
   .count { margin-left: 0; }
   #search { width: 100%; }
+  /* Four tabs no longer fit one row on a phone: wrap whole tabs, never their words. */
+  .tabs { flex-wrap: wrap; gap: 0; }
+  .tabs [role="tab"] { white-space: nowrap; padding-inline: 0.6rem; }
+  /* An idea gets the full width; its time goes underneath. */
+  .idea { grid-template-columns: minmax(0, 1fr) auto; }
+  .idea-when { grid-column: 1; grid-row: 2; }
+  .idea-remove { grid-column: 2; grid-row: 1 / span 2; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 </style>
@@ -720,6 +753,19 @@ ${EXTRA_TABS.length || ARCHIVE.length ? `<nav class="wrap tabs" role="tablist" a
 
 <main>
 <div class="wrap panel" id="panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
+  <section class="block inbox" id="inbox" aria-labelledby="inbox-title">
+    <div class="block-head"><h2 id="inbox-title">Inbox</h2><span class="tally" id="inbox-tally"></span></div>
+    <p class="intro">Jot down a task idea as it comes to you. It waits here until Claude turns it into a task.</p>
+    <form class="inbox-form" id="inbox-form" autocomplete="off">
+      <label class="sr-only" for="inbox-text">A new task idea</label>
+      <input id="inbox-text" type="text" maxlength="1000" placeholder="A task idea" enterkeyhint="send" disabled>
+      <button type="submit" disabled>Add</button>
+    </form>
+    <p class="inbox-status" id="inbox-status" aria-live="polite">Connecting…</p>
+    <ul class="ideas" id="inbox-new" hidden></ul>
+    <details class="done-fold" id="inbox-filed-fold" hidden><summary></summary><ul class="ideas" id="inbox-filed"></ul></details>
+  </section>
+
   <ul class="tallies" aria-label="Task counts">
     <li><strong>${count('todo') + count('doing') + count('blocked')}</strong> open</li>
     <li>${stateBadge('doing')}<strong>${count('doing')}</strong></li>
@@ -761,7 +807,7 @@ ${EXTRA_TABS.length || ARCHIVE.length ? `<nav class="wrap tabs" role="tablist" a
     <ul class="findings">${findings}</ul>
   </section>
 
-  <footer>Generated from <a href="${esc(fileUrl)}" target="_blank" rel="noopener">TASKS.md</a> by <code>scripts/task-board.mjs</code>${ctx.sha ? `, at ${esc(ctx.branch)} ${esc(ctx.sha)}` : ''}. TASKS.md is the source of truth; this page is a read-only view of it.</footer>
+  <footer>Generated from <a href="${esc(fileUrl)}" target="_blank" rel="noopener">TASKS.md</a> by <code>scripts/task-board.mjs</code>${ctx.sha ? `, at ${esc(ctx.branch)} ${esc(ctx.sha)}` : ''}. TASKS.md is the source of truth; this page is a read-only view of it, apart from the Inbox.</footer>
 </div>
 ${EXTRA_TABS.map((t) => docPanel(t, ctx)).join('\n')}
 ${archivePanel(ctx)}
@@ -852,6 +898,196 @@ ${archivePanel(ctx)}
   }
   if (location.hash) reveal(location.hash.slice(1));
   apply();
+})();
+
+// The Inbox. Ideas live in the artifact's database, so the page renders without
+// it and the box lights up once the viewer's database answers. Opened from disk,
+// or by someone who cannot write, it says so instead.
+(async () => {
+  const form = document.getElementById('inbox-form');
+  const input = document.getElementById('inbox-text');
+  const add = form.querySelector('button');
+  const status = document.getElementById('inbox-status');
+  const tally = document.getElementById('inbox-tally');
+  const fresh = document.getElementById('inbox-new');
+  const fold = document.getElementById('inbox-filed-fold');
+  const filed = document.getElementById('inbox-filed');
+  const say = (...parts) => {
+    const keep = parts.filter(Boolean);
+    status.replaceChildren(...keep);
+    status.hidden = !keep.length;
+  };
+
+  const claude = window.claude;
+  const db = claude && claude.use ? await claude.use('db') : null;
+  if (!db) {
+    say('Adding ideas works only on the board as published on claude.ai.');
+    return;
+  }
+  const user = await claude.use('user');
+  const me = user ? await user.id() : null;
+  let writable = (user ? await user.can('data.write') : null) !== false;
+  const inbox = db.collection('inbox');
+  let docs = [];
+  let connected = false;
+
+  if (writable) {
+    input.disabled = false;
+    add.disabled = false;
+    if (location.hash === '#inbox') input.focus();
+  } else {
+    form.hidden = true;
+  }
+
+  // The store's "unavailable" is transient: one retry after a short random pause.
+  async function attempt(fn) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!e || e.code !== 'unavailable') throw e;
+      await new Promise((r) => setTimeout(r, 400 + Math.random() * 800));
+      return fn();
+    }
+  }
+  function failed(e) {
+    const code = e && e.code;
+    if (code === 'invalid_argument' || code === 'not_granted' || code === 'revoked') {
+      writable = false;
+      form.hidden = true;
+      render();
+      say('This board is read-only for you.');
+    } else if (code === 'quota_exceeded') {
+      say('The inbox is full. Ask Claude to clear out the ideas already handled.');
+    } else {
+      say('That did not save. Check the connection and try again.');
+    }
+  }
+
+  const when = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
+  const TASK_ID = /^[A-Z]\\d+$/;
+  const stateOf = (d) => d.status || 'new';
+
+  function row(doc, removable) {
+    const d = doc.data();
+    const li = document.createElement('li');
+    li.className = 'idea';
+    const text = document.createElement('span');
+    text.className = 'idea-text';
+    text.textContent = String(d.text || '');
+    const at = new Date(String(d.createdAt || ''));
+    const stamp = document.createElement('span');
+    stamp.className = 'idea-when';
+    stamp.textContent = isNaN(at) ? '' : when.format(at);
+    li.append(text, stamp);
+    if (removable) {
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.className = 'idea-remove';
+      x.textContent = '×';
+      x.setAttribute('aria-label', 'Remove: ' + text.textContent);
+      x.addEventListener('click', () => remove(doc.id, d));
+      li.append(x);
+    }
+    if (stateOf(d) !== 'new') {
+      // What became of it: links to the tasks it was filed as, or why it was not.
+      const out = document.createElement('span');
+      out.className = 'idea-outcome';
+      const ids = (Array.isArray(d.tasks) ? d.tasks : []).map(String).filter((t) => TASK_ID.test(t));
+      if (ids.length) {
+        out.append('Filed as ');
+        ids.forEach((t, i) => {
+          if (i) out.append(', ');
+          const a = document.createElement('a');
+          a.href = '#' + t.toLowerCase();
+          a.textContent = t;
+          out.append(a);
+        });
+      } else {
+        out.append(stateOf(d) === 'dropped' ? 'Not filed' : 'Filed');
+      }
+      if (d.note) out.append(' · ' + String(d.note));
+      li.append(out);
+    }
+    return li;
+  }
+
+  function render() {
+    const open = docs.filter((d) => stateOf(d.data()) === 'new');
+    const done = docs.filter((d) => stateOf(d.data()) !== 'new');
+    fresh.replaceChildren(...open.map((d) => row(d, writable)));
+    fresh.hidden = !open.length;
+    tally.textContent = open.length ? open.length + ' waiting' : 'Nothing waiting';
+    fold.hidden = !done.length;
+    fold.querySelector('summary').textContent = done.length + ' already handled';
+    filed.replaceChildren(...done.slice(0, 50).map((d) => row(d, false)));
+  }
+
+  let removed = null;
+  async function remove(id, data) {
+    try {
+      await attempt(() => inbox.doc(id).delete());
+    } catch (e) {
+      failed(e);
+      return;
+    }
+    removed = { id, data: { ...data } };
+    const undo = document.createElement('button');
+    undo.type = 'button';
+    undo.textContent = 'Undo';
+    undo.addEventListener('click', async () => {
+      const r = removed;
+      removed = null;
+      say();
+      if (!r) return;
+      try {
+        await attempt(() => inbox.doc(r.id).set(r.data));
+      } catch (e) {
+        failed(e);
+      }
+    });
+    say('Removed. ', undo);
+    setTimeout(() => {
+      if (removed && removed.id === id) {
+        removed = null;
+        say();
+      }
+    }, 15000);
+  }
+
+  let saving = false;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim().split(/\\s+/).join(' ');
+    if (!text || saving || !writable) return;
+    saving = true;
+    add.disabled = true;
+    const idea = { text: text.slice(0, 1000), status: 'new', createdAt: new Date().toISOString() };
+    if (me) idea.by = me;
+    // One ref for the write and its retry, so a retry cannot file the idea twice.
+    const ref = inbox.doc();
+    try {
+      await attempt(() => ref.set(idea));
+      input.value = '';
+      say();
+    } catch (err) {
+      failed(err);
+    }
+    saving = false;
+    add.disabled = !writable;
+    if (writable) input.focus();
+  });
+
+  inbox.orderBy('createdAt', 'desc').limit(300).onSnapshot(
+    (snap) => {
+      docs = snap.docs.filter((d) => d.exists);
+      if (!connected) {
+        connected = true;
+        say();
+      }
+      render();
+    },
+    () => say('The inbox stopped updating. Reload the page to see the latest.'),
+  );
 })();
 </script>`;
 }

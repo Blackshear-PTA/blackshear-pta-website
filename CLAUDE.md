@@ -56,3 +56,21 @@ this replaced. To store or rotate it, see the header of `scripts/cf.sh`.
 
 Wrangler needs Node 22 (see [`.node-version`](.node-version)); under Node 20 it
 refuses to run at all and the error says nothing about accounts.
+
+## The task board has an inbox
+
+The published task board (its URL is in Claude's memory, not in this public
+repo) has an *Inbox* where Jon jots down task ideas between sessions. They are
+stored in that artifact's database, collection `inbox`, not in TASKS.md. Read
+and update them with the `ArtifactData` tool; the document shape is in the
+header of [`scripts/task-board.mjs`](scripts/task-board.mjs).
+
+- **Whenever you rebuild the board, check the inbox first**, and tell Jon if
+  ideas are waiting.
+- **When Jon asks you to triage it:** for each idea with `status: "new"`, add a
+  task to TASKS.md, or a step to an existing task. Then update the idea to
+  `status: "filed"` with the new task IDs in `tasks`, or to `status: "dropped"` with a
+  `note` saying why (a duplicate, say). Rebuild and republish the board in the
+  same turn. Never delete an idea: the record of what it became is the point.
+- **Republish without passing `capabilities`**, so the page keeps its `db` and
+  `user` grants. Passing `{}` would switch the inbox off.
