@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47)
+**Last updated:** 2026-10-21 (Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47; member manager, A45 and D18)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
@@ -494,9 +494,42 @@
   - **Before `noindex` comes off,** the board should settle [F22](#f22): children's names on `/sponsors`, and children's names and grades on `/contact`, become searchable.
   - **Don't** follow the old instruction to delete `src/worker.ts`: the Worker now runs `/admin`, photos and the on-demand pages ([F49](#f49)).
 
-### Phase 3 - Member accounts *(not started, only if still wanted)*
+### Phase 3 - Members
 
-Magic-link auth via an established library over D1 · no passwords · Durable Objects for anything realtime
+*The member manager comes first. Member accounts, only if still wanted, would sign in against its list: magic-link auth via an established library over D1 · no passwords · Durable Objects for anything realtime.*
+
+- [ ] **A45**: **Build a member manager** - `JON` + `CLAUDE` - One place for the member list, personal emails, dues paid, the fine arts fee paid and the rest, replacing the several lists kept by hand today, and feeding every other system that needs it. Asked for by Jon 2026-10-21.
+
+  **Find out what exists**
+
+  1. [ ] List every place member data is kept today, who keeps it, and how often it changes: the membership export [B28](#google-workspace-for-nonprofits) loaded, Zeffy's records, the treasurer's books, room-parent lists and any other spreadsheet.
+  2. [ ] For each, note the fields it holds, and which source wins when two disagree.
+  3. [ ] Pin down the money: what dues and the fine arts fee cost, whether each is per adult, per family or per child, which Zeffy forms take them, and how cash and check payments get recorded.
+  4. [ ] Find out how members are reported to Texas PTA, and whether that system takes an import.
+
+  **Decide**
+
+  5. [ ] Settle where the list lives and who may open it ([D18](#open-decisions)).
+  6. [ ] Agree the smallest set of fields that does the job, and take it to the board. It is family contact data, the risk [D4](#open-decisions) warns about.
+
+  **Build**
+
+  7. [ ] Tables for households, people, payments, and children only if step 6 keeps them. Every payment belongs to a school year.
+  8. [ ] A members page for the board: search, filter by paid or unpaid this year, edit, and import and export CSV. Only a named group of officers can open it.
+  9. [ ] Load the sources from step 1, merge the duplicates, and review the result with Jon.
+
+  **Connect it**
+
+  10. [ ] **Zeffy:** dues and fine arts fee payments arrive by themselves if Zeffy offers an API, webhook or Zapier trigger; otherwise import its export.
+  11. [ ] **`members@`:** keep the group matched to paid members, adding newcomers and removing lapsed ones, which replaces B28's yearly refresh by hand. Automatic once [D15](#open-decisions) is settled; until then the page writes the bulk-upload CSV.
+  12. [ ] **Texas PTA:** an export in whatever form step 4 finds.
+  13. [ ] **Treasurer:** a payments export to reconcile against the bank, or a Sheet in the PTA Shared Drive kept current.
+  14. [ ] **Room parents:** class lists by teacher for the room parent dashboard ([A39](#phase-0---accounts--scaffold)), if step 6 keeps children.
+
+  - **Parent data never goes in this repo**, which is public. It lives only in the database or in Workspace, as B28's addresses do.
+  - **Back it up** the way [A44](#phase-2---real-site) backs up posts, and decide how long a lapsed member's record is kept.
+  - **Plan the yearly rollover:** a new school year starts everyone unpaid without losing last year's record.
+  - **More connections later**, once these work: volunteer sign-ups, and the site's Join button.
 
 ---
 
@@ -521,6 +554,7 @@ Magic-link auth via an established library over D1 · no passwords · Durable Ob
 | D15 | **Give Claude scripted admin access to Workspace** | ⏳ **Open - recommendation** | Raised by Jon 2026-10-05. Today Jon clicks through the Admin console and Claude writes the steps and files, like the bulk-upload CSV. **Recommended: yes, but narrowly, using GAM**, the standard open-source command-line tool for Workspace admins. Set it up with **its own OAuth sign-in as a *delegated* admin account**: a custom admin role limited to Groups and user management, **not** super admin, and **not** domain-wide delegation, which can impersonate anyone. Claude then runs reviewable commands: dry runs first, and every change shown to Jon before it runs, under the normal permission prompts. **Not needed yet:** B28's first list is 83 addresses, which paste fine. **Worth it later for** a yearly membership refresh that syncs the group to a new export (adding newcomers and removing lapsed members), bulk group settings and audits. **Never worth it for** one-off clicks. Costs: about 30 minutes of setup in a Google Cloud project under the PTA's organization, and an admin token on Jon's machine that has to be revoked at handoff. The Admin console stays the documented path for the next board. Separately, the Cloudflare token could gain **DNS edit on this zone only**, so Claude could make records like B12's directly instead of Jon pasting them. Small risk, small gain |
 | D16 | **An address for Little EAST** | ✅ **Decided** 2026-10-06 | **A user account, `littleeast@`**, decided by the exec board. It is held by the Little EAST chair and passed on with the role, like the officers' accounts. Created in [B31](#google-workspace-for-nonprofits). *Options considered:* **A user account** (`littleeast@`): its own mailbox, Drive and Calendar, held by the chair and passed on with the role, the same as the officers. **A group**: one address that copies mail to whoever is on the committee, with no login to hand over. **A collaborative inbox**: a group where incoming requests can be assigned to someone and marked done, worked from groups.google.com, useful if several volunteers answer the same questions. Choose by whether Little EAST mostly *receives requests several people answer* (collaborative inbox), *needs to reach a set of people* (group), or *runs its own documents and calendar* (user account). All three are free |
 | D17 | **community@, suggested by Lennie** | ✅ **Decided** 2026-10-06 | **A Google Group, `community@`, with several members**, decided by the exec board. It works as a shared mailbox through Collaborative Inbox; set up in [B32](#google-workspace-for-nonprofits). *Still to settle:* what it is for: community partners, neighborhood outreach, sponsors, or something else. Then which kind of address. **A group** delivering to the people who handle it; **a collaborative inbox** if requests need assigning and tracking; or **a shared user account with delegation**, like `hello@`, if it needs its own mailbox history, documents or calendar, worked by several people from their own Gmail with no shared password. The difference between it and `hello@` should be clear before creating it, or the two will compete |
+| D18 | **Where the member list lives** | ⏳ **Open - recommendation** | Raised by Jon 2026-10-21 for [A45](#phase-3---members). **Recommended: the site's own database, on a members page in `/admin`**, behind the same Google sign-in, with Cloudflare Access limiting it to a Workspace group of the officers who need it, such as treasurer, president and secretary. The sign-in, the database, the backup script and the edit history already exist from moving posts there ([A42](#phase-2---real-site)), and only code can keep `members@` and the Zeffy payments matched without someone copying rows. *Considered:* **a Google Sheet in the PTA Shared Drive**, with Apps Script for the connections: nothing to build or hand over, and any board member can fix it, but nothing stops a bad edit or the whole file being shared by mistake. **A paid membership platform**: a yearly cost, and one more login to pass on. **The risk either way is handoff**: custom code needs someone to maintain it after Jon, so the members page should also write a Sheet the board can always open |
 | D9 | What happens to the losing designs | ✅ **Decided** | **Kept as reserves, not deleted.** They cost one CSS file each, still build, and still pass the contrast gate, so reversing the choice is a one-line change. `/preview` stays up as a labeled reference rather than a ballot. Retire them when the board stops wanting the option - the steps are at the top of `src/themes/registry.ts` |
 
 ### D10 in full - the calendar
