@@ -1,9 +1,10 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (both Shared Drives created, B15; their themes, B35; how files get into them, B18 and F58)
+**Last updated:** 2026-10-21 (an Inbox on the task board for quick ideas; the Little EAST page prioritized, U21; announcements catch-up, A45; Ms. Bell and the campus website, A46)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
+**Inbox:** the published board has an *Inbox* at the top for jotting down a task idea without opening a session. Ideas are kept in the published page's own storage, not in this file. When asked to triage, `CLAUDE` files each one here as a task (or a step of an existing one), or says why not, and the Inbox then shows what each idea became.
 
 ---
 
@@ -32,6 +33,7 @@
 | U18 | ~~Give the break-glass admin a second factor that can be handed over~~ | JON | ✅ **Done 2026-10-05:** 2-Step Verification is on, and the authenticator setup key and backup codes are stored with the password, well ahead of Google's 30-day cutoff ([B22](#google-workspace-for-nonprofits), [F54](#f54)) |
 | U19 | **Delete the suspended `jon@` account - on or after 2026-10-19** | JON | Suspended 2026-10-05 and nothing broke. Delete it with a data transfer to `communications@`; the steps are [B24](#google-workspace-for-nonprofits)'s step 7. ✅ It owns no secondary calendars (checked 2026-10-06) |
 | U20 | **Registrar transfer: Gabe runs it himself, on or after 2026-10-12** | JON + Gabe | Waiting on Gabe: the registry still showed GoDaddy on 2026-10-15. Jon's setup ✅ done 2026-10-06. Steps in [C9](#track-c---domain-dns-email) |
+| U21 | **Update the Little EAST page** | JON + board | Prioritized by Jon 2026-10-21. Waiting on the Little EAST chair's copy in the fill-in doc; once it is in, `CLAUDE` turns it into one PR. Steps in [A40](#phase-0---accounts--scaffold) |
 | U12 | ~~Test `/admin` end to end~~ | JON | ✅ Proven 2026-09-03. A post written in the editor, with three photos and a chosen cover, committed to `main` and rendered on the site. I cannot do this - Access blocks me, which is the point |
 
 | U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
@@ -391,6 +393,8 @@
   3. [ ] The chair fills it in: 2026 details, links, photos (only with permission), and whether to list `littleeast@` as the contact.
   4. [ ] `CLAUDE` turns it into one PR against the `little-east:` block in `src/content/pages.yaml`, which takes a title, a one-line intro, paragraphs, one button, year sections of links and names, and a contact.
 
+  - **Prioritized by Jon, 2026-10-21** ([U21](#-do-this-week)). The next move is the chair's (step 3).
+
 ### Phase 1 - Theme demo and board vote *(complete)*
 
 - [x] **A8**: ~~"Coming soon" page at `/`~~ - `CLAUDE` - **Superseded.** `/` now serves the real Civic Letterpress A homepage ([A19](#phase-2---real-site)). The whole zone is still `noindex` ([A6](#phase-0---accounts--scaffold)) and Weebly is still canonical until cutover, so nothing is prematurely public - but a placeholder no longer buys anything
@@ -466,6 +470,17 @@
   2. [ ] Keep a copy off this computer.
 
   - Worth automating later, for example with a monthly GitHub Action committing to a private repository, but the habit matters first.
+- [ ] **A45**: Catch the announcements up with what the PTA has already published - `JON` + `CLAUDE` - Recent news has gone out as the Weekly Buzz, Instagram posts and newsletters, but not as announcements on the site. Added 2026-10-21.
+
+  1. [ ] Jon points `CLAUDE` at the recent pieces: Weekly Buzz issues, Instagram posts, newsletters and anything else sent since the site went live.
+  2. [ ] `CLAUDE` drafts one announcement for each piece worth keeping: a title, a few sentences and a link to the original.
+  3. [ ] Jon publishes them through `/admin`, which `CLAUDE` cannot reach ([U12](#-do-this-week)).
+
+  - Worth making a habit afterwards: each new Buzz or newsletter gets a short announcement the same week.
+- [ ] **A46**: Talk to Ms. Bell about helping her with the campus website - `JON` - The school's own website, which is separate from this PTA site and run through AISD. Added 2026-10-21.
+
+  1. [ ] Ask Ms. Bell what help she wants with it.
+  2. [ ] Find out what AISD access that takes, and who at the district grants it.
 - [ ] **A32**: **Email notifications for new announcements** - ⏸️ **Tabled 2026-09-04** - `JON` - Jon: "worried it's too complicated". RSS stays on the page meanwhile. Revisit when there is a reason to.
 
   - **Why it is hard:** every option holds parents' email addresses. Self-hosting, the one that fit the constraints, also means running double opt-in and unsubscribe ourselves, and touching the DNS that carries the PTA's mail ([D12](#open-decisions)).
