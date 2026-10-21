@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (member manager added, A45 and D18)
+**Last updated:** 2026-10-16 (KeePassXC chosen for the shared vault, D2 and B33)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
@@ -465,7 +465,7 @@
 
 ### Phase 3 - Members
 
-The member manager comes first. Member accounts stay *only if still wanted*, and would sign in against its list: magic-link auth via an established library over D1 · no passwords · Durable Objects for anything realtime
+*The member manager comes first. Member accounts, only if still wanted, would sign in against its list: magic-link auth via an established library over D1 · no passwords · Durable Objects for anything realtime.*
 
 - [ ] **A45**: **Build a member manager** - `JON` + `CLAUDE` - One place for the member list, personal emails, dues paid, the fine arts fee paid and the rest, replacing the several lists kept by hand today, and feeding every other system that needs it. Asked for by Jon 2026-10-21.
 
