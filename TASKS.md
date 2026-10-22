@@ -29,12 +29,12 @@
 | U14 | ~~Print the calendar on real paper~~ | JON | ✅ **Printed 2026-10-05 and looks right.** October 2026 on one landscape letter sheet, with the site's header, the month grid and the events legible. The date, title, URL and page number in the margins come from the *browser's* "Headers and footers" print option, not the site; untick it in the print dialog for a cleaner sheet |
 | U15 | ~~Find the Workspace admin login~~ | JON | ✅ **Found and signed in 2026-09-30.** The PTA Gmail holds the original 2020 G Suite signup mail. The admin named there no longer exists, but another role account from that tenant does, and Jon got into it. It is not named here because this repo is public. **The console loads but every card errors** - see [B10](#google-workspace-for-nonprofits) and [F53](#f53) |
 | U16 | ~~Cancel the Business Standard trial started 2026-09-30~~ | JON | ✅ **Cancelled 2026-09-30**, before any charge. ✅ **Card removed 2026-10-01.** No payment methods or subscriptions remain on the PTA Gmail ([F47](#f47), [F53](#f53)) |
-| U17 | **Finish setting up Workspace and the service logins** | JON | In progress. Left: two-factor on the GitHub owners, then require it ([A37](#phase-0---accounts--scaffold)); board sign-ins ([B29](#google-workspace-for-nonprofits)) |
+| U17 | **Finish setting up Workspace and the service logins** | JON | In progress. Left: require two-factor on GitHub once the API shows every owner has it ([A37](#phase-0---accounts--scaffold) steps 4 and 5); board sign-ins ([B29](#google-workspace-for-nonprofits)) |
 | U18 | ~~Give the break-glass admin a second factor that can be handed over~~ | JON | ✅ **Done 2026-10-05:** 2-Step Verification is on, and the authenticator setup key and backup codes are stored with the password, well ahead of Google's 30-day cutoff ([B22](#google-workspace-for-nonprofits), [F54](#f54)) |
 | U19 | ~~Delete the suspended `jon@` account - on or after 2026-10-19~~ | JON | ✅ Deleted 2026-10-22 (Jon). Suspended 2026-10-05 and nothing broke. Delete it with a data transfer to `communications@`; the steps are [B24](#google-workspace-for-nonprofits)'s step 7. ✅ It owns no secondary calendars (checked 2026-10-06) |
 | U20 | **Registrar transfer: Gabe runs it himself, on or after 2026-10-12** | JON + Gabe | Waiting on Gabe: the registry still showed GoDaddy on 2026-10-15. Jon's setup ✅ done 2026-10-06. Steps in [C9](#track-c---domain-dns-email) |
 | U21 | **Update the Little EAST page** | JON + board | Prioritized by Jon 2026-10-21. Waiting on the Little EAST chair's copy in the fill-in doc; once it is in, `CLAUDE` turns it into one PR. Steps in [A40](#phase-0---accounts--scaffold). Meanwhile the whole site points at the old one, `/little-east` included ([A48](#phase-2---real-site)) |
-| U22 | **blackshearpta.org sends visitors to the old Weebly site, for now** | JON | Decided by the exec board 2026-10-22, with flyers going out that evening. Merge [PR #57](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/57); `CLAUDE` then checks it live. The new site stays up for review at its workers.dev address. Steps in [A48](#phase-2---real-site) |
+| U22 | ~~blackshearpta.org sends visitors to the old Weebly site, for now~~ | JON | ✅ Live 2026-10-22, before that evening's event: [PR #57](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/57) merged, and `CLAUDE` checked every page with a request. Decided by the exec board 2026-10-22. Switching back is A48 step 4. The new site stays up for review at its workers.dev address. Steps in [A48](#phase-2---real-site) |
 | U12 | ~~Test `/admin` end to end~~ | JON | ✅ Proven 2026-09-03. A post written in the editor, with three photos and a chosen cover, committed to `main` and rendered on the site. I cannot do this - Access blocks me, which is the point |
 
 | U13 | ~~Enable One-time PIN as an identity provider~~ | JON | ✅ Done 2026-09-02. The PIN screen appears, and an address outside the policy correctly gets no code ([F31](#f31)) |
@@ -108,7 +108,7 @@
 | 10 | Shared Drives, then document migration (B15, B35, B18) | ◐ both drives created 2026-10-21 ✅ (B15) · themes applied 2026-10-21 ✅ (B35) · migration ◐ both Gmails' files copied in, checked and tidied 2026-10-22 ✅; sorting into folders ⏳ (B18) |
 | 11 | **Data migration:** everything from both Gmails, plus running the Blackshear Parents calendar from Workspace (B30, B26, B27) | ◐ decided by the exec board 2026-10-06 ✅ · PTA Gmail mail and contacts into `hello@` ✅ 2026-10-16 · Fundraising Gmail ⏳ (B26) · Drive ✅ 2026-10-22, copied in, checked and tidied · calendar ✅ stays with the PTA Gmail, run from Workspace (Jon, 2026-10-06, after Google refused the transfer) |
 | 12 | Organization logo in Gmail, Drive and Calendar (B20) | ✅ uploaded 2026-09-30; Google takes up to 4 days to show it |
-| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅ 2026-10-22, GitHub ⏳ · sweep ⏳ |
+| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅ 2026-10-22, GitHub reported ✅ 2026-10-22, API check ⏳ · sweep ⏳ |
 | 14 | Board onboarding: the eight new accounts signed in and enrolled in 2-Step Verification (B29) | ⏳ in progress |
 | 15 | Members' mailing list `members@` ("Blackshear PTA Members"): an announcement-only group of outside members (B28) | ✅ 2026-10-05 · 83 members |
 | 16 | Password manager for the central logins: KeePassXC, one file in the *PTA Vault* Shared Drive (D2, B33) | ◐ decided 2026-10-16 ✅ · *PTA Vault* drive, settings and members ✅ 2026-10-21 · setup ⏳ |
@@ -167,7 +167,9 @@
 
   **The second test, 2026-10-22:** a message from a personal Gmail to the admin account came through `admin-notifications@` and landed in `communications@`'s spam, for the same reason. Steps 1 to 3 apply to it as well.
 
-  4. [ ] In each member's Gmail, a filter that keeps the group's mail out of spam: search `list:admin-notifications@blackshearpta.org`, then *Create filter* → **Never send it to Spam**, and *Apply the label* IT Admin if wanted. This is the dependable fix; *Not spam* only trains the filter.
+  4. [ ] In each member's Gmail, a filter that keeps the group's mail out of spam: in the search box's options, put `list:admin-notifications@blackshearpta.org` in *Has the words* and leave every other field empty (*Date within* and *Search* belong to searching and do not carry into a filter). Click **Search** first and check the test message is found, then *Create filter* → **Never send it to Spam**, and *Apply the label* IT Admin if wanted. This is the dependable fix; *Not spam* only trains the filter.
+
+  - **What the second test's headers showed** (2026-10-22): the admin account's own copy reached its inbox, with SPF, DKIM and DMARC all passing. The copy the group delivered to `communications@` passed SPF and DKIM for `blackshearpta.org` but **failed DMARC for the sender's gmail.com address**, with ARC passing: the group re-sends the message under its own name, so the original signature no longer lines up with the From address. Gmail's *Show original* summary can still say PASS, because it gives ARC the benefit of the doubt. So the group's hop is the cause, as Jon worked out, and a filter on the members' side is the fix.
   5. [ ] Glance at the admin account's own Spam folder now and then. Gmail is reported not to forward mail it has already filed as spam, so a notice caught there never reaches the group.
 
   - **Why it is probably not our DNS:** Gmail's reason was *"similar to messages that were identified as spam in the past"*, which is a content filter, not an authentication failure. SPF, DKIM and DMARC govern mail *sent from* the domain, and this was mail arriving at it. A one-word "Test" to a days-old mailbox is a classic false positive.
@@ -253,7 +255,9 @@
 
   **The database**
 
-  5. [ ] KeePassXC → **Create new database**: name *Blackshear PTA*; keep the default encryption settings; a **long passphrase** as the master password (KeePassXC's generator can make one); no key file, which would be one more thing to lose. Save it as `Blackshear PTA.kdbx` in the *PTA Vault* drive.
+  5. [ ] KeePassXC → **Create new database**: name *Blackshear PTA*; keep the default encryption settings; a **long passphrase** as the master password (KeePassXC's generator can make one); no key file, which would be one more thing to lose. Save it as `Blackshear PTA.kdbx` in the *PTA Vault* drive. **Created 2026-10-22 (Jon), saved locally first; to finish, move it into *PTA Vault*.**
+
+  - **One copy, the one in the drive.** Everyone opens `Blackshear PTA.kdbx` in *PTA Vault* through Drive for desktop, and nobody keeps a working copy of their own: two copies drift apart, and a change saved to one is missing from the other. For backups, tick *Backup database file before saving* in KeePassXC's settings, and lean on Drive's version history and the copy in the envelope.
 
   **Moving the logins over from 1Password**
 
@@ -383,9 +387,9 @@
 - [~] **A37**: GitHub organization ownership - `JON` - `Blackshear-PTA` has four owners: the PTA's own account (`blackshearpta-legacy`), the Communications and break-glass role accounts, and Jon's personal `jon-flowers`. The repository belongs to the organization, so nothing needs transferring.
 
   1. [x] Add `communications@` and the break-glass account as owners, each with its own GitHub account (decided by Jon and done 2026-10-05).
-  2. [ ] **Two-factor on every owner account**, with authenticator apps. The PTA and break-glass accounts' setup keys and recovery codes go in the envelope. Which accounts still lack it is deliberately not written here, because this file is public.
+  2. [x] Reported done by Jon, 2026-10-22. **Two-factor on every owner account**, with authenticator apps. The PTA and break-glass accounts' setup keys and recovery codes go in the envelope. Which accounts still lack it is deliberately not written here, because this file is public.
   3. [ ] Decide whether to keep the PTA account (`blackshearpta-legacy`), now that the admin account owns the PTA's services (Jon, 2026-10-22, [B5](#google-workspace-for-nonprofits)) and has its own GitHub account as an owner (step 1). Retiring it means first moving the `/admin` editor's GitHub token, which belongs to it ([D12](#open-decisions)). *This replaces adding `webmaster@` as its email, which was never done.*
-  4. [ ] `CLAUDE` confirms through the GitHub API that every owner has two-factor. *Checked 2026-10-22: not yet.*
+  4. [ ] `CLAUDE` confirms through the GitHub API that every owner has two-factor. *Checked 2026-10-22, twice, the second time after step 2 was reported done: not yet. Step 5 waits until this check passes, because turning the requirement on removes every owner GitHub does not yet see as protected.*
   5. [ ] **Only then:** Organization → Settings → Authentication security → **Require two-factor authentication**. GitHub removes every member without it the moment this is turned on.
 
   - **Do not delete or rename the PTA account.** The `/admin` editor's GitHub token belongs to it ([D12](#open-decisions), [docs/ADMIN.md](docs/ADMIN.md)).
@@ -502,8 +506,8 @@
 - [~] **A48**: Send blackshearpta.org back to the old Weebly site, for now - `JON` + `CLAUDE` - Decided by the exec board 2026-10-22: the Weebly site stays the PTA's public face until the new site's content is filled in and checked. Flyers with blackshearpta.org went out that evening.
 
   1. [x] `CLAUDE` builds it ([PR #57](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/57), 2026-10-22): every page on blackshearpta.org and `www` answers a temporary (302) redirect to its Weebly counterpart. `/` goes to Weebly's homepage, and `/little-east`, `/sponsors`, `/volunteer`, `/contact` and `/calendar` to Weebly's page of the same name; anything else goes to the homepage. It is never cached, and it is not a 301 because browsers remember those ([A22](#phase-2---real-site)).
-  2. [ ] Jon merges PR #57 before the evening's event.
-  3. [ ] `CLAUDE` checks it live with a request ([F55](#f55)): `curl -sI https://blackshearpta.org/little-east/` shows `302` and the Weebly address.
+  2. [x] Merged 2026-10-22 (Jon), before the evening's event.
+  3. [x] Checked live 2026-10-22, by request ([F55](#f55)): `/`, `/little-east` (with and without the slash), `/sponsors`, `/volunteer`, `/contact` and `/calendar` answer `302` to their Weebly pages with `no-store`; `/gallery` and `/announcements` go to Weebly's homepage; `www.` redirects too, and `blackshearpta.com/little-east` ends on Weebly's Little EAST page. `/rss.xml` still answers 200, `/admin/` still goes to the Google sign-in, and the workers.dev address still serves the new site.
   4. [ ] **When the board is ready for the new site:** set `WEEBLY_REDIRECT` to `false` in `src/worker/weebly-redirect.ts`, merge, and check that `/` answers `200` again.
 
   - **Left working:** `/admin`, announcement photos and files such as `/rss.xml`. The board reviews the new site at `https://blackshear-pta.blackshearpta.workers.dev/`, which does not redirect, and saves through `/admin` show there.
