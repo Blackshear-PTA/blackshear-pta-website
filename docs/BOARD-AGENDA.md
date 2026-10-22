@@ -23,3 +23,4 @@ Date to be set. Items collect here as they come up; the October 6 notes are on t
 - **Domain transfer:** Gabe is running it himself from October 12; done yet? ([C9](#c9)).
 - **Room parent dashboard:** what Bree needs ([A39](#a39)).
 - **GitHub for Nonprofits:** approved or not ([B7](#b7)).
+- **One admin account for every service:** the PTA's admin account owns its outside services, starting with Cloudflare, and its notices go to admin-notifications@ so they are always read ([B5](#b5)).
