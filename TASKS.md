@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-21 (Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47; member manager, A45 and D18)
+**Last updated:** 2026-10-22 (both Gmails' Drive files copied in, checked and tidied, B18, B26 and B30; Takeout for both Gmails' Drives and what an export holds, B18 and F59; PTA Vault members, B33; Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47; member manager, A45 and D18)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
@@ -104,13 +104,13 @@
 | 7 | Account model (D14) → board accounts and shared addresses (B14, B5) | ✅ 2026-10-05 · eight accounts created; first sign-ins are B29 |
 | 8 | Google sign-in for `/admin` (B6) | ✅ 2026-10-15 |
 | 9 | `hello@` replaces the PTA Gmail as the central inbox and the site's public address (B25, A34), plus automated mail check (A35) | ✅ 2026-10-05: live, on the site, delegated (acceptances pending in B29) · A35 ✅ 2026-10-15 |
-| 10 | Shared Drives, then document migration (B15, B35, B18) | ◐ both drives created 2026-10-21 ✅ (B15) · themes ⏳ (B35) · migration ⏳ (B18) |
-| 11 | **Data migration:** everything from both Gmails, plus running the Blackshear Parents calendar from Workspace (B30, B26, B27) | ◐ decided by the exec board 2026-10-06 ✅ · PTA Gmail mail and contacts into `hello@` ✅ 2026-10-16 · Fundraising Gmail ⏳ (B26) · Drive ⏳ · calendar ✅ stays with the PTA Gmail, run from Workspace (Jon, 2026-10-06, after Google refused the transfer) |
+| 10 | Shared Drives, then document migration (B15, B35, B18) | ◐ both drives created 2026-10-21 ✅ (B15) · themes applied 2026-10-21 ✅ (B35) · migration ◐ both Gmails' files copied in, checked and tidied 2026-10-22 ✅; sorting into folders ⏳ (B18) |
+| 11 | **Data migration:** everything from both Gmails, plus running the Blackshear Parents calendar from Workspace (B30, B26, B27) | ◐ decided by the exec board 2026-10-06 ✅ · PTA Gmail mail and contacts into `hello@` ✅ 2026-10-16 · Fundraising Gmail ⏳ (B26) · Drive ✅ 2026-10-22, copied in, checked and tidied · calendar ✅ stays with the PTA Gmail, run from Workspace (Jon, 2026-10-06, after Google refused the transfer) |
 | 12 | Organization logo in Gmail, Drive and Calendar (B20) | ✅ uploaded 2026-09-30; Google takes up to 4 days to show it |
 | 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · two-factor on the new logins ⏳ · sweep ⏳ |
 | 14 | Board onboarding: the eight new accounts signed in and enrolled in 2-Step Verification (B29) | ⏳ in progress |
 | 15 | Members' mailing list `members@` ("Blackshear PTA Members"): an announcement-only group of outside members (B28) | ✅ 2026-10-05 · 83 members |
-| 16 | Password manager for the central logins: KeePassXC, one file in the *PTA Vault* Shared Drive (D2, B33) | ◐ decided 2026-10-16 ✅ · *PTA Vault* drive ✅ 2026-10-21 · setup ⏳ |
+| 16 | Password manager for the central logins: KeePassXC, one file in the *PTA Vault* Shared Drive (D2, B33) | ◐ decided 2026-10-16 ✅ · *PTA Vault* drive, settings and members ✅ 2026-10-21 · setup ⏳ |
 
 - [x] **B1**: Initial Google for Nonprofits request submitted - `JON` - Submitted 2026-08-28
 - [x] **B2**: Complete nonprofit validation - `JON` - Partner is **Goodstack** (We Are Percent Ltd), *not* TechSoup. Rep approval ✅ and identity verification ✅ both cleared 2026-08-28. Complete by implication: the B4 approval could not have happened without it. See [F12](#f12)
@@ -139,14 +139,16 @@
   - **PTA Vault settings** (2026-10-21): no access from outside the PTA and none for non-members, so only the drive's members can ever open the file. Download, copy and print are off for every role, which has to change for content managers: [B33](#google-workspace-for-nonprofits) step 3.
 - [x] **B16**: Create a break-glass super admin - `JON` - **✅ Created and credentials saved 2026-09-30. Its second factor is [B22](#google-workspace-for-nonprofits).** Since 2026-10-05 its mail forwards to `communications@`, so alerts and verification codes are seen, and it is the primary Google for Nonprofits admin and a Cloudflare Super Administrator. Where the credentials are kept is deliberately not recorded in this public repo ([D2](#open-decisions)). Sign in with it once from a private window before relying on it, then calendar a sign-in every few months. The reasoning, kept for the next board: Two super admins exist, but neither is right as the last-resort account. `jon@` leaves when Jon does. The 2020 role account is meant to become the actual secretary's mailbox under [D14](#open-decisions), and an ordinary board member should not hold super admin. Create a dedicated account. Its address is deliberately not recorded in this public repo, and the name matters less than the controls. Give it a long unique password, 2-Step Verification using **printed backup codes** (no personal phone attached), and the PTA Gmail as recovery email. Do not use it day to day, but sign in every few months so the inactivity process that nearly deleted this tenant in 2021 never fires. **Two officers should be able to reach its credentials**, not one; where they live is [D2](#open-decisions). Once it exists and is tested, remove super admin from the 2020 role account (B17)
 - [x] **B17**: The 2020 role account - `JON` - **✅ Settled 2026-10-02.** It is `secretary@`, the account Gabe created for his first nonprofit attempt, and **Gabe is the Secretary**, so it is already exactly the role account [D14](#open-decisions) would have created for him. Its name and recovery email are correctly his. It **stays a super admin** as the second human admin after Jon (Jon, 2026-10-01). Because of org-wide enforcement and Google's own admin rule ([F54](#f54)), **Gabe must enroll in 2-Step Verification**, or the account loses web access after about 30 days. Tell him
-- [ ] **B18**: Move PTA documents into the Shared Drive - `JON` + board - After [B15](#google-workspace-for-nonprofits).
+- [~] **B18**: Move PTA documents into the Shared Drive - `JON` + board - After [B15](#google-workspace-for-nonprofits). Both Gmails' files are in, checked and tidied (2026-10-22), in the documents drive's *Workspace Import - October 2026* folder; sorting them into the drive's folders is what remains.
 
   1. [ ] **Inventory** what exists and who owns it: the PTA Gmail's Drive, the Fundraising Gmail's Drive, board members' personal Drives, and anything shared by link. For each, note roughly how much is Google Docs, Sheets, Slides and Forms and how much is PDFs and photos, which decides step 3.
   2. [ ] **Agree a structure** with the board: folders per role and committee in the documents drive, and a separate small drive for anything only some roles may see, because every member of a Shared Drive can see everything in it. Keep it shallow.
-  3. [ ] **Choose how to copy** each personal account's files. They cannot be moved, only copied ([F58](#f58)). Mostly Google files: a **copy script** run as the receiving PTA account, which `CLAUDE` writes. Mostly PDFs and photos: **Google Takeout**, then upload the folders. A handful of files: *Make a copy* by hand.
-  4. [ ] **Pilot one folder** by that method, and check the copies open and look right before doing the rest.
-  5. [ ] **Migrate by owner**: each owner copies their personal account's files, and moves any a PTA account already owns.
-  6. [ ] Leave the old copies read-only for a term, with a note pointing at the new home, then retire them.
+  3. [x] **Choose how to copy** each personal account's files, which cannot be moved, only copied ([F58](#f58)). **Google Takeout, for both Gmails** (Jon, 2026-10-21): with this many folders and subfolders, copying by hand would never finish. Takeout runs signed in as the account being exported, so each account's holder runs their own. Files a PTA account already owns are moved instead.
+  4. [x] **Tidied 2026-10-22** by `CLAUDE`, through Drive for desktop, after a dry run that checked every file against the original zips. Removed: the `-info.json` metadata files (4,213 from the PTA Gmail, 2,369 from the Fundraising Gmail), the pinned versions byte-for-byte identical to the current file (2,166 and 1,016), and 5 `.DS_Store` files; renamed the 6 files like `name.xlsx(1)`. Nothing failed. The metadata is kept, one zip beside each export, *Takeout metadata (info.json files).zip*, and *Tidy log 2026-10-22.csv* in the import folder lists every change, so anything can be restored from the drive's trash within 30 days. **Tidy each export** ([F59](#f59)): set the `-info.json` metadata files aside in one zip, drop the pinned copies that are identical to the current file, rename files like `name.xlsx(1)` to `name (1).xlsx`, and delete `.DS_Store`. Best done before uploading. Both 2026-10-21 exports went up untidied, so theirs happens in the drive, through Drive for desktop, where a deletion goes to the drive's trash rather than straight away.
+  5. [x] **Decided by Jon 2026-10-22: leave it in the documents drive for now.** It keeps roughly the access people already had, and given how it has been handled before he is not worried about it. **Decide where restricted material goes**, before it is uploaded: Treasurer records (bank statements, check images, reconciliations) and form responses with parents' details. Every member of the documents drive would see them; a small drive for the roles that need them is the usual answer (step 2).
+  6. [x] **Uploaded 2026-10-21.** **Upload with Google Drive for desktop**, signed in as `communications@`, into the documents drive's backup folder. 2026-10-21: the PTA Gmail's export went up through the browser and had mostly processed by the end of the session; the Fundraising Gmail's is going up through Drive for desktop. One folder first, checked, then the rest. A browser tab is unreliable for thousands of files; Drive for desktop resumes after an interruption, and leaves Word and Excel files as they are.
+  7. [ ] Check the uploaded file count matches, then delete the local export and its zip, which hold the PTA's financial and member records. **Counts ✅ 2026-10-21:** `CLAUDE` compared both exports with the drive as Drive for desktop shows it, path by path, and every file arrived: 10,420 of 10,420 from the PTA Gmail and 5,606 of 5,606 from the Fundraising Gmail, in *Workspace Import - October 2026*. Only 27 empty folders from the PTA Gmail did not come across, because a browser folder upload skips empty folders. Keep one zip per account until step 4 is done, since the tidying works from them; the unpacked folders and a second, identical copy of the Fundraising zip can go now.
+  8. [ ] Leave the originals in each Gmail for a term, with a note pointing at the new home, then retire them.
 
   - **Move or copy:** files a PTA account owns can be moved, and keep their links, comments and history. Moving a folder needs the Manager role on the drive; a file needs Contributor or above. Everything a personal account owns arrives as a copy, with a new link and without the original's comments, version history or sharing ([F58](#f58)).
   - **The copy script and Takeout compared:** both keep the folder structure, and both make copies, so neither keeps links. The script copies inside Google, so Docs, Sheets and Forms stay Google files (Forms without their responses) and nothing is downloaded. It needs the source account to share its top-level folders with the PTA account running it, and loose files at the top of My Drive put into a folder first. Takeout exports Google files as Word, Excel and PowerPoint; Drive can turn them back on upload, but formatting and formulas can shift, and a Form cannot come back as a form. Takeout also skips anything in *Shared with me*.
@@ -196,7 +198,7 @@
 
   **Later**
 
-  8. [ ] **Drive:** copy into the Shared Drive's fundraising area ([B18](#google-workspace-for-nonprofits)). Anything with a public link stays where it is until its campaign ends.
+  8. [x] Done 2026-10-22: copied in, checked and tidied ([B18](#google-workspace-for-nonprofits) steps 4 and 7). **Drive:** Google Takeout, which runs signed in as the Fundraising Gmail, so do it in the same sitting as steps 3 to 7 if possible. **2026-10-21:** Jon got into the Fundraising Gmail, downloaded its Takeout and uploaded it through Drive for desktop, and all 5,606 files arrived ([B18](#google-workspace-for-nonprofits) step 7). Tidying is B18 step 4. Then the same tidying and upload as the PTA Gmail's ([B18](#google-workspace-for-nonprofits) steps 4 to 7, [F59](#f59)), into the documents drive's fundraising area. Anything with a public link stays where it is until its campaign ends.
   9. [ ] **Services** registered to the Fundraising Gmail (a March 2026 board thread mentions Animoto, TinyURL and HelloSign, plus payment and sign-up tools): add `fundraising@` as an admin or change the login email, one at a time ([A38](#phase-0---accounts--scaffold)).
   10. [ ] Update printed or emailed material that gives the old address.
   11. [ ] Save the Fundraising Gmail's password in the password manager ([B33](#google-workspace-for-nonprofits)).
@@ -212,7 +214,7 @@
   2. [x] **Finished 2026-10-15**, in 4 hours: 16,961 messages found, 16,960 copied, 0 skipped, 1 failed. The attached report names the failed one. Spot-check `hello@`: the labels, Sent mail, and an old message from 2020. Some of the ~77 messages already forwarded may appear twice; accepted (Jon).
   3. [x] Then **Exit import → Exit and delete import**, which removes the tool's access to the PTA Gmail. Exited 2026-10-16.
   4. [x] **Contacts:** exported as Google CSV and imported into `hello@` (2026-10-15). Delete the CSV from Downloads.
-  5. [ ] **Drive files:** into the Shared Drive ([B15](#google-workspace-for-nonprofits), [B18](#google-workspace-for-nonprofits)).
+  5. [x] Done 2026-10-22: copied in, checked and tidied ([B18](#google-workspace-for-nonprofits) steps 4 and 7). **Drive files:** Takeout downloaded and unpacked 2026-10-21: 7.0 GB and 10,421 files, of which about 3,700 are the documents themselves ([F59](#f59)). Uploaded the same day through the browser, untidied, into the documents drive's *Workspace Import - October 2026* folder, and checked: all 10,420 files arrived ([B18](#google-workspace-for-nonprofits) step 7). Tidying and deleting the local copy are B18 steps 4 and 7.
 
   **Fundraising Gmail → `fundraising@`:** [B26](#google-workspace-for-nonprofits), with the Fundraising chair.
 
@@ -240,8 +242,8 @@
 
   1. [x] Install KeePassXC from keepassxc.org (Mac, Windows and Linux; the same file opens on all three).
   2. [x] Create a **separate Shared Drive just for the vault**, *PTA Vault*, apart from the documents drive ([B15](#google-workspace-for-nonprofits)). Created 2026-10-21. Its members are exactly the people who may open the vault, so access is managed in one place.
-  3. [ ] In *PTA Vault* → **Shared drive settings**, tick **Contributors and content managers** under *People who can download, copy, print*. With it off, Drive for desktop shows the vault file as a `.gdrive` shortcut and KeePassXC cannot open it. Managers are exempt, so a test as a Manager would work and hide the problem. Leave *Commenters and viewers* unticked.
-  4. [ ] Install **Google Drive for desktop**, signed in as `communications@`, so the Shared Drive appears in Finder and KeePassXC saves straight into it. Everyone then opens the one file, not their own copy.
+  3. [x] Ticked 2026-10-21. In *PTA Vault* → **Shared drive settings**, tick **Contributors and content managers** under *People who can download, copy, print*. With it off, Drive for desktop shows the vault file as a `.gdrive` shortcut and KeePassXC cannot open it. Managers are exempt, so a test as a Manager would work and hide the problem. Leave *Commenters and viewers* unticked.
+  4. [x] Installed 2026-10-21, signed in as `communications@`. Install **Google Drive for desktop**, signed in as `communications@`, so the Shared Drive appears in Finder and KeePassXC saves straight into it. Everyone then opens the one file, not their own copy.
 
   **The database**
 
@@ -257,9 +259,9 @@
   **Sharing it**
 
   10. [ ] Master password: on the sheet in the sealed break-glass envelope, and told to the other officers who need it **in person, never by email**.
-  11. [ ] Add those officers' role accounts to the *PTA Vault* Shared Drive as **Content manager**, not Contributor: in Drive for desktop a Contributor can only read, so could not save changes to the vault.
+  11. [x] Done 2026-10-21 (Jon): `communications@` is the Manager, and `president@`, `vp@` and `fundraising@` are Content managers. Add those officers' role accounts to the *PTA Vault* Shared Drive as **Content manager**, not Contributor: in Drive for desktop a Contributor can only read, so could not save changes to the vault.
   12. [ ] Each installs KeePassXC and Google Drive for desktop. Optional: the *KeePassXC-Browser* extension for autofill; KeePassDX (Android) or KeePassium or Strongbox (iPhone) on phones.
-  13. [ ] Record which roles have access in [docs/ACCOUNTS.md](docs/ACCOUNTS.md), never the passwords. Once the vault is in use, remove the PTA items from Jon's personal 1Password.
+  13. [ ] Record which roles have access in [docs/ACCOUNTS.md](docs/ACCOUNTS.md), never the passwords (roles recorded 2026-10-21). Once the vault is in use, remove the PTA items from Jon's personal 1Password.
 
   - **When someone leaves:** remove them from the Shared Drive, change the master password (Database → Database Security), and change any important logins they knew.
   - **Two people saving at once** can leave a "conflicted copy" in Drive. KeePassXC's **Database → Merge from database** combines them.
@@ -269,8 +271,8 @@
 - [~] **B35**: Themes for both Shared Drives - `CLAUDE` + `JON` - A banner for each drive, from the PTA's own brand, so the two are easy to tell apart. Asked for by Jon 2026-10-21, after Google refused the 800-pixel `hello@` photo: a theme must be at least 1280 × 144 pixels.
 
   1. [x] `CLAUDE` makes them (2026-10-21): [`assets/brand/drive-theme-documents.png`](assets/brand/drive-theme-documents.png), Buzz on brand blue, and [`assets/brand/drive-theme-vault.png`](assets/brand/drive-theme-vault.png), Buzz on black, each with the lemon rule from the foot of the site's masthead. No honeycomb: Buzz is a yellow jacket, not a honeybee ([F7](#f7)). Both are 2560 × 288, Google's 80:9 shape at twice the minimum, built by `scripts/make-drive-themes.mjs`.
-  2. [ ] Upload both images to `communications@`'s My Drive. The theme picker only chooses from images already in Drive.
-  3. [ ] Open each drive → click its name at the top → **Change theme** → **Create custom theme** → pick its image → **Select**. Keep the crop covering the whole image.
+  2. [x] Upload both images to Drive, because the theme picker only chooses from images already there. Jon keeps them in the documents drive for reference (2026-10-21).
+  3. [x] Both applied 2026-10-21. Open each drive → click its name at the top → **Change theme** → **Create custom theme** → pick its image → **Select**. Keep the crop covering the whole image.
   4. [ ] Check that the small square beside each drive's name shows Buzz. If the crop cuts him off, `CLAUDE` moves him.
 
   - **No words on them** on purpose: Drive always shows the drive's name beside the theme, and a square crop would cut words off.
@@ -1309,6 +1311,23 @@ The general shape: *read the free tier's terms, not just its feature list, befor
 So everything from either Gmail, or from a board member's own Drive, arrives as a **copy**: a new link, and none of the original's comments, version history or sharing. Files a PTA account already owns move normally, keeping their links, comments and history. The old links keep working on the originals, which is why files with circulating links stay where they are until their season ends.
 
 The general shape, the same as [F56](#f56) for the calendar: *a personal Gmail and the PTA's Workspace are different organizations, and Google does not let content cross that line except as a copy.*
+
+<a name="f59"></a>
+**F59 - A Drive Takeout is more than half overhead, and some of it should not be uploaded.** The PTA Gmail's Drive export, downloaded 2026-10-21 ([B30](#google-workspace-for-nonprofits)), was 7.0 GB and 10,421 files, and about 3,700 of them are the documents themselves. The rest, and what to do with each before uploading ([B18](#google-workspace-for-nonprofits) step 4):
+
+- **4,213 `-info.json` files**, one beside every file and folder. They are metadata, not content: dates, the original Drive link, and the sharing list, with the name and email address of everyone each file was shared with. Uploaded loose, they would double the file count and show every member of the drive everyone's sharing history. Set them aside in one zip and keep it, because it is the only map from each copy back to its original link, which is how circulating links get found and fixed.
+- **2,468 `…-at-<date>-pinned` files**, the versions Drive had been told to keep. 2,166 are byte-for-byte the same as the current file, 2.4 GB of duplicates; 160 are real older versions.
+- **Duplicate names** in one folder come out as `name.xlsx(1)`, which breaks the extension, so the file will not open until it is renamed `name (1).xlsx`. Six here.
+- **Google Docs, Sheets and Slides** arrive as Word, Excel and PowerPoint, about 240 here. Most of this Drive was uploaded PDFs and Word files to begin with.
+- **Each Google Form** arrives as a zip holding an HTML snapshot of the form and its responses as a CSV. It cannot become a working form again, and the responses carry parents' details. 18 here.
+- **Shortcuts** arrive as small `.html` bookmark files pointing at the original, which belongs to someone else and is not in the export. 21 here.
+- **Finder's `.DS_Store` files**, a few of them uploaded to Drive in 2020.
+
+A spot check found nothing missing: names that seemed to have no file had only been changed on export, with a trailing space or dot replaced by `_`.
+
+**The Fundraising Gmail's export was the same shape**: 5,606 files, of which 2,369 are `-info.json` sidecars and 1,183 are pinned versions, 1,016 of those identical to the current file (1.0 GB), plus 42 zips. **A browser folder upload skips empty folders**, 27 of them here, and its progress count is files plus folders: 10,865 was 10,420 files and 445 folders.
+
+The general shape: *Takeout is built for leaving Google, so it carries metadata, kept versions and converted formats that an upload back into Google does not need.*
 
 ## Reference
 

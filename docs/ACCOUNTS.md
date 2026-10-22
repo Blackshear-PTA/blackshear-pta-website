@@ -21,7 +21,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | **Weebly** | The old website | Login holder unknown | Retire ([A29](#a29)) |
 | **Social media and other tools**: Instagram, Facebook, sign-up and payment tools, Animoto, TinyURL, HelloSign | Various | Mostly signed up under the two old Gmails | Inventory, then move the logins to PTA addresses ([A38](#a38)) |
 | **Google Cloud project** `blackshear-pta-access` | The Google sign-in client for /admin | The PTA's Google organization; any super admin | Nothing; Google deletes the client after six months unused; see `docs/ADMIN.md` |
-| **KeePassXC vault** (password manager) | One encrypted file holding the PTA's central logins, in the *PTA Vault* Shared Drive, which only its members can open. Free and open source. | The officers who are members of that Shared Drive; the master password is also in the sealed envelope | Set up ([B33](#b33)) |
+| **KeePassXC vault** (password manager) | One encrypted file holding the PTA's central logins, in the *PTA Vault* Shared Drive, which only its members can open. Free and open source. | Members of *PTA Vault*: Communications (Manager); President, VP and Fundraising (Content manager). The master password is also in the sealed envelope | Set up ([B33](#b33)) |
 | **Claude Code automation** | A scoped Cloudflare API token on Jon's machine (read-only except the database), plus GitHub through Jon's account | Jon | Revoke at handoff |
 
 ## Email addresses
