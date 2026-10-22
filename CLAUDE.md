@@ -50,6 +50,13 @@ npm run export:posts -- --remote                   # already wrapped
 Local work (`npm run dev`, `dev worker`, `npm run check`, `db:migrate`) needs no
 token. Deploys need none either; Workers Builds holds its own.
 
+Since 2026-10-22 it is an **account API token**, `blackshear-pta-wrangler`
+(dashboard: Manage Account → Account API Tokens). It belongs to the PTA's
+account rather than to anyone's login, so any Super Administrator can roll or
+revoke it, and `npm run cf:whoami` reports *Account API Token*. It cannot read
+Workers Builds, whose API accepts only user tokens; a deploy's result is the
+*Workers Builds: blackshear-pta* check on its commit in GitHub (F60).
+
 **Do not put the token back in `~/.zshenv`, `~/.zshrc` or any other shell
 profile**, and do not `export` it in a terminal. That is exactly the exposure
 this replaced. To store or rotate it, see the header of `scripts/cf.sh`.

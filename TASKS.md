@@ -358,10 +358,11 @@
 
   1. [x] Invite `communications@` and the break-glass account as **Super Administrator - All Privileges** (2026-10-05). Both accepted.
   2. [x] Rename the account *Blackshear PTA* ([PR #45](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/45)), and set the billing email to the central IT address (2026-10-05).
-  3. [ ] **Two-factor on both new logins** (My Profile → Authentication), with authenticator apps. The break-glass one's setup key and backup codes go in the envelope ([B22](#google-workspace-for-nonprofits)).
+  3. [x] **Two-factor on both new logins** (My Profile → Authentication), with authenticator apps (2026-10-22). The break-glass one's setup key and backup codes go in the envelope ([B22](#google-workspace-for-nonprofits)).
   4. [ ] Once [B5](#google-workspace-for-nonprofits)'s delivery test passes, change the original login's email from the PTA Gmail to `webmaster@`.
 
-  - **Change that login's email; never delete the user.** The local API token (in the Keychain, read by `scripts/cf.sh`; in `~/.zshenv` until 2026-10-16) and the Workers Builds connection were made under it, and an email change keeps them. The account **ID** pinned in [CLAUDE.md](CLAUDE.md) does not change.
+  - **Change that login's email; never delete the user.** The Workers Builds token and connection were made under it, and an email change keeps them. The account **ID** pinned in [CLAUDE.md](CLAUDE.md) does not change.
+  - **Local API token rotated 2026-10-22** ([F60](#f60)). The user token `jf-website`, whose value had appeared in two session transcripts, was replaced by the account API token `blackshear-pta-wrangler`, which belongs to the account rather than to any login. `jf-website` was then deleted and its old value checked dead, the two shell-profile backups that held it were removed, and so was the cf-terraforming token left in the Keychain since 2026-09-03 (already dead). Same permissions as before except *Workers Builds Configuration*, which an account token cannot use.
   - **Nonprofit pricing:** none applies, and the free plan covers everything this site uses.
   - After [C9](#track-c---domain-dns-email), the domain registration lives in this account too.
 - [~] **A37**: GitHub organization ownership - `JON` - `Blackshear-PTA` has four owners: the PTA's own account (`blackshearpta-legacy`), the Communications and break-glass role accounts, and Jon's personal `jon-flowers`. The repository belongs to the organization, so nothing needs transferring.
@@ -1328,6 +1329,16 @@ A spot check found nothing missing: names that seemed to have no file had only b
 **The Fundraising Gmail's export was the same shape**: 5,606 files, of which 2,369 are `-info.json` sidecars and 1,183 are pinned versions, 1,016 of those identical to the current file (1.0 GB), plus 42 zips. **A browser folder upload skips empty folders**, 27 of them here, and its progress count is files plus folders: 10,865 was 10,420 files and 445 folders.
 
 The general shape: *Takeout is built for leaving Google, so it carries metadata, kept versions and converted formats that an upload back into Google does not need.*
+
+<a name="f60"></a>
+**F60 - Cloudflare has two kinds of API token, and Workers Builds accepts only one of them.** Found while rotating the local token on 2026-10-22 ([A36](#phase-0---accounts--scaffold)):
+
+- **Two user tokens, easy to confuse.** The original login's profile listed `jf-website`, the token `scripts/cf.sh` uses, and `blackshear-pta-builds`, the token Workers Builds was deploying with, which has about 25 permissions. Rolling the second would have stopped deploys. Their names don't say which is which; their permissions and *last used* dates do, because the builds token is used on every push.
+- **Account API tokens** (Manage Account → Account API Tokens) belong to the account, not to a login. They keep working when a board member leaves or a login is removed, and any Super Administrator can see, roll or revoke them. Their values start `cfat_`. D1 and Workers accept them, and wrangler reports *Account API Token*.
+- **Workers Builds takes only user tokens**, both as the token a build runs with and for its API, which says *"account-scoped tokens are not supported"*. So the local token lost *Workers Builds Configuration* when it became an account token, and the builds token stays a user token until Cloudflare adds support. Deploy results don't need it: each build posts a *Workers Builds: blackshear-pta* check to its commit on GitHub, branch pushes included.
+- **Proving a token dead needs a real token to test.** Cloudflare answers an empty bearer token with the same *Invalid API Token* as a revoked one, so a script that fails to read the old value "proves" it dead. Check that the value is present and matches its fingerprint first.
+
+The general shape: *a token's name says nothing about what depends on it; check its permissions and last use before rolling or deleting it.*
 
 ## Reference
 

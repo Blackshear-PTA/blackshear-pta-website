@@ -16,6 +16,10 @@
 #
 #   security add-generic-password -a "$USER" -s blackshear-pta-wrangler-token -U -w
 #
+# The token is an account API token, blackshear-pta-wrangler (Manage Account ->
+# Account API Tokens; since 2026-10-22). It belongs to the PTA's account, not to
+# anyone's login: roll it there, then store the new value as above.
+#
 # Not the same item as blackshear-pta-cf-token in terraform/README.md, which is
 # the short-lived read-only token for cf-terraforming.
 #
