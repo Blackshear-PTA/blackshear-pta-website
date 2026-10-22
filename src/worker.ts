@@ -53,6 +53,7 @@
 
 import { handleAdminApi, isAdminPath, type AdminEnv } from './worker/admin';
 import { isImagePath, serveImage, type ImageEnv } from './worker/images';
+import { redirectTo, weeblyRedirect } from './worker/weebly-redirect';
 import astro from '@astrojs/cloudflare/entrypoints/server';
 
 interface Env extends AdminEnv, ImageEnv {
@@ -158,6 +159,14 @@ export default {
       if (!env.IMAGES) return new Response('Not found', { status: 404 });
       return serveImage(env.IMAGES, url.pathname);
     }
+
+    /**
+     * TEMPORARY: the public pages point back at the old Weebly site, by the exec
+     * board's decision of 2026-10-22. Everything above this line still works.
+     * How to turn it off is at the top of worker/weebly-redirect.ts.
+     */
+    const weebly = weeblyRedirect(url);
+    if (weebly) return redirectTo(weebly);
 
     return toAstro(request, env, ctx);
   },
