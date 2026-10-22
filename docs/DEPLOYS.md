@@ -24,7 +24,10 @@ maintainer's machine. `CLAUDE.md` has the full reasoning. Check with
 Local commands that reach Cloudflare get the PTA's API token from the macOS
 Keychain through `scripts/cf.sh`, for that one command only; it is no longer in
 any shell profile. `cf:deploy` and `db:migrate:remote` already go through it.
-Workers Builds needs none of this.
+Since 2026-10-22 it is an account API token, owned by the account rather than
+by anyone's login. Workers Builds needs none of this. Each build reports back
+as a *Workers Builds: blackshear-pta* check on its commit in GitHub, which is
+the quickest way to see whether a merge deployed.
 
 ## Publishing an announcement is not a deploy
 

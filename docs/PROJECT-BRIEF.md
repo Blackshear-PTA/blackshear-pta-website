@@ -51,7 +51,7 @@ shadcn, DaisyUI, and friends actively work against visual differentiation - that
 Free, unlimited private repos and collaborators. Ownership transfer becomes a membership change rather than a repo migration.
 
 ### 3.6 Register everything to an org-domain address from day one
-Sign up for every service as `webmaster@blackshearpta.org`. When Workspace lands it becomes a real mailbox and nothing needs transferring. See [F4 in `TASKS.md`](../TASKS.md#f4) for the bootstrap ordering, which is circular and has to be done in a specific sequence.
+Sign up for every service as the PTA's admin account: a Workspace *user*, because Google sign-in does not work with a group, whose mail forwards to the `admin-notifications@` group so it is always read. (Until 2026-10-22 this said `webmaster@`, a group; see B5 in `TASKS.md`.) See [F4 in `TASKS.md`](../TASKS.md#f4) for the bootstrap ordering, which is circular and has to be done in a specific sequence.
 
 ### 3.7 Sessions go in D1, not KV
 Cloudflare KV's free tier allows roughly **1,000 writes/day**. Session writes will blow through that. Astro's session API auto-wires to KV on Cloudflare, so this default must be **deliberately overridden**.
@@ -76,8 +76,8 @@ Access works with plain Gmail today and switches to Workspace SSO with a config 
 ```
 GoDaddy (registrar - transfer to Cloudflare deferred to October)
   └─ DNS → Cloudflare
-       ├─ Email → webmaster@blackshearpta.org
-       │    (mechanism TBD; see TASKS.md C7 / F2)
+       ├─ Email → Google Workspace
+       │    (settled 2026-09-30; see TASKS.md C7)
        ├─ Access (Zero Trust, Google IdP) → /admin only
        └─ Worker  ← deployed from GitHub Org repo
             ├─ static assets (Astro build → ./dist)
