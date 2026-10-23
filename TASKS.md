@@ -372,7 +372,7 @@
   - `BaseLayout.astro`: the `<meta name="robots">` tag
   - `src/worker.ts`: `withSiteHeaders`, for the pages rendered on demand
 - [x] **A7**: Cloudflare Web Analytics - `JON` - **Done, and it was already done.** Enabled automatically when the zone was added; automatic setup injects the beacon at the edge, so no snippet in `BaseLayout.astro` and nothing to maintain. Free, cookieless, no consent banner. Confirms in passing that edge injection still works with `assets.run_worker_first`, which was an open question. It is also the source of [F27](#f27)
-- [~] **A36**: Cloudflare account ownership - `JON` - Make sure Cloudflare does not hang on one login. A Cloudflare account has no single owner; every Super Administrator has equal control.
+- [x] **A36**: Cloudflare account ownership - `JON` - **✅ Done 2026-10-23:** the PTA Gmail's login is gone, and deploys still work under the admin account. Make sure Cloudflare does not hang on one login. A Cloudflare account has no single owner; every Super Administrator has equal control.
 
   1. [x] Invite `communications@` and the break-glass account as **Super Administrator - All Privileges** (2026-10-05). Both accepted.
   2. [x] Rename the account *Blackshear PTA* ([PR #45](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/45)), and set the billing email to the central IT address (2026-10-05).
@@ -390,7 +390,7 @@
   **Retire**
 
   10. [x] Done 2026-10-23 (Jon). Manage Account → **Members** → the PTA Gmail's row → **⋯ → Remove member** → confirm.
-  11. [ ] `CLAUDE` checks the next build: the *Workers Builds* check passes, and the new Worker version's author is still the admin account ([F60](#f60)).
+  11. [x] Checked 2026-10-23: PR #58's branch build after the removal passed, and its Worker version was uploaded by the admin account. `CLAUDE` checks the next build: the *Workers Builds* check passes, and the new Worker version's author is still the admin account ([F60](#f60)).
 
   - **To undo:** invite the PTA Gmail again from Members. Removing it does not delete the login itself; deleting that is optional and can wait.
 
