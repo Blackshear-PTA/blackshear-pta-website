@@ -29,7 +29,7 @@
 | U14 | ~~Print the calendar on real paper~~ | JON | ✅ **Printed 2026-10-05 and looks right.** October 2026 on one landscape letter sheet, with the site's header, the month grid and the events legible. The date, title, URL and page number in the margins come from the *browser's* "Headers and footers" print option, not the site; untick it in the print dialog for a cleaner sheet |
 | U15 | ~~Find the Workspace admin login~~ | JON | ✅ **Found and signed in 2026-09-30.** The PTA Gmail holds the original 2020 G Suite signup mail. The admin named there no longer exists, but another role account from that tenant does, and Jon got into it. It is not named here because this repo is public. **The console loads but every card errors** - see [B10](#google-workspace-for-nonprofits) and [F53](#f53) |
 | U16 | ~~Cancel the Business Standard trial started 2026-09-30~~ | JON | ✅ **Cancelled 2026-09-30**, before any charge. ✅ **Card removed 2026-10-01.** No payment methods or subscriptions remain on the PTA Gmail ([F47](#f47), [F53](#f53)) |
-| U17 | **Finish setting up Workspace and the service logins** | JON | In progress. Left: turn on GitHub's org-wide two-factor requirement ([A37](#phase-0---accounts--scaffold) step 5); board sign-ins ([B29](#google-workspace-for-nonprofits)) |
+| U17 | **Finish setting up Workspace and the service logins** | JON | In progress. Left: board sign-ins ([B29](#google-workspace-for-nonprofits)) |
 | U18 | ~~Give the break-glass admin a second factor that can be handed over~~ | JON | ✅ **Done 2026-10-05:** 2-Step Verification is on, and the authenticator setup key and backup codes are stored with the password, well ahead of Google's 30-day cutoff ([B22](#google-workspace-for-nonprofits), [F54](#f54)) |
 | U19 | ~~Delete the suspended `jon@` account - on or after 2026-10-19~~ | JON | ✅ Deleted 2026-10-22 (Jon). Suspended 2026-10-05 and nothing broke. Delete it with a data transfer to `communications@`; the steps are [B24](#google-workspace-for-nonprofits)'s step 7. ✅ It owns no secondary calendars (checked 2026-10-06) |
 | U20 | **Registrar transfer: Gabe runs it himself, on or after 2026-10-12** | JON + Gabe | Waiting on Gabe: the registry still showed GoDaddy on 2026-10-15. Jon's setup ✅ done 2026-10-06. Steps in [C9](#track-c---domain-dns-email) |
@@ -59,7 +59,7 @@
 - [x] **C8**: Establish `webmaster@blackshearpta.org` - `JON` - **✅ Created 2026-10-02** as a Google Group, per [D14](#open-decisions). The steps to finish it are in [B5](#google-workspace-for-nonprofits). **Renamed `admin-notifications@` on 2026-10-22**, with `webmaster@` kept as an alias ([B5](#google-workspace-for-nonprofits))
 - [~] **C9**: Registrar transfer GoDaddy → Cloudflare - `JON` + **Gabe** - Move `blackshearpta.org`'s registration out of Gabe's personal GoDaddy account and into the PTA's Cloudflare account. Gabe runs it himself (his choice, 2026-10-06). Nothing changes for the website or email, because DNS already runs on Cloudflare.
 
-  - **Status, 2026-10-15:** Jon's setup is done. The registry still shows GoDaddy, so the transfer has not started.
+  - **Status, 2026-10-23** (`npm run check:domain`): Jon's setup is done. The registry still shows GoDaddy, so the transfer has not started.
   - **Background:** the first attempt, on 2026-08-28, was rejected by GoDaddy within minutes. The likeliest cause was the 60-day lock after an August registrant change, which ran to 2026-10-11 ([F15](#f15)).
 
   **Jon's setup**
@@ -108,7 +108,7 @@
 | 10 | Shared Drives, then document migration (B15, B35, B18) | ◐ both drives created 2026-10-21 ✅ (B15) · themes applied 2026-10-21 ✅ (B35) · migration ◐ both Gmails' files copied in, checked and tidied 2026-10-22 ✅; sorting into folders ⏳ (B18) |
 | 11 | **Data migration:** everything from both Gmails, plus running the Blackshear Parents calendar from Workspace (B30, B26, B27) | ◐ decided by the exec board 2026-10-06 ✅ · PTA Gmail mail and contacts into `hello@` ✅ 2026-10-16 · Fundraising Gmail ⏳ (B26) · Drive ✅ 2026-10-22, copied in, checked and tidied · calendar ✅ stays with the PTA Gmail, run from Workspace (Jon, 2026-10-06, after Google refused the transfer) |
 | 12 | Organization logo in Gmail, Drive and Calendar (B20) | ✅ uploaded 2026-09-30; Google takes up to 4 days to show it |
-| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅, GitHub ✅ 2026-10-22, GitHub's org-wide requirement ⏳ · sweep ⏳ |
+| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅, GitHub ✅ 2026-10-22, required org-wide on GitHub ✅ 2026-10-23 · sweep ⏳ |
 | 14 | Board onboarding: the eight new accounts signed in and enrolled in 2-Step Verification (B29) | ⏳ in progress |
 | 15 | Members' mailing list `members@` ("Blackshear PTA Members"): an announcement-only group of outside members (B28) | ✅ 2026-10-05 · 83 members |
 | 16 | Password manager for the central logins: KeePassXC, one file in the *PTA Vault* Shared Drive (D2, B33) | ◐ decided 2026-10-16 ✅ · *PTA Vault* drive, settings and members ✅ 2026-10-21 · setup ⏳ |
@@ -262,9 +262,9 @@
   **Moving the logins over from 1Password**
 
   6. [x] Already so (2026-10-22): about 14 items, in a 1Password vault of their own. In 1Password, put the PTA items in a vault of their own, if they are not already. Keep the two Gmail logins even though they predate Workspace: both accounts stay alive as recovery addresses ([B25](#google-workspace-for-nonprofits), [B26](#google-workspace-for-nonprofits)), and the PTA Gmail owns the parents' calendar.
-  7. [ ] Export **only that vault**. 1Password 8 exports a whole account, so use **Travel Mode**: mark only the PTA vault *Safe for travel*, turn Travel Mode on at 1password.com, then File → Export → the account → **1PUX**. Turn Travel Mode off afterwards. Open the export once to confirm it holds only PTA items. For a handful of items, copying them in by hand is just as good.
-  8. [ ] KeePassXC → **Database → Import → 1Password Export (.1pux)**, into the open *Blackshear PTA* database. Check every entry is a PTA one.
-  9. [ ] **Delete the .1pux file and empty the Trash.** It is unencrypted.
+  7. [x] Done 2026-10-23 (Jon). Export **only that vault**. 1Password 8 exports a whole account, so use **Travel Mode**: mark only the PTA vault *Safe for travel*, turn Travel Mode on at 1password.com, then File → Export → the account → **1PUX**. Turn Travel Mode off afterwards. Open the export once to confirm it holds only PTA items. For a handful of items, copying them in by hand is just as good.
+  8. [x] Done 2026-10-23 (Jon). KeePassXC → **Database → Import → 1Password Export (.1pux)**, into the open *Blackshear PTA* database. Check every entry is a PTA one.
+  9. [x] Done 2026-10-23: no `.1pux` file is left in the Desktop, Downloads, Documents or project folders (`CLAUDE` checked). **Delete the .1pux file and empty the Trash.** It is unencrypted.
 
   **Sharing it**
 
@@ -390,7 +390,7 @@
   2. [x] Done 2026-10-22 (Jon). **Two-factor on every owner account**, with authenticator apps. The PTA and break-glass accounts' setup keys and recovery codes go in the envelope. Which accounts still lack it is deliberately not written here, because this file is public.
   3. [ ] Decide whether to keep the PTA account (`blackshearpta-legacy`), now that the admin account owns the PTA's services (Jon, 2026-10-22, [B5](#google-workspace-for-nonprofits)) and has its own GitHub account as an owner (step 1). Retiring it means first moving the `/admin` editor's GitHub token, which belongs to it ([D12](#open-decisions)). *This replaces adding `webmaster@` as its email, which was never done.*
   4. [x] Passed 2026-10-22, on the third check: the API shows every member and outside collaborator with two-factor. `CLAUDE` confirms through the GitHub API that every owner has two-factor.
-  5. [ ] **Only then:** Organization → Settings → Authentication security → **Require two-factor authentication**. GitHub removes every member without it the moment this is turned on.
+  5. [x] Done 2026-10-23 (Jon), and confirmed through the API: the requirement is on and no member lacks two-factor. **Only then:** Organization → Settings → Authentication security → **Require two-factor authentication**. GitHub removes every member without it the moment this is turned on.
 
   - **Check two-factor with the API, not with the recovery codes.** On 2026-10-22 three owner accounts had recovery codes saved in a password manager, yet GitHub's settings and its API both showed two-factor off; why is unknown. Step 4 is what caught it.
   - **Do not delete or rename the PTA account.** The `/admin` editor's GitHub token belongs to it ([D12](#open-decisions), [docs/ADMIN.md](docs/ADMIN.md)).
