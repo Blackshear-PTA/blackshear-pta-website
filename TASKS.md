@@ -415,7 +415,7 @@
   - **Prioritized by Jon, 2026-10-21** ([U21](#-do-this-week)). The next move is Jon's (step 5).
   - **Photos of children, carried over at Jon's direction.** Most photos on the site deliberately show no faces ([docs/EDITING-CONTENT.md](docs/EDITING-CONTENT.md)). These do, and the 2025 donor banner names families and their children's grades. All of it has been public on the PTA's Weebly page for years, so it was carried over as it was.
   - **Sharper 2025 photos exist.** The Weebly copies are about 1100px. Marcus Charles's Dropbox folder has the originals ([F61](#f61)), if the page ever wants them larger.
-  - **Still open:** whether the page lists `littleeast@` as its contact. It says `hello@` for now.
+  - **Contact: `littleeast@`** (Jon, 2026-10-23). The page names the chair and lists the role account, with `hello@` for anything else. As of the 2026-10-16 check in [B29](#google-workspace-for-nonprofits), `littleeast@` had not been signed in yet, so mail to it waits unread until the chair does.
 
 ### Phase 1 - Theme demo and board vote *(complete)*
 
