@@ -78,6 +78,36 @@ book-fair:
 `backdrop` must be one of the slugs listed in `src/content.config.ts`. Using one
 that does not exist fails the build with a message naming the valid options.
 
+### Sections that fold, with videos and photos
+
+A section can also carry videos and pictures, and can fold shut under its
+heading. `/little-east` uses all of it, one section per year:
+
+```yaml
+    - heading: "2025 - the 12th Little EAST"
+      expanded: true              # folds: true starts open, false starts closed
+      body:
+        - "One line about the year."
+      videos:
+        - youtubeId: "LSkAJ5eusCo"   # the part after watch?v= or youtu.be/
+          title: "The 12th Little EAST, 2025"
+      figures:                    # shown whole, never cropped: posters, banners
+        - src: "../assets/little-east/2025/poster.jpg"
+          alt: "What the poster shows, for a screen reader"
+          caption: "The poster"   # optional, shown under it
+      photos:                     # square thumbnails that open full size
+        - src: "../assets/little-east/2025/photo-01.jpg"
+          alt: "What is in the photo"
+```
+
+Leave `expanded` out and the section is always shown, as on every other page.
+Picture paths are relative to `pages.yaml`, so they start `../assets/`. A path
+to a file that is not there fails the build and names the file.
+
+**When a new Little EAST year goes on top,** give it `expanded: true` and change
+last year's to `false`, so only the newest year opens by default. Its pictures
+go in a new `src/assets/little-east/<year>/` folder.
+
 **Then add it to the menu**, if it belongs there, in `src/content/site.yaml`:
 
 ```yaml
@@ -90,21 +120,29 @@ adds the little arrow and opens a new tab.
 
 ## Adding a photo
 
+For a picture in a page section (a year of Little EAST, say), put the file
+under `src/assets/` and list it in `pages.yaml` as above. Nothing else is needed.
+
+For anywhere else on the site:
+
 1. Put the file in `src/assets/photos/`.
 2. Add a row to `src/assets/photos/README.md` saying what it shows and where it
    is used. This is not bureaucracy: it is how the next person knows whether
    they can move it.
 3. Reference it from the component that needs it.
 
-Photos have to be *imported* rather than referenced by a path string, because
-that is what lets the build resize and re-compress them. A path string ships the
+Photos have to be *imported* (or listed through `pages.yaml`'s `src:`, which
+imports them for you) rather than referenced by a path string, because that is
+what lets the build resize and re-compress them. A path string ships the
 original: several of ours are 4MB phone photos, which on a phone connection is
 the difference between a page loading and a parent giving up.
 
 Two standing rules:
 
 - **Nothing goes up without the family being happy for it to be there.** Most
-  current photos deliberately contain no children's faces.
+  current photos deliberately contain no children's faces. The Little EAST
+  archive is the exception: its photos were already public on the old Weebly
+  page for years, and were carried over as they were at Jon's direction (A40).
 - **Every photo needs a written description** (`alt` text) saying what is in it,
   for anyone using a screen reader. Write what you would say describing the
   photo to someone on the phone. Not "photo1.jpg".
