@@ -1,0 +1,154 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { PageData } from '../types';
+
+/**
+ * A page section's pictures: `figures` shown whole, then `photos` as a grid.
+ *
+ * Two lists because they want opposite treatment. A poster or a thank-you
+ * banner is mostly words, and a square crop would cut them off mid-sentence; a
+ * photo grid reads best as even squares. Both open full size in the page's
+ * Lightbox, and both are plain links to that file without it.
+ *
+ * `group` keeps one section's pictures together in the lightbox, so stepping
+ * through 2025 never runs on into 2024.
+ */
+interface Props {
+  figures: PageData['sections'][number]['figures'];
+  photos: PageData['sections'][number]['photos'];
+  group: string;
+}
+
+const { figures, photos, group } = Astro.props;
+
+/** Figures share one height, so a poster and a wide banner line up along the top. */
+const FIGURE_HEIGHT = 288;
+
+/**
+ * What the lightbox opens: the whole photo, re-encoded but not resized. The
+ * Weebly copies these came from are about 1100px on the long side already, and
+ * Astro never enlarges, so there is nothing to gain from a width here.
+ */
+const full = async (src: ImageMetadata) =>
+  (await getImage({ src, format: 'webp', quality: 80 })).src;
+
+const figureItems = await Promise.all(
+  figures.map(async (figure) => ({
+    ...figure,
+    href: await full(figure.src),
+    width: Math.min(Math.round((FIGURE_HEIGHT * figure.src.width) / figure.src.height), 640),
+  })),
+);
+
+const photoItems = await Promise.all(
+  photos.map(async (photo) => ({ ...photo, href: await full(photo.src) })),
+);
+---
+
+{
+  figureItems.length > 0 && (
+    <ul class="section-figures">
+      {figureItems.map((figure) => (
+        <li>
+          <figure>
+            <a href={figure.href} data-lightbox={group} data-caption={figure.caption}>
+              <Image
+                src={figure.src}
+                alt={figure.alt}
+                width={figure.width}
+                densities={[1, 2]}
+                loading="lazy"
+              />
+            </a>
+            {figure.caption && <figcaption>{figure.caption}</figcaption>}
+          </figure>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+{
+  photoItems.length > 0 && (
+    <ul class="section-photos">
+      {photoItems.map((photo) => (
+        <li>
+          <a href={photo.href} data-lightbox={group}>
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              width={300}
+              height={300}
+              densities={[1, 2]}
+              loading="lazy"
+            />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  ul {
+    margin: 0 0 var(--pta-gap);
+    padding: 0;
+    list-style: none;
+  }
+
+  .section-figures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--pta-gap);
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  /*
+    Natural shape, capped by height. Both sizes stay `auto`, so when a phone is
+    narrower than a banner the width cap wins and the height follows it down,
+    rather than the picture being squashed to fit.
+  */
+  .section-figures img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 18rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  figcaption {
+    margin-block-start: 0.35rem;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  .section-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .section-photos a {
+    display: block;
+    border-radius: var(--pta-radius);
+    overflow: hidden;
+  }
+
+  .section-photos img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+  }
+
+  .section-photos a:hover img,
+  .section-photos a:focus-visible img {
+    transform: scale(1.04);
+  }
+</style>

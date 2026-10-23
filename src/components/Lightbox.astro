@@ -1,0 +1,187 @@
+---
+/**
+ * Full-size photo viewer for any link marked `data-lightbox="<group>"`.
+ *
+ * Progressive enhancement, on purpose. Each thumbnail is a real link to the
+ * full-size file, so with the script blocked, failed or not yet loaded, a click
+ * still opens the photo - the browser's own image view. The script only swaps
+ * that for this dialog and adds previous / next within the same group.
+ *
+ * Native <dialog> for the same reasons as the calendar's event details:
+ * showModal() gives the focus trap, the inert page behind it, Escape to close
+ * and focus returned to the thumbnail afterwards, none of which a div would get
+ * right on its own.
+ *
+ * One per page. The groups keep each year's photos to themselves, so "next" on
+ * the last 2025 photo stops rather than wandering into 2024.
+ */
+---
+
+<dialog class="lightbox" data-lightbox-dialog aria-label="Photo viewer">
+  <figure class="lb-figure">
+    <img data-lb-img alt="" />
+    <figcaption>
+      <span data-lb-caption></span>
+      <span class="lb-count" data-lb-count></span>
+    </figcaption>
+  </figure>
+
+  <div class="lb-actions">
+    <button type="button" class="lb-btn" data-lb-prev>
+      <span aria-hidden="true">&larr;</span> Previous
+    </button>
+    <button type="button" class="lb-btn" data-lb-next>
+      Next <span aria-hidden="true">&rarr;</span>
+    </button>
+    <button type="button" class="lb-btn lb-close" data-lb-close>Close</button>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox-dialog]');
+
+  if (dialog) {
+    const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-lb-count]')!;
+    const prev = dialog.querySelector<HTMLButtonElement>('[data-lb-prev]')!;
+    const next = dialog.querySelector<HTMLButtonElement>('[data-lb-next]')!;
+
+    let group: HTMLAnchorElement[] = [];
+    let index = 0;
+
+    const show = (i: number) => {
+      index = Math.max(0, Math.min(group.length - 1, i));
+      const link = group[index];
+      if (!link) return;
+      const alt = link.querySelector('img')?.alt ?? '';
+      img.src = link.href;
+      img.alt = alt;
+      caption.textContent = link.dataset.caption || alt;
+      count.textContent = group.length > 1 ? `${index + 1} of ${group.length}` : '';
+      prev.hidden = next.hidden = group.length < 2;
+      prev.disabled = index === 0;
+      next.disabled = index === group.length - 1;
+    };
+
+    document.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest<HTMLAnchorElement>('a[data-lightbox]');
+      // A modified click is someone asking for a new tab. Let them have it.
+      if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      group = [
+        ...document.querySelectorAll<HTMLAnchorElement>(
+          `a[data-lightbox="${CSS.escape(link.dataset.lightbox ?? '')}"]`,
+        ),
+      ];
+      show(group.indexOf(link));
+      dialog.showModal();
+    });
+
+    prev.addEventListener('click', () => show(index - 1));
+    next.addEventListener('click', () => show(index + 1));
+    dialog.querySelector('[data-lb-close]')!.addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') show(index - 1);
+      if (event.key === 'ArrowRight') show(index + 1);
+    });
+
+    // A click on the dimmed backdrop lands on the dialog element itself.
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    // Drop the image on close, so a large photo is not held for a page that has
+    // moved on, and the next open never flashes the previous photo.
+    dialog.addEventListener('close', () => img.removeAttribute('src'));
+  }
+</script>
+
+<style>
+  .lightbox {
+    width: min(64rem, calc(100vw - 2rem));
+    /* The site-wide dialog rule caps the height; this one fills it, so the photo
+       can use the screen rather than a fixed box. */
+    height: min(85vh, 100% - 2rem);
+    padding: 0.75rem;
+    border: var(--pta-border-width) solid var(--pta-ink);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+  }
+
+  .lightbox[open] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .lightbox::backdrop {
+    background: rgb(0 0 0 / 0.75);
+  }
+
+  .lb-figure {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Contained, never cropped: this is the one place the whole photo shows. */
+  .lb-figure img {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--pta-gap);
+    font-size: var(--text-fine);
+  }
+
+  .lb-count {
+    flex: none;
+    color: var(--pta-ink-muted);
+  }
+
+  .lb-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .lb-close {
+    margin-inline-start: auto;
+  }
+
+  .lb-btn {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    background: var(--pta-surface);
+    color: var(--pta-ink);
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+    font-size: var(--text-fine);
+    cursor: pointer;
+  }
+
+  .lb-btn:hover:not(:disabled) {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+  }
+
+  .lb-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+</style>

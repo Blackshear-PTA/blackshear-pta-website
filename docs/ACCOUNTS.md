@@ -32,7 +32,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 | all@ | Group, every PTA account | Owners: Communications, the President, the admin account | Includes every current and future account automatically. Used to share the parents' calendar; only owners and managers post ([B34](#b34)) |
 | members@ | Group, announcement-only | Posted to by hello@, Communications and the President | All 83 current PTA members; replies go to hello@ ([B28](#b28)) |
 | president@, vp@, secretary@, treasurer@, fundraising@, roomparents@, garden@, staffappreciation@, communications@ | User accounts | The officer holding each role | They pass with the role; at turnover an admin resets the password ([D14](#d14)) |
-| littleeast@ | User account | The Little EAST chair | Created 2026-10-06 ([B31](#b31)); may become the Little EAST page's contact ([A40](#a40)) |
+| littleeast@ | User account | The Little EAST chair | Created 2026-10-06 ([B31](#b31)); the Little EAST page's public contact since 2026-10-23 ([A40](#a40)) |
 | community@ | Group, used as a shared mailbox (being created) | Several members, worked as a Collaborative Inbox | Decided 2026-10-06; purpose to be settled so it does not overlap with hello@ ([B32](#b32)) |
 | admin-notifications@ (alias webmaster@) | Group | Communications plus a backup | Receives the admin account's forwarded mail: service notices, bills and password resets ([B5](#b5)) |
 | dmarc@ | Group | Communications plus a backup | Email-authentication reports |

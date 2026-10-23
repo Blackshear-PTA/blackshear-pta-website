@@ -1,6 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
+import VideoEmbed from '../components/sections/VideoEmbed.astro';
+import TikTokEmbed from '../components/TikTokEmbed.astro';
+import SectionGallery from '../components/SectionGallery.astro';
+import Lightbox from '../components/Lightbox.astro';
 import { isExternal } from '../lib/links';
 
 /**
@@ -36,6 +40,23 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const page = entry.data;
+
+const hasPictures = page.sections.some((s) => s.figures.length > 0 || s.photos.length > 0);
+
+/**
+ * What a folded section holds, under its heading, so someone can tell which
+ * year is worth opening without opening them all.
+ */
+const contents = (section: (typeof page.sections)[number]) => {
+  const pictures = section.figures.length + section.photos.length;
+  return [
+    section.videos.length === 1 && 'Video',
+    section.videos.length > 1 && `${section.videos.length} videos`,
+    pictures > 0 && `${pictures} ${pictures === 1 ? 'picture' : 'pictures'}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+};
 ---
 
 <PageLayout page={page}>
@@ -58,12 +79,43 @@ const page = entry.data;
   }
 
   {
-    page.sections.map((section) => (
-      <section class="section-block">
-        <div class="rule" role="presentation" />
-        <h2>{section.heading}</h2>
+    page.sections.map((section, index) => {
+      /*
+        A section with `expanded` set folds shut under its heading. Native
+        <details>, so it opens with no script, from the keyboard, and on its own
+        when the browser's find-in-page matches something inside. Without
+        `expanded` it renders exactly as every page always has.
+      */
+      const Wrapper = section.expanded === undefined ? 'section' : 'details';
+      return (
+      <Wrapper class="section-block" open={section.expanded}>
+        {section.expanded === undefined ? (
+          <>
+            <div class="rule" role="presentation" />
+            <h2>{section.heading}</h2>
+          </>
+        ) : (
+          /* The rule goes inside the summary: anything else in a <details>
+             hides when it closes, and a closed year still needs its rule. */
+          <summary>
+            <span class="rule" role="presentation" />
+            <span class="summary-row">
+              <span class="summary-text">
+                <h2>{section.heading}</h2>
+                {contents(section) && <span class="summary-meta">{contents(section)}</span>}
+              </span>
+              <span class="chevron" aria-hidden="true" />
+            </span>
+          </summary>
+        )}
         {section.body.map((paragraph) => (
           <p class="prose">{paragraph}</p>
+        ))}
+
+        {section.videos.map((video) => (
+          <div class="section-video">
+            {'tiktokId' in video ? <TikTokEmbed video={video} /> : <VideoEmbed video={video} />}
+          </div>
         ))}
 
         {section.links.length > 0 && (
@@ -86,6 +138,12 @@ const page = entry.data;
           </ul>
         )}
 
+        <SectionGallery
+          figures={section.figures}
+          photos={section.photos}
+          group={`section-${index}`}
+        />
+
         {/* Plain names, no destinations: sponsor tiers and thank-you lists. */}
         {section.names.length > 0 && (
           <ul class="names">
@@ -94,8 +152,9 @@ const page = entry.data;
             ))}
           </ul>
         )}
-      </section>
-    ))
+      </Wrapper>
+      );
+    })
   }
 
   {
@@ -115,6 +174,8 @@ const page = entry.data;
       </section>
     )
   }
+
+  {hasPictures && <Lightbox />}
 </PageLayout>
 
 <style>
@@ -124,6 +185,7 @@ const page = entry.data;
   }
 
   .rule {
+    display: block;
     height: var(--pta-rule-width);
     background: var(--pta-rule);
     margin-block-end: var(--pta-gap);
@@ -140,6 +202,66 @@ const page = entry.data;
     font-weight: var(--pta-display-weight);
     letter-spacing: var(--pta-display-tracking);
     text-transform: var(--pta-display-transform);
+  }
+
+  /*
+    A folding section's heading row. The whole row is the control, not just the
+    words, so the target is the full width of the page and at least 44px tall.
+  */
+  summary {
+    display: block;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pta-gap);
+    min-height: 44px;
+    margin-block-end: var(--pta-gap);
+  }
+
+  summary h2 {
+    margin: 0;
+  }
+
+  .summary-meta {
+    display: block;
+    margin-block-start: 0.2rem;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  /* Drawn rather than a glyph, so it is the same in every font the themes use. */
+  .chevron {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-inline-end: 0.35rem;
+    border-right: 3px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    transform: translateY(-25%) rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+
+  details[open] .chevron {
+    transform: translateY(25%) rotate(225deg);
+  }
+
+  summary:hover h2 {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  .section-video {
+    margin-block-end: var(--pta-gap);
   }
 
   .cta-row {
@@ -180,6 +302,12 @@ const page = entry.data;
     display: grid;
     gap: var(--pta-gap);
     max-width: var(--pta-measure);
+  }
+
+  /* The same gap below the tiles as between them, when posters or photos
+     follow. Last in a section, the section's own padding does the spacing. */
+  .links:not(:last-child) {
+    margin-block-end: var(--pta-gap);
   }
 
   .links a {
