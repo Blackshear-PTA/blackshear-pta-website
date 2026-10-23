@@ -303,6 +303,12 @@ const contents = (section: (typeof page.sections)[number]) => {
     max-width: var(--pta-measure);
   }
 
+  /* The same gap below the tiles as between them, when posters or photos
+     follow. Last in a section, the section's own padding does the spacing. */
+  .links:not(:last-child) {
+    margin-block-end: var(--pta-gap);
+  }
+
   .links a {
     display: flex;
     flex-direction: column;

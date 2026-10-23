@@ -96,6 +96,14 @@ const socialAlt = 'The front walkway and entrance of Blackshear Elementary Schoo
     <meta name="description" content={description} />
     <link rel="canonical" href={pageUrl} />
 
+    {/*
+      Buzz in the brand disc, built by scripts/make-favicons.mjs. The .ico is
+      listed with a size so browsers that understand SVG pick the SVG instead.
+    */}
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     {/* Open Graph, used by iMessage, WhatsApp, Slack, Facebook and LinkedIn. */}
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Blackshear Elementary PTA" />

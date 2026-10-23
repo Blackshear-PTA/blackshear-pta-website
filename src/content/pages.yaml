@@ -15,14 +15,17 @@
 
 little-east:
   meta:
-    title: "Fine Arts and Little EAST - Blackshear PTA"
-    description: "The Fine Arts committee runs Little EAST, Blackshear's annual art show and silent auction, plus performances, drama club and the Austin Studio Tours."
-  title: "Fine Arts / Little EAST"
-  lede: "Blackshear is a Fine Arts Academy. This committee is how families get to be part of that."
+    title: "Little EAST - Blackshear PTA"
+    description: "Little EAST is Blackshear Elementary's free yearly art show and festival: student art, performances, the Trashion Show, screen printing and the PTA's silent auction, with photos and videos from past years."
+  # About Little EAST only, since 2026-10-23 (Jon). The page used to introduce
+  # the Fine Arts committee as a whole; the homepage still does, and links here.
+  title: "Little EAST"
+  lede: "Blackshear's yearly art show and festival, put on by the PTA. Free, and open to everyone."
   backdrop: little-east
   body:
-    - "We find fun ways for families to engage with the Fine Arts Academy. We join the Austin Studio Tours and turn the school into a gallery, students perform, the drama club does Shakespeare and improv, and we host Little EAST, our annual silent auction."
-    - "Little EAST is the PTA's largest event of the year and its largest single source of funding."
+    - "One Saturday each November, Blackshear Elementary Fine Arts Academy turns into a gallery. The halls fill with art from every grade, students perform on the front lawn, and families make things together in the craft courtyard."
+    - "There is a Trashion Show, where students walk the runway in outfits made from recycled materials, a screen printing shop with that year's Little EAST design, and a silent auction. Little EAST is also an official stop on the Austin Studio Tour."
+    - "It is the PTA's biggest event of the year and its largest single source of funding, so every bid and every shirt helps pay for the PTA's work at Blackshear."
   cta:
     label: "Join the PTA"
     href: "https://tinyurl.com/BlackshearStore"
@@ -32,8 +35,7 @@ little-east:
   #
   # Everything below was carried over from the Weebly page (TASKS.md A40):
   # its two YouTube embeds, its links, and every poster, banner and photo, in
-  # Weebly's order. The one-line summaries come from each year's poster. The
-  # images are in src/assets/little-east/<year>/.
+  # Weebly's order. The images are in src/assets/little-east/<year>/.
   #
   # Archived links point at where they actually land rather than at the
   # tinyurl. The 2026 planning doc reuses tinyurl.com/12thLittleEAST for this
@@ -42,8 +44,6 @@ little-east:
   sections:
     - heading: "2025 - the 12th Little EAST"
       expanded: true
-      body:
-        - "Legacy in the Making. Saturday, November 8, 2025, 11am to 3pm, free and open to the public: student art and performances, the Trashion Show, craft stations, screen printing and the silent auction."
       videos:
         - youtubeId: "LSkAJ5eusCo"
           title: "The 12th Little EAST, 2025"
@@ -100,8 +100,6 @@ little-east:
           alt: "A student walking the Trashion Show runway in a handmade outfit"
     - heading: "2024 - the 11th Little EAST"
       expanded: false
-      body:
-        - "Fantastic Future. Saturday, November 16, 2024, 11am to 3pm: student art, a fashion show and performances, mural art, screen printing, maker stations and the silent auction."
       videos:
         - youtubeId: "Uwveb84gNoc"
           title: "The 11th Little EAST, 2024"
@@ -118,8 +116,6 @@ little-east:
           caption: "Thank you to our sponsors"
     - heading: "2023 - the 10th Little EAST"
       expanded: false
-      body:
-        - "Saturday, November 11, 2023, 11am to 3pm: student art, a mosaic mural, a makerspace, student performances and a fashion show, screen printing, face painting and the silent auction."
       links:
         - label: "2023 silent auction"
           href: "https://new.biddingowl.com/BlackshearLittleEAST"
@@ -164,8 +160,6 @@ little-east:
           alt: "A student on the runway in an outfit made from recycled packaging"
     - heading: "2022 - the 9th Little EAST"
       expanded: false
-      body:
-        - "Saturday, November 12, 2022, 11am to 3pm: student art, DIY crafts, a maker space, face painting, an art installation and the silent auction, with performances by the Blackshear Choir, the Adderley School, GroundWork, Toni Bravo Dance and UT Shakespeare."
       # The 2022 auction link is not carried over: BiddingOwl dropped the
       # auction and the address now lands on its homepage (F21).
       links:
@@ -222,7 +216,7 @@ little-east:
           alt: "Pulling a pink print through a silkscreen"
         - src: "../assets/little-east/2022/photo-21.jpg"
           alt: "Volunteers screen printing a T-shirt"
-    - heading: "2021"
+    - heading: "2021 - the 8th Little EAST"
       expanded: false
       # The 2021 video link is not carried over: YouTube now says "Video
       # unavailable", and it is not on the PTA's channel under another address
@@ -248,7 +242,7 @@ little-east:
           alt: "A quilt of student art squares spelling out EAST 2021"
         - src: "../assets/little-east/2021/photo-08.jpg"
           alt: "A paper rainbow over a hallway doorway, under the words Creativity stARTs here"
-    - heading: "2019"
+    - heading: "2019 - the 7th Little EAST"
       expanded: false
       photos:
         - src: "../assets/little-east/2019/photo-01.jpg"
