@@ -1,25 +1,11 @@
 {
   "source": "mm0p8e311cqe8fcv2tfsuk4u5c@group.calendar.google.com",
-  "generated": "2026-10-22",
+  "generated": "2026-10-23",
   "window": {
-    "from": "2026-10-22",
-    "to": "2027-10-22"
+    "from": "2026-10-23",
+    "to": "2027-10-23"
   },
   "events": [
-    {
-      "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-10-22T12:40:00.000Z",
-      "title": "Tea with Tiona",
-      "start": "2026-10-22T12:40:00.000Z",
-      "end": "2026-10-22T13:40:00.000Z",
-      "allDay": false
-    },
-    {
-      "id": "5m8ld9j06jdabsdd3l43bciutc@google.com@2026-10-22T22:00:00.000Z",
-      "title": "CatchALL Night",
-      "start": "2026-10-22T22:00:00.000Z",
-      "end": "2026-10-22T23:30:00.000Z",
-      "allDay": false
-    },
     {
       "id": "0etoqfsc8jmavths3kfdibv907@google.com@2026-10-28T20:30:00.000Z",
       "title": "CAC Meeting",
@@ -99,19 +85,19 @@
       "allDay": false
     },
     {
-      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
-      "title": "Thanksgiving School Lunch",
-      "start": "2026-11-19T00:00:00.000Z",
-      "end": "2026-11-20T00:00:00.000Z",
-      "allDay": true
-    },
-    {
       "id": "4gghje7qicdf0ik3f3n3eve8qm@google.com@2026-11-19T00:00:00.000Z",
       "title": "Staff Pies & Sides Event",
       "start": "2026-11-19T00:00:00.000Z",
       "end": "2026-11-20T00:00:00.000Z",
       "allDay": true,
       "description": "<a href=\"https://tinyurl.com/BlackshearBuffet\">https://tinyurl.com/BlackshearBuffet</a>"
+    },
+    {
+      "id": "2phh001rvau5eddqhqpbr1bunk@google.com@2026-11-19T00:00:00.000Z",
+      "title": "Thanksgiving School Lunch",
+      "start": "2026-11-19T00:00:00.000Z",
+      "end": "2026-11-20T00:00:00.000Z",
+      "allDay": true
     },
     {
       "id": "4tkjdi9bf9dd25klidkt3h049k@google.com@2026-11-19T13:40:00.000Z",
@@ -324,15 +310,15 @@
       "allDay": true
     },
     {
-      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
-      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
+      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
+      "title": "School Holiday",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "2lkpt9tnlfmj9gptotl71q7h95@google.com@2027-01-18T00:00:00.000Z",
-      "title": "School Holiday",
+      "id": "2pkj6ft4l7c9ueg08mpbpp02t6@google.com@2027-01-18T00:00:00.000Z",
+      "title": "Ms. Turner's 1/2 Birthday (5th grade)",
       "start": "2027-01-18T00:00:00.000Z",
       "end": "2027-01-19T00:00:00.000Z",
       "allDay": true
@@ -723,15 +709,15 @@
       "allDay": false
     },
     {
-      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
+      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Last Day of School",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "45f6pg1eh9utf89us1rpcs29kn@google.com@2027-05-27T00:00:00.000Z",
-      "title": "Last Day of School",
+      "id": "12ark20hg01svnkifbmoqihu7m@google.com@2027-05-27T00:00:00.000Z",
+      "title": "Mr. Pearson's Birthday (3rd Grade Teacher)",
       "start": "2027-05-27T00:00:00.000Z",
       "end": "2027-05-28T00:00:00.000Z",
       "allDay": true
@@ -821,20 +807,20 @@
       "allDay": true
     },
     {
-      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
-      "title": "Ms. Earl's Birthday! (Cafeteria)",
-      "start": "2027-09-15T00:00:00.000Z",
-      "end": "2027-09-16T00:00:00.000Z",
-      "allDay": true,
-      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
-    },
-    {
       "id": "5bg18f9q63pts13rlhear4tk86_R20260915@google.com@2027-09-15T00:00:00.000Z",
       "title": "Ms. Virginia's Birthday! (Cafeteria)",
       "start": "2027-09-15T00:00:00.000Z",
       "end": "2027-09-16T00:00:00.000Z",
       "allDay": true,
       "description": "Ms. Virginia is part of our Cafe team - she helps make sure that our kiddos are well fed and ready to learn!"
+    },
+    {
+      "id": "553hbsitob02n514cvpatju2q2_R20260915@google.com@2027-09-15T00:00:00.000Z",
+      "title": "Ms. Earl's Birthday! (Cafeteria)",
+      "start": "2027-09-15T00:00:00.000Z",
+      "end": "2027-09-16T00:00:00.000Z",
+      "allDay": true,
+      "description": "Ms. Earl is our Cafe Manager.  She and her team make sure that our kiddos are well fed and ready to learn."
     },
     {
       "id": "7gs7hus0g356fqvugr34j90ls1@google.com@2027-09-20T00:00:00.000Z",
@@ -844,15 +830,15 @@
       "allDay": true
     },
     {
-      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2027-10-05T00:00:00.000Z",
-      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
+      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2027-10-05T00:00:00.000Z",
+      "title": "Ms. Wellman's Birthday! (AP)",
       "start": "2027-10-05T00:00:00.000Z",
       "end": "2027-10-06T00:00:00.000Z",
       "allDay": true
     },
     {
-      "id": "4m6cjbe19qag1jcn5qjctioq7k_R20261005@google.com@2027-10-05T00:00:00.000Z",
-      "title": "Ms. Wellman's Birthday! (AP)",
+      "id": "1udfc492kl6n51rmk6o2g5vlh1@google.com@2027-10-05T00:00:00.000Z",
+      "title": "Mr. Crenshaw's Birthday! (SpEd TA)",
       "start": "2027-10-05T00:00:00.000Z",
       "end": "2027-10-06T00:00:00.000Z",
       "allDay": true

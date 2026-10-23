@@ -1,0 +1,62 @@
+---
+/**
+ * A TikTok video, embedded with TikTok's own player.
+ *
+ * Unlike YouTube there is no privacy-enhanced address, so opening the player
+ * loads TikTok's scripts and cookies. Two things keep that from costing anyone
+ * who did not ask for it: the frame is lazy-loaded, and on /little-east it sits
+ * inside a year that starts folded shut, so nothing is fetched from tiktok.com
+ * until someone opens that year and scrolls to it.
+ *
+ * Portrait, because TikTok is. The frame is capped narrow so a phone-shaped
+ * video does not become a wall of black on a desktop.
+ *
+ * The `title` is the iframe's accessible name; a screen reader otherwise
+ * announces nothing but "frame".
+ */
+interface Props {
+  video: { tiktokId: string; title: string };
+}
+
+const { video } = Astro.props;
+
+// music_info and description off: the PTA's own heading and caption already say
+// what this is. rel=0 keeps other accounts' videos out of the end screen.
+const src = `https://www.tiktok.com/player/v1/${video.tiktokId}?music_info=0&description=0&rel=0`;
+---
+
+<div class="frame">
+  <iframe
+    src={src}
+    title={video.title}
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="encrypted-media; fullscreen; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<style>
+  /* Same box as VideoEmbed's, turned on its side: 9:16, sized by the browser,
+     opaque so nothing shows through while the player loads. */
+  .frame {
+    position: relative;
+    width: 100%;
+    max-width: 20rem;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
+    background: var(--pta-ink);
+  }
+
+  .frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+</style>

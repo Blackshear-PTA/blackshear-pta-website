@@ -1,4 +1,4 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, type SchemaContext } from 'astro:content';
 import { z } from 'astro/zod';
 import { file } from 'astro/loaders';
 import { POST_URL, MAX_POSTS } from './worker/instagram.mjs';
@@ -106,17 +106,64 @@ const pageLink = link.extend({
   note: z.string().optional(),
 });
 
-const pageSection = z.object({
-  heading: z.string(),
-  body: z.array(z.string()).default([]),
-  links: z.array(pageLink).default([]),
-  /** Plain names with no destination: sponsor tiers, thank-you lists. */
-  names: z.array(z.string()).default([]),
+/**
+ * A YouTube video. The bare id, not a URL: the embed origin is decided in
+ * VideoEmbed.astro, so nobody can paste a tracking youtube.com address here.
+ * The homepage's `video` is one of these too, which is what lets both use one
+ * component.
+ */
+const youtubeVideo = z.object({
+  youtubeId: z.string(),
+  /** Becomes the iframe's accessible name, which is required. */
+  title: z.string(),
 });
+
+/**
+ * A TikTok video, by the number at the end of its address
+ * (tiktok.com/@account/video/<number>). An id for the same reason as YouTube's:
+ * TikTokEmbed.astro builds the embed address, so nothing pasted here can point
+ * the frame somewhere else.
+ */
+const tiktokVideo = z.object({
+  tiktokId: z.string().regex(/^\d+$/, 'Just the number at the end of the TikTok address.'),
+  title: z.string(),
+});
+
+/**
+ * `image()` rather than a path string: it hands Astro's build-time pipeline the
+ * file, so a page ships resized copies rather than the original. Paths are
+ * relative to pages.yaml, so `../assets/little-east/2025/poster.jpg`.
+ */
+const pageSection = ({ image }: SchemaContext) =>
+  z.object({
+    heading: z.string(),
+    /**
+     * Makes the section fold shut under its heading, for long archives such as
+     * Little EAST's years. `true` starts it open, `false` closed; leave it out
+     * and the section is always shown, like every page before this one.
+     */
+    expanded: z.boolean().optional(),
+    body: z.array(z.string()).default([]),
+    /** Each one a YouTube video (`youtubeId`) or a TikTok (`tiktokId`). */
+    videos: z.array(z.union([youtubeVideo, tiktokVideo])).default([]),
+    links: z.array(pageLink).default([]),
+    /** Plain names with no destination: sponsor tiers, thank-you lists. */
+    names: z.array(z.string()).default([]),
+    /**
+     * Shown whole and never cropped, because the words are the point: posters,
+     * flyers, thank-you banners. `caption` is the visible label; `alt` is what
+     * a screen reader hears instead of the picture.
+     */
+    figures: z
+      .array(z.object({ src: image(), alt: z.string(), caption: z.string().optional() }))
+      .default([]),
+    /** A grid of square thumbnails that open full size. Order is display order. */
+    photos: z.array(z.object({ src: image(), alt: z.string() })).default([]),
+  });
 
 const pages = defineCollection({
   loader: file('src/content/pages.yaml'),
-  schema: z.object({
+  schema: (context) => z.object({
     meta: z.object({
       title: z.string(),
       description: z.string(),
@@ -143,7 +190,7 @@ const pages = defineCollection({
     body: z.array(z.string()).default([]),
     /** The one action this page most wants. Rendered as a button. */
     cta: link.optional(),
-    sections: z.array(pageSection).default([]),
+    sections: z.array(pageSection(context)).default([]),
     /** Who to ask. `name`/`role` optional so a page can list just an address. */
     contact: z
       .object({
@@ -228,14 +275,7 @@ const home = defineCollection({
      * theme chooses to render it - what to say is content, whether to show it
      * is presentation.
      */
-    video: z
-      .object({
-        /** The bare id, not a URL. The embed origin is decided in the component. */
-        youtubeId: z.string(),
-        /** Becomes the iframe's accessible name, which is required. */
-        title: z.string(),
-      })
-      .optional(),
+    video: youtubeVideo.optional(),
     hero,
     quickActions: z.object({
       heading: z.string(),

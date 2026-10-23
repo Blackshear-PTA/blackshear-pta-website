@@ -15,62 +15,249 @@
 
 little-east:
   meta:
-    title: "Fine Arts and Little EAST - Blackshear PTA"
-    description: "The Fine Arts committee runs Little EAST, Blackshear's annual art show and silent auction, plus performances, drama club and the Austin Studio Tours."
-  title: "Fine Arts / Little EAST"
-  lede: "Blackshear is a Fine Arts Academy. This committee is how families get to be part of that."
+    title: "Little EAST - Blackshear PTA"
+    description: "Little EAST is Blackshear Elementary's free yearly art show and festival: student art, performances, the Trashion Show, screen printing and the PTA's silent auction, with photos and videos from past years."
+  # About Little EAST only, since 2026-10-23 (Jon). The page used to introduce
+  # the Fine Arts committee as a whole; the homepage still does, and links here.
+  title: "Little EAST"
+  lede: "Blackshear's yearly art show and festival, put on by the PTA. Free, and open to everyone."
   backdrop: little-east
   body:
-    - "We find fun ways for families to engage with the Fine Arts Academy. We join the Austin Studio Tours and turn the school into a gallery, students perform, the drama club does Shakespeare and improv, and we host Little EAST, our annual silent auction."
-    - "Little EAST is the PTA's largest event of the year and its largest single source of funding."
+    - "One Saturday each November, Blackshear Elementary Fine Arts Academy turns into a gallery. The halls fill with art from every grade, students perform on the front lawn, and families make things together in the craft courtyard."
+    - "There is a Trashion Show, where students walk the runway in outfits made from recycled materials, a screen printing shop with that year's Little EAST design, and a silent auction. Little EAST is also an official stop on the Austin Studio Tour."
+    - "It is the PTA's biggest event of the year and its largest single source of funding, so every bid and every shirt helps pay for the PTA's work at Blackshear."
   cta:
     label: "Join the PTA"
     href: "https://tinyurl.com/BlackshearStore"
+  # One section per year, newest first. Each folds shut under its heading:
+  # `expanded: true` on the current year only, `false` on the rest. When a new
+  # year goes on top, flip the old one to `false`.
+  #
+  # Everything below was carried over from the Weebly page (TASKS.md A40):
+  # its two YouTube embeds, its links, and every poster, banner and photo, in
+  # Weebly's order. The images are in src/assets/little-east/<year>/.
+  #
+  # Archived links point at where they actually land rather than at the
+  # tinyurl. The 2026 planning doc reuses tinyurl.com/12thLittleEAST for this
+  # year's auction, and a shortener repointed for a new year would silently
+  # change what an old year's link opens (F61).
   sections:
     - heading: "2025 - the 12th Little EAST"
-      body: []
+      expanded: true
+      videos:
+        - youtubeId: "LSkAJ5eusCo"
+          title: "The 12th Little EAST, 2025"
       links:
         - label: "2025 silent auction"
-          href: "https://tinyurl.com/12thLittleEAST"
-          note: "Opens BiddingOwl"
+          href: "https://new.biddingowl.com/12LittleEAST"
+          note: "Opens BiddingOwl. Bidding has closed"
         - label: "Photos by DesignLab44 (Marcus Charles)"
-          href: "https://tinyurl.com/BlackshearLEPics"
-          note: "Downloads a zip file from Dropbox"
-      names: []
+          href: "https://www.dropbox.com/scl/fo/ws0oyhdkek1dizj5ihi22/AHCV6hwjTX0vsATehyqnZjY?rlkey=ssvy5bs92zv3lfawm768qk4gv&dl=0"
+          note: "Opens the full set in Dropbox"
+      figures:
+        - src: "../assets/little-east/2025/poster.jpg"
+          alt: "The 2025 Little EAST poster, Legacy in the Making: the school building drawn under a rising sun"
+          caption: "The poster"
+        - src: "../assets/little-east/2025/sponsors.jpg"
+          alt: "Thank-you banner with the logos of the local businesses that sponsored the 2025 Little EAST, and the Blackshear families who donated items"
+          caption: "Thank you to our sponsors"
+      photos:
+        - src: "../assets/little-east/2025/photo-01.jpg"
+          alt: "The Little EAST banner and Austin Studio Tour sign on the school fence"
+        - src: "../assets/little-east/2025/photo-02.jpg"
+          alt: "A black wall covered in bright student pop-art paintings"
+        - src: "../assets/little-east/2025/photo-03.jpg"
+          alt: "Students in matching Blackshear T-shirts singing as a choir"
+        - src: "../assets/little-east/2025/photo-04.jpg"
+          alt: "A dress form wearing a Trashion outfit made from food boxes"
+        - src: "../assets/little-east/2025/photo-05.jpg"
+          alt: "Children painting rocks and getting their faces painted at a craft table"
+        - src: "../assets/little-east/2025/photo-06.jpg"
+          alt: "A wall of colorful student portraits"
+        - src: "../assets/little-east/2025/photo-07.jpg"
+          alt: "Students drumming on buckets on outdoor risers"
+        - src: "../assets/little-east/2025/photo-08.jpg"
+          alt: "Young dancers performing on the front lawn as families watch"
+        - src: "../assets/little-east/2025/photo-09.jpg"
+          alt: "A crowd of families on the lawn watching a performance"
+        - src: "../assets/little-east/2025/photo-10.jpg"
+          alt: "Parents and children drawing together at a craft table"
+        - src: "../assets/little-east/2025/photo-11.jpg"
+          alt: "Volunteers screen printing the Little EAST design"
+        - src: "../assets/little-east/2025/photo-12.jpg"
+          alt: "Little EAST tote bags and printed shirts on a clothing rack"
+        - src: "../assets/little-east/2025/photo-13.jpg"
+          alt: "Young ballet dancers holding hands in a circle on the grass"
+        - src: "../assets/little-east/2025/photo-14.jpg"
+          alt: "Children building with Legos at a crowded table"
+        - src: "../assets/little-east/2025/photo-15.jpg"
+          alt: "Children dancing on the lawn in front of the school fence"
+        - src: "../assets/little-east/2025/photo-16.jpg"
+          alt: "A child and an adult working on a Trashion outfit in the art room"
+        - src: "../assets/little-east/2025/photo-17.jpg"
+          alt: "Students in Trashion outfits made from recycled materials, in a hallway lined with art"
+        - src: "../assets/little-east/2025/photo-18.jpg"
+          alt: "A student walking the Trashion Show runway in a handmade outfit"
     - heading: "2024 - the 11th Little EAST"
-      body: []
+      expanded: false
+      videos:
+        - youtubeId: "Uwveb84gNoc"
+          title: "The 11th Little EAST, 2024"
       links:
-        - label: "2024 Little EAST video"
-          href: "https://tinyurl.com/11thLittleEAST"
-          note: "Opens YouTube"
         - label: "Photos by CMK Digitals"
           href: "https://photos.app.goo.gl/p2VUzM2dXKd1RECC9"
-          note: "Opens Google Photos"
-      names: []
+          note: "Opens the full set in Google Photos"
+      figures:
+        - src: "../assets/little-east/2024/poster.jpg"
+          alt: "The 2024 Little EAST poster, Fantastic Future: a flying saucer above the Earth, held up by children's hands, with butterflies and bees"
+          caption: "The poster"
+        - src: "../assets/little-east/2024/sponsors.jpg"
+          alt: "Thank-you banner with the logos of the local businesses that sponsored the 2024 Little EAST"
+          caption: "Thank you to our sponsors"
     - heading: "2023 - the 10th Little EAST"
-      body: []
+      expanded: false
       links:
         - label: "2023 silent auction"
-          href: "https://tinyurl.com/10thLittleEAST"
-          note: "Opens BiddingOwl"
-      names: []
-    - heading: "2022"
-      body: []
-      links:
-        - label: "2022 Little EAST video"
-          href: "https://www.tiktok.com/@blackshearfinearts/video/7165672308009422123"
-          note: "Opens TikTok"
-      names: []
-    - heading: "2021"
-      body: []
-      links:
-        - label: "2021 Little EAST video"
-          href: "https://youtu.be/81dHWT3LIzU"
-          note: "Opens YouTube"
-      names: []
+          href: "https://new.biddingowl.com/BlackshearLittleEAST"
+          note: "Opens BiddingOwl. Bidding has closed"
+      figures:
+        - src: "../assets/little-east/2023/poster.jpg"
+          alt: "The 2023 Little EAST poster: a green moth with the Earth at its center"
+          caption: "The poster"
+        - src: "../assets/little-east/2023/sponsors.jpg"
+          alt: "Thank-you banner with the logos of the local businesses that sponsored the 2023 Little EAST"
+          caption: "Thank you to our sponsors"
+      photos:
+        - src: "../assets/little-east/2023/photo-01.jpg"
+          alt: "Families making a mosaic at a craft table in the courtyard"
+        - src: "../assets/little-east/2023/photo-02.jpg"
+          alt: "Students selling baked goods at the bake sale table"
+        - src: "../assets/little-east/2023/photo-03.jpg"
+          alt: "Families gathered around a table of plants and crafts"
+        - src: "../assets/little-east/2023/photo-04.jpg"
+          alt: "Children building with cardboard boxes in the courtyard"
+        - src: "../assets/little-east/2023/photo-05.jpg"
+          alt: "Silent auction items laid out on a round table"
+        - src: "../assets/little-east/2023/photo-06.jpg"
+          alt: "A volunteer holding up a tote bag at the screen printing table"
+        - src: "../assets/little-east/2023/photo-07.jpg"
+          alt: "Young dancers performing on the lawn beside a mural"
+        - src: "../assets/little-east/2023/photo-08.jpg"
+          alt: "Students drumming on buckets on outdoor risers"
+        - src: "../assets/little-east/2023/photo-09.jpg"
+          alt: "Families making art at a table in front of a wall of student portraits"
+        - src: "../assets/little-east/2023/photo-10.jpg"
+          alt: "Children dancing in a circle on the lawn as families watch"
+        - src: "../assets/little-east/2023/photo-11.jpg"
+          alt: "A student walking the red-carpet Trashion Show runway in front of the school"
+        - src: "../assets/little-east/2023/photo-12.jpg"
+          alt: "Students playing ukuleles on outdoor risers"
+        - src: "../assets/little-east/2023/photo-13.jpg"
+          alt: "Two young students in Trashion outfits on the runway"
+        - src: "../assets/little-east/2023/photo-14.jpg"
+          alt: "A student striking a pose on the Trashion Show red carpet"
+        - src: "../assets/little-east/2023/photo-15.jpg"
+          alt: "A student on the runway in an outfit made from recycled packaging"
+    - heading: "2022 - the 9th Little EAST"
+      expanded: false
+      # The 2022 auction link is not carried over: BiddingOwl dropped the
+      # auction and the address now lands on its homepage (F21).
+      # The video is on the Fine Arts TikTok account, @blackshearfinearts.
+      videos:
+        - tiktokId: "7165672308009422123"
+          title: "The 9th Little EAST, 2022"
+      figures:
+        - src: "../assets/little-east/2022/poster.jpg"
+          alt: "The 2022 Little EAST poster: a one-eyed blue monster, framed by the day's activities"
+          caption: "The poster"
+        - src: "../assets/little-east/2022/donors.jpg"
+          alt: "Thank-you banner with the logos of the local businesses that donated to the 2022 Little EAST"
+          caption: "Thank you to our donors"
+      photos:
+        - src: "../assets/little-east/2022/photo-01.jpg"
+          alt: "A crowd of families on the front lawn"
+        - src: "../assets/little-east/2022/photo-02.jpg"
+          alt: "Silent auction items on a table in the cafeteria"
+        - src: "../assets/little-east/2022/photo-03.jpg"
+          alt: "Student paintings of planets and outer space"
+        - src: "../assets/little-east/2022/photo-04.jpg"
+          alt: "A wall of colorful student drawings"
+        - src: "../assets/little-east/2022/photo-05.jpg"
+          alt: "Student sunset paintings with black silhouettes"
+        - src: "../assets/little-east/2022/photo-06.jpg"
+          alt: "A wall of abstract student paintings"
+        - src: "../assets/little-east/2022/photo-07.jpg"
+          alt: "A wall of colorful student collages"
+        - src: "../assets/little-east/2022/photo-08.jpg"
+          alt: "Families on the lawn around easels of student artwork"
+        - src: "../assets/little-east/2022/photo-09.jpg"
+          alt: "A wall of student monster paintings"
+        - src: "../assets/little-east/2022/photo-10.jpg"
+          alt: "A hallway lined with student artwork"
+        - src: "../assets/little-east/2022/photo-11.jpg"
+          alt: "Students dancing in a circle on the lawn as families take photos"
+        - src: "../assets/little-east/2022/photo-12.jpg"
+          alt: "Students dancing together on the lawn"
+        - src: "../assets/little-east/2022/photo-13.jpg"
+          alt: "A student potting a succulent at a plant-your-own station"
+        - src: "../assets/little-east/2022/photo-14.jpg"
+          alt: "Two students painting at a craft table"
+        - src: "../assets/little-east/2022/photo-15.jpg"
+          alt: "Students playing ukuleles on outdoor risers"
+        - src: "../assets/little-east/2022/photo-16.jpg"
+          alt: "A hallway wall of student paper butterflies"
+        - src: "../assets/little-east/2022/photo-17.jpg"
+          alt: "A sea-monster art installation made of paper scales and googly eyes"
+        - src: "../assets/little-east/2022/photo-18.jpg"
+          alt: "Families crowding a craft table in the hallway"
+        - src: "../assets/little-east/2022/photo-19.jpg"
+          alt: "A child in front of a colorful mixed-media mural"
+        - src: "../assets/little-east/2022/photo-20.jpg"
+          alt: "Pulling a pink print through a silkscreen"
+        - src: "../assets/little-east/2022/photo-21.jpg"
+          alt: "Volunteers screen printing a T-shirt"
+    - heading: "2021 - the 8th Little EAST"
+      expanded: false
+      # The 2021 video link is not carried over: YouTube now says "Video
+      # unavailable", and it is not on the PTA's channel under another address
+      # (F61).
+      figures:
+        - src: "../assets/little-east/2021/donors.png"
+          alt: "Thank-you banner with the logos of the local businesses that donated to the 2021 Little EAST"
+          caption: "Thank you to our donors"
+      photos:
+        - src: "../assets/little-east/2021/photo-01.jpg"
+          alt: "Student artwork hung along the outside wall of the school"
+        - src: "../assets/little-east/2021/photo-02.jpg"
+          alt: "A hallway wall of colorful student pop-art portraits"
+        - src: "../assets/little-east/2021/photo-03.jpg"
+          alt: "Children building with cardboard boxes in the gym"
+        - src: "../assets/little-east/2021/photo-04.jpg"
+          alt: "A wall of student line-monster drawings"
+        - src: "../assets/little-east/2021/photo-05.jpg"
+          alt: "A wall of student sugar-skull drawings"
+        - src: "../assets/little-east/2021/photo-06.jpg"
+          alt: "A student painting at an outdoor craft table"
+        - src: "../assets/little-east/2021/photo-07.jpg"
+          alt: "A quilt of student art squares spelling out EAST 2021"
+        - src: "../assets/little-east/2021/photo-08.jpg"
+          alt: "A paper rainbow over a hallway doorway, under the words Creativity stARTs here"
+    - heading: "2019 - the 7th Little EAST"
+      expanded: false
+      photos:
+        - src: "../assets/little-east/2019/photo-01.jpg"
+          alt: "A white table set with plates covered in colorful dot stickers"
+        - src: "../assets/little-east/2019/photo-02.jpg"
+          alt: "An all-white room filling up with colorful dot stickers as visitors add them"
+        - src: "../assets/little-east/2019/photo-03.jpg"
+          alt: "Two young dancers in leotards smiling against a brick wall"
+  # littleeast@ is the chair's role account (B31), passed on with the role.
+  # The page lists it directly since Jon's call on 2026-10-23 (A40).
   contact:
-    email: "hello@blackshearpta.org"
-    note: "Ryann Matthews chairs this committee. Email the PTA and we will put you in touch."
+    name: "Ryann Matthews"
+    role: "Little EAST Chair"
+    email: "littleeast@blackshearpta.org"
+    note: "Anything that isn't about Little EAST goes to the whole board at hello@blackshearpta.org."
 
 sponsors:
   meta:

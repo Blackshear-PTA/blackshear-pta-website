@@ -33,7 +33,7 @@
 | U18 | ~~Give the break-glass admin a second factor that can be handed over~~ | JON | ✅ **Done 2026-10-05:** 2-Step Verification is on, and the authenticator setup key and backup codes are stored with the password, well ahead of Google's 30-day cutoff ([B22](#google-workspace-for-nonprofits), [F54](#f54)) |
 | U19 | ~~Delete the suspended `jon@` account - on or after 2026-10-19~~ | JON | ✅ Deleted 2026-10-22 (Jon). Suspended 2026-10-05 and nothing broke. Delete it with a data transfer to `communications@`; the steps are [B24](#google-workspace-for-nonprofits)'s step 7. ✅ It owns no secondary calendars (checked 2026-10-06) |
 | U20 | **Registrar transfer: Gabe runs it himself, on or after 2026-10-12** | JON + Gabe | Waiting on Gabe: the registry still showed GoDaddy on 2026-10-15. Jon's setup ✅ done 2026-10-06. Steps in [C9](#track-c---domain-dns-email) |
-| U21 | **Update the Little EAST page** | JON + board | Prioritized by Jon 2026-10-21. Waiting on the Little EAST chair's copy in the fill-in doc; once it is in, `CLAUDE` turns it into one PR. Steps in [A40](#phase-0---accounts--scaffold). Meanwhile the whole site points at the old one, `/little-east` included ([A48](#phase-2---real-site)) |
+| U21 | **Update the Little EAST page** | JON + board | Prioritized by Jon 2026-10-21. ✅ Caught up with the Weebly page 2026-10-23: every year, both videos, every photo, each year folding shut. Next: Jon sends the 2026 details and `CLAUDE` adds them on top. Steps in [A40](#phase-0---accounts--scaffold). Meanwhile the whole site points at the old one, `/little-east` included ([A48](#phase-2---real-site)), so review it at the workers.dev address |
 | U22 | ~~blackshearpta.org sends visitors to the old Weebly site, for now~~ | JON | ✅ Live 2026-10-22, before that evening's event: [PR #57](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/57) merged, and `CLAUDE` checked every page with a request. Decided by the exec board 2026-10-22. Switching back is A48 step 4. The new site stays up for review at its workers.dev address. Steps in [A48](#phase-2---real-site) |
 | U12 | ~~Test `/admin` end to end~~ | JON | ✅ Proven 2026-09-03. A post written in the editor, with three photos and a chosen cover, committed to `main` and rendered on the site. I cannot do this - Access blocks me, which is the point |
 
@@ -449,10 +449,15 @@
 
   1. [x] `CLAUDE` drafted a fill-in doc, *Little EAST page: new copy for the website*, setting each part of the live page beside a blank *Your version* column (2026-10-06).
   2. [x] Jon shared it with `littleeast@`.
-  3. [ ] The chair fills it in: 2026 details, links, photos (only with permission), and whether to list `littleeast@` as the contact.
-  4. [ ] `CLAUDE` turns it into one PR against the `little-east:` block in `src/content/pages.yaml`, which takes a title, a one-line intro, paragraphs, one button, year sections of links and names, and a contact.
+  3. [ ] The chair fills it in: 2026 details, links, photos (only with permission), and whether to list `littleeast@` as the contact. *Jon is now gathering the 2026 details himself (2026-10-23), from the committee's planning doc and the volunteer SignUpGenius.*
+  4. [x] `CLAUDE` caught the page up with the Weebly one first (2026-10-23, at Jon's request). It now has every year Weebly has, 2019 to 2025; both YouTube videos embedded (2025's and 2024's); and all 74 posters, thank-you banners and photos, with alt text. Each year folds shut under its heading, with 2025 open and the rest closed. The `little-east:` block's year sections now take `expanded`, `videos`, `figures` and `photos`, and any page can use them ([docs/EDITING-CONTENT.md](docs/EDITING-CONTENT.md)). Dead and repointable links are in [F61](#f61).
+  5. [ ] `JON` sends the 2026 details; `CLAUDE` adds a 2026 section on top, open, and closes 2025.
 
-  - **Prioritized by Jon, 2026-10-21** ([U21](#-do-this-week)). The next move is the chair's (step 3).
+  - **Prioritized by Jon, 2026-10-21** ([U21](#-do-this-week)). The next move is Jon's (step 5).
+  - **Photos of children, carried over at Jon's direction.** Most photos on the site deliberately show no faces ([docs/EDITING-CONTENT.md](docs/EDITING-CONTENT.md)). These do, and the 2025 donor banner names families and their children's grades. All of it has been public on the PTA's Weebly page for years, so it was carried over as it was.
+  - **Sharper 2025 photos exist.** The Weebly copies are about 1100px. Marcus Charles's Dropbox folder has the originals ([F61](#f61)), if the page ever wants them larger.
+  - **Jon's review, 2026-10-23:** the page is about Little EAST alone now, titled *Little EAST*, with an intro about the event; the homepage still introduces the Fine Arts committee and links here. 2021 and 2019 are the 8th and 7th, because there was no Little EAST in 2020. The one-line summaries per year came out. The 2022 TikTok is embedded now rather than linked; TikTok has no privacy mode like YouTube's, so its player loads only once someone opens 2022.
+  - **Contact: `littleeast@`** (Jon, 2026-10-23). The page names the chair and lists the role account, with `hello@` for anything else. As of the 2026-10-16 check in [B29](#google-workspace-for-nonprofits), `littleeast@` had not been signed in yet, so mail to it waits unread until the chair does.
 
 ### Phase 1 - Theme demo and board vote *(complete)*
 
@@ -1406,6 +1411,16 @@ The general shape: *Takeout is built for leaving Google, so it carries metadata,
 - **Which login a build ran as is on record.** Each Worker version names the login that uploaded it (`wrangler versions list`, or `author_email` in the versions API). The first build after the builds token moved to the admin account, on 2026-10-22, reads the admin account; every version before it, the PTA Gmail.
 
 The general shape: *a token's name says nothing about what depends on it; check its permissions and last use before rolling or deleting it.*
+
+<a name="f61"></a>
+**F61 - One Little EAST video is gone, and the archive's short links can be repointed under it.** Found while catching `/little-east` up with the Weebly page on 2026-10-23 ([A40](#phase-0---accounts--scaffold)):
+
+- **The 2021 video is gone.** `youtu.be/81dHWT3LIzU` now says *"Video unavailable"*, and it is not on the PTA's YouTube channel under another address. Dropped rather than carried over, per [F21](#f21). The Weebly page still links it.
+- **Short links get reused.** The 2026 planning doc links this year's auction as `tinyurl.com/12thlittleeast`, the same short link the page used for the 2025 auction. Repointed for 2026, it would quietly make the 2025 link open the 2026 auction. The archive now links to where each one actually lands: the BiddingOwl page itself, the Dropbox folder, the YouTube id.
+- **The photos link no longer downloads a zip.** `tinyurl.com/BlackshearLEPics` now opens Marcus Charles's *LITTLE EAST 2025* Dropbox folder, the full-resolution originals (2-3 MB each) of the photos Weebly shows at about 1100px. [F21](#f21) described the zip.
+- **The 2026 doc's *Video* link is the 2024 video.** `Uwveb84gNoc` is titled *11th Little EAST*. The 2025 one is `LSkAJ5eusCo`, *12th Little EAST Video (2025)*. Worth correcting in the doc if it is meant to be last year's.
+
+The general shape, again: *a shortener hides what it points at, and what it points at can change. An archive should hold the destination.*
 
 ## Reference
 
