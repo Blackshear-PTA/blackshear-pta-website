@@ -76,9 +76,10 @@ and the maintainer's other projects keep the personal one:
   account's token from gh for that one command, and stops if gh has no login
   for it. Do not `gh auth switch` to it: that changes the account every other
   project on the machine uses.
-- **`git push`** needs nothing extra. This checkout's own git config names the
-  account for gh's credential helper, and gives commits GitHub's no-reply
-  address for it. Its header in `scripts/gh.sh` has the settings.
+- **`git push`** needs nothing extra. This checkout's own git config has a
+  credential helper that asks gh for the account's token, and gives commits
+  GitHub's no-reply address for it. The settings are in the header of
+  `scripts/gh.sh`.
 
 ## The task board has an inbox
 

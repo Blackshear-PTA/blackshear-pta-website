@@ -14,13 +14,18 @@
 #
 # Pushes are covered separately, by this checkout's own git config:
 #
-#   git config --local credential.https://github.com.username blackshear-communications
 #   git config --local user.name  blackshear-communications
 #   git config --local user.email 338345163+blackshear-communications@users.noreply.github.com
+#   git config --local credential.https://github.com.username blackshear-communications
+#   git config --local --replace-all credential.https://github.com.helper ''
+#   git config --local --add credential.https://github.com.helper \
+#     '!f() { test "$1" = get || exit 0; printf "username=blackshear-communications\npassword=%s\n" "$(/opt/homebrew/bin/gh auth token --hostname github.com --user blackshear-communications)"; }; f'
 #
-# gh's credential helper then hands git the Communications account's token for
-# this repository only, and commits carry GitHub's no-reply address rather than
-# anyone's real one.
+# gh's own credential helper answers only for its active account, so the empty
+# entry clears it for this checkout, and the next one asks gh for this
+# account's token instead. Other repositories keep the personal account.
+# Commits carry GitHub's no-reply address for the account rather than anyone's
+# real one.
 #
 # One-time setup: add the account to gh, then make the personal one active
 # again, since adding an account also switches to it:
