@@ -49,7 +49,7 @@ What the PTA runs, who can get into each service, and what is changing. It names
 
 - **Communications:** Workspace super admin, Cloudflare Super Administrator, GitHub owner, Google for Nonprofits admin, holder of hello@ and one of its delegates.
 - **Secretary:** Workspace super admin. Invited as a Cloudflare Super Administrator for the domain transfer, to be scaled back afterwards ([C9](#c9)).
-- **The admin account:** the owner of every outside service and the emergency super admin. Workspace super admin, Cloudflare Super Administrator and owner of the deploy token, GitHub owner, primary Google for Nonprofits admin. Its credentials are in the password vault and the sealed envelope ([B33](#b33), [B22](#b22)).
+- **The admin account:** the owner of every outside service and the emergency super admin. Workspace super admin, Cloudflare Super Administrator and owner of the deploy token, GitHub owner and owner of the `/admin` editor's GitHub token, primary Google for Nonprofits admin. Its credentials are in the password vault and the sealed envelope ([B33](#b33), [B22](#b22)).
 - **President, VP, Fundraising:** delegates of hello@. The President also posts to members@.
 - **The website editor (/admin):** Communications, President, VP, Secretary and Fundraising, each signing in with their PTA Google account.
 - **Every officer:** their own role account, with 2-Step Verification required.
