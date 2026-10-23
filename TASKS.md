@@ -1,6 +1,6 @@
 # Blackshear PTA Website - Task Board
 
-**Last updated:** 2026-10-22 (both Gmails' Drive files copied in, checked and tidied, B18, B26 and B30; Takeout for both Gmails' Drives and what an export holds, B18 and F59; PTA Vault members, B33; Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47; member manager, A45 and D18)
+**Last updated:** 2026-10-23 (the PTA Gmail's Cloudflare login retired, A36; the `/admin` editor's GitHub token moved to the admin account, A37; what else the PTA Gmail signs in to, A38; the Weebly login, A29; the Fundraising Gmail's forwarding, contacts and password, B26. Earlier, 2026-10-22: both Gmails' Drive files copied in, checked and tidied, B18, B26 and B30; Takeout for both Gmails' Drives and what an export holds, B18 and F59; PTA Vault members, B33; Shared Drives created and themed, B15, B35, B18 and F58; an Inbox on the task board for quick ideas; Little EAST page prioritized, U21; announcements catch-up, A46; Ms. Bell and the campus website, A47; member manager, A45 and D18)
 **Owner legend:** `JON` = needs Jon's account access / a human decision · `CLAUDE` = Claude Code can do it · `BOARD` = needs another board member
 **Status legend:** `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 **Browsable view:** `npm run tasks:board` renders this file as a filterable page at `.task-board/index.html`, with a *Board meeting* tab drawn from [`docs/BOARD-AGENDA.md`](docs/BOARD-AGENDA.md), which is replaced before each meeting (the old one moves to [`docs/archive/`](docs/archive/), shown as the *Archive* tab), and a *Systems & accounts* tab drawn from [`docs/ACCOUNTS.md`](docs/ACCOUNTS.md), which is kept current as access changes. Keep the conventions below (`- [ ] **ID**: title - OWNER - detail`, the U and D tables, `**F<n> - headline.**`); the page parses them, and leaves out anything it does not recognize. **Write a task's steps as indented lines under it**, a numbered checklist (`  1. [ ] step`, `  2. [x] done step`) with notes as indented bullets, and keep the task line itself to a sentence or two. The page shows them under the task's *Details*, with ✅ and ⬜ marks.
@@ -109,7 +109,7 @@
 | 10 | Shared Drives, then document migration (B15, B35, B18) | ◐ both drives created 2026-10-21 ✅ (B15) · themes applied 2026-10-21 ✅ (B35) · migration ◐ both Gmails' files copied in, checked and tidied 2026-10-22 ✅; sorting into folders ⏳ (B18) |
 | 11 | **Data migration:** everything from both Gmails, plus running the Blackshear Parents calendar from Workspace (B30, B26, B27) | ◐ decided by the exec board 2026-10-06 ✅ · PTA Gmail mail and contacts into `hello@` ✅ 2026-10-16 · Fundraising Gmail mail ✅ 2026-10-23 (B26) · Drive ✅ 2026-10-22, copied in, checked and tidied · calendar ✅ stays with the PTA Gmail, run from Workspace (Jon, 2026-10-06, after Google refused the transfer) |
 | 12 | Organization logo in Gmail, Drive and Calendar (B20) | ✅ uploaded 2026-09-30; Google takes up to 4 days to show it |
-| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅, GitHub ✅ 2026-10-22, required org-wide on GitHub ✅ 2026-10-23 · sweep ⏳ |
+| 13 | Move service logins off the PTA Gmail, with a second admin on each: Cloudflare, GitHub, and anything else found (A36, A37, A38) | ◐ Cloudflare ✅ role-account admins, renamed · GitHub ✅ role-account owners · Cloudflare's deploy token on the admin account ✅ 2026-10-22 · two-factor: Cloudflare ✅, GitHub ✅ 2026-10-22, required org-wide on GitHub ✅ 2026-10-23 · the PTA Gmail off Cloudflare ✅ 2026-10-23 · sweep: found ✅ 2026-10-23 (A38), moving ⏳ |
 | 14 | Board onboarding: the eight new accounts signed in and enrolled in 2-Step Verification (B29) | ⏳ in progress |
 | 15 | Members' mailing list `members@` ("Blackshear PTA Members"): an announcement-only group of outside members (B28) | ✅ 2026-10-05 · 83 members |
 | 16 | Password manager for the central logins: KeePassXC, one file in the *PTA Vault* Shared Drive (D2, B33) | ✅ 2026-10-23 · in use: one file in *PTA Vault*, the PTA's logins moved out of 1Password, the officers set up |
@@ -196,21 +196,21 @@
 
   **Mail**
 
-  3. [ ] **Forwarding,** so nothing new falls into the gap. In the Fundraising Gmail: Settings → See all settings → *Forwarding and POP/IMAP* → **Add a forwarding address** → `fundraising@blackshearpta.org`. Google emails a confirmation to `fundraising@`, and whoever is signed in there clicks it. Then choose *Forward a copy of incoming mail to* `fundraising@` and *keep Gmail's copy in the Inbox*, and save.
+  3. [x] Done 2026-10-23 (Jon). **Forwarding,** so nothing new falls into the gap. In the Fundraising Gmail: Settings → See all settings → *Forwarding and POP/IMAP* → **Add a forwarding address** → `fundraising@blackshearpta.org`. Google emails a confirmation to `fundraising@`, and whoever is signed in there clicks it. Then choose *Forward a copy of incoming mail to* `fundraising@` and *keep Gmail's copy in the Inbox*, and save.
   4. [x] Done 2026-10-23. **Import:** Admin console → Data → Data import & export → Data import → **Gmail** → Import. Source `blackshearptafundraising@gmail.com` → **Request authorization**, and authorize it as the Fundraising Gmail within 24 hours, ticking *View your email messages and settings*.
   5. [x] Done 2026-10-23. Target `fundraising@blackshearpta.org`. Same settings as the PTA Gmail: default start date (everything), Spam and Trash unticked, no labels excluded. **Start import.**
   6. [x] Done 2026-10-23: all mail copied over (Jon). When Google's "finished" email arrives, check its totals look plausible, then **Exit import → Exit and delete import**. If step 3 was not done before step 4, first run one **delta import**, after forwarding is on, to catch the mail that arrived in between.
 
   **Contacts**
 
-  7. [ ] Export from the Fundraising Gmail as **Google CSV** (contacts.google.com → select all → Export). Importing needs a sign-in as `fundraising@`: the chair does it, or it waits until she has signed in. Delete the CSV from Downloads afterwards.
+  7. [x] Done 2026-10-23 (Jon). Export from the Fundraising Gmail as **Google CSV** (contacts.google.com → select all → Export). Importing needs a sign-in as `fundraising@`: the chair does it, or it waits until she has signed in. Delete the CSV from Downloads afterwards.
 
   **Later**
 
   8. [x] Done 2026-10-22: copied in, checked and tidied ([B18](#google-workspace-for-nonprofits) steps 4 and 7). **Drive:** Google Takeout, which runs signed in as the Fundraising Gmail, so do it in the same sitting as steps 3 to 7 if possible. **2026-10-21:** Jon got into the Fundraising Gmail, downloaded its Takeout and uploaded it through Drive for desktop, and all 5,606 files arrived ([B18](#google-workspace-for-nonprofits) step 7). Tidying is B18 step 4. Then the same tidying and upload as the PTA Gmail's ([B18](#google-workspace-for-nonprofits) steps 4 to 7, [F59](#f59)), into the documents drive's fundraising area. Anything with a public link stays where it is until its campaign ends.
-  9. [ ] **Services** registered to the Fundraising Gmail (a March 2026 board thread mentions Animoto, TinyURL and HelloSign, plus payment and sign-up tools): add `fundraising@` as an admin or change the login email, one at a time ([A38](#phase-0---accounts--scaffold)).
+  9. [ ] **Services** registered to the Fundraising Gmail (a March 2026 board thread mentions Animoto, TinyURL and HelloSign, plus payment and sign-up tools; all three also mail the PTA Gmail, [A38](#phase-0---accounts--scaffold) step 2): add `fundraising@` as an admin or change the login email, one at a time ([A38](#phase-0---accounts--scaffold)).
   10. [ ] Update printed or emailed material that gives the old address.
-  11. [ ] Save the Fundraising Gmail's password in the password manager ([B33](#google-workspace-for-nonprofits)).
+  11. [x] Done 2026-10-23 (Jon). Save the Fundraising Gmail's password in the password manager ([B33](#google-workspace-for-nonprofits)).
 
   - **Keep the Fundraising Gmail alive:** it is `fundraising@`'s recovery address.
   - **Nobody but the chair can check `fundraising@`'s mailbox:** an admin cannot read it without resetting her password, which would lock her out. So the spot-check of labels and old messages is hers once she signs in.
@@ -344,7 +344,7 @@
 
 *Free GitHub Team for verified 501(c)(3) orgs. Not urgent; see [F17](#f17), but free upside, and it converts the existing org in place with no rework.*
 
-- [~] **B7**: Apply for GitHub for Nonprofits - `JON` - ✅ Applied 2026-10-06; waiting on GitHub's review at nonprofits.github.com/nonprofit_offers. Approval converts the existing organization in place.
+- [~] **B7**: Apply for GitHub for Nonprofits - `JON` - ✅ Applied 2026-10-06, by the Communications account (Jon, 2026-10-23); waiting on GitHub's review at nonprofits.github.com/nonprofit_offers. Approval converts the existing organization in place.
 
   1. [x] Apply. GitHub did not find the PTA in its database, so the application asked for details (below).
   2. [ ] **When approved, choose Team**, which shows as $0 instead of $4 per user. Enterprise is discounted but still paid, about $15.75 a month, and is not needed.
@@ -379,17 +379,17 @@
   3. [x] **Two-factor on both new logins** (My Profile → Authentication), with authenticator apps (2026-10-22). The admin account's setup key and backup codes go in the envelope and the vault ([B22](#google-workspace-for-nonprofits), [B33](#google-workspace-for-nonprofits)).
   4. [x] **Move the Workers Builds token to the admin account** (2026-10-22): signed in as it, Workers & Pages → `blackshear-pta` → Settings → Build → API token → *Create new token*. The next build's Worker version was uploaded by the admin account, so it works ([F60](#f60)).
   5. [x] Done 2026-10-22 (Jon). Signed in as the original PTA Gmail login: My Profile → API Tokens → delete `blackshear-pta-builds`, which nothing uses now.
-  6. [ ] **Retire the PTA Gmail's Cloudflare login** (Jon, 2026-10-23: go ahead). The admin account and `communications@` are Super Administrators too, so nothing depends on this one. Checks first, then the removal, all signed in as the admin account.
+  6. [x] Done 2026-10-23 (Jon). The members list now shows only the admin account and `communications@` (`CLAUDE`, checked). **Retire the PTA Gmail's Cloudflare login** (Jon, 2026-10-23: go ahead). The admin account and `communications@` are Super Administrators too, so nothing depends on this one. Checks first, then the removal, all signed in as the admin account.
 
   **Before**
 
-  7. [ ] Workers & Pages → `blackshear-pta` → Settings → **Build**: *API token* is the admin account's (step 4), and *Git repository* shows `Blackshear-PTA/blackshear-pta-website`. Cloudflare ties that connection to the GitHub app installed on the organization (installed 2026-08-30, all repositories), not to whoever set it up.
-  8. [ ] Manage Account → **Notifications**: change any destination that is the PTA Gmail to the admin account.
-  9. [ ] Nothing else to move: the billing email is already the admin account (step 2), the payment method belongs to the account rather than to a login, and the local token belongs to the account (F60).
+  7. [x] Done 2026-10-23 (Jon). Workers & Pages → `blackshear-pta` → Settings → **Build**: *API token* is the admin account's (step 4), and *Git repository* shows `Blackshear-PTA/blackshear-pta-website`. Cloudflare ties that connection to the GitHub app installed on the organization (installed 2026-08-30, all repositories), not to whoever set it up.
+  8. [x] Done 2026-10-23 (Jon). Manage Account → **Notifications**: change any destination that is the PTA Gmail to the admin account.
+  9. [x] Nothing else to move: the billing email is already the admin account (step 2), the payment method belongs to the account rather than to a login, and the local token belongs to the account (F60).
 
   **Retire**
 
-  10. [ ] Manage Account → **Members** → the PTA Gmail's row → **⋯ → Remove member** → confirm.
+  10. [x] Done 2026-10-23 (Jon). Manage Account → **Members** → the PTA Gmail's row → **⋯ → Remove member** → confirm.
   11. [ ] `CLAUDE` checks the next build: the *Workers Builds* check passes, and the new Worker version's author is still the admin account ([F60](#f60)).
 
   - **To undo:** invite the PTA Gmail again from Members. Removing it does not delete the login itself; deleting that is optional and can wait.
@@ -408,10 +408,10 @@
 
   **Retiring the PTA account** (Jon, 2026-10-23)
 
-  6. [ ] **Who applied for GitHub for Nonprofits** ([B7](#google-workspace-for-nonprofits))? If it was the PTA account, leave step 12 until B7 is settled, in case GitHub's answer goes to the applicant.
-  7. [ ] **A new token for the Instagram list, under the admin account.** Signed in as it: avatar → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Name `blackshear-pta-instagram`; resource owner **Blackshear-PTA**; *Only select repositories* → `blackshear-pta-website`; **Contents: Read and write** and nothing else; expiration **No expiration** ([D12](#open-decisions)). An owner's token is approved automatically. If *No expiration* is not offered, the organization has a maximum-lifetime policy: Organization → Settings → Personal access tokens.
-  8. [ ] Cloudflare, signed in as the admin account: Workers & Pages → `blackshear-pta` → Settings → **Variables and Secrets** → `GITHUB_TOKEN` → edit, paste the new token, deploy. It goes nowhere else.
-  9. [ ] Test it: in `/admin`, save the Instagram list once. `CLAUDE` checks the commit on `main` is authored by the admin account's GitHub user, then updates [docs/ADMIN.md](docs/ADMIN.md) and D12 to name it as the token's owner.
+  6. [x] **Answered 2026-10-23 (Jon): the Communications account applied**, not the PTA account, so step 12 need not wait for [B7](#google-workspace-for-nonprofits). **Who applied for GitHub for Nonprofits?** If it was the PTA account, leave step 12 until B7 is settled, in case GitHub's answer goes to the applicant.
+  7. [x] Done 2026-10-23 (Jon). **A new token for the Instagram list, under the admin account.** Signed in as it: avatar → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Name `blackshear-pta-instagram`; resource owner **Blackshear-PTA**; *Only select repositories* → `blackshear-pta-website`; **Contents: Read and write** and nothing else; expiration **No expiration** ([D12](#open-decisions)). An owner's token is approved automatically. If *No expiration* is not offered, the organization has a maximum-lifetime policy: Organization → Settings → Personal access tokens.
+  8. [x] Done 2026-10-23 (Jon). `CLAUDE` checked: the deployment that set it was the admin account's, `GITHUB_TOKEN` is among the Worker's secrets, and the site still answers as before. Cloudflare, signed in as the admin account: Workers & Pages → `blackshear-pta` → Settings → **Variables and Secrets** → `GITHUB_TOKEN` → edit, paste the new token, deploy. It goes nowhere else.
+  9. [ ] Test it: in `/admin`, save the Instagram list once. It is the only real test, since Cloudflare never shows a secret's value. `CLAUDE` checks the commit on `main` is authored by the admin account's GitHub user, then updates [docs/ADMIN.md](docs/ADMIN.md) and D12 to name it as the token's owner.
   10. [ ] Signed in as the PTA account: delete its old fine-grained token (the same menu as step 7).
   11. [ ] The organization's billing email is still the PTA Gmail: change it to the admin account. `CLAUDE` can make that one API call on Jon's word.
   12. [ ] Organization → **People** → the PTA account → **Remove from organization**. Three owners remain, all with two-factor.
@@ -423,12 +423,21 @@
   - **Do not delete or rename the PTA account before step 10.** Until step 8, the `/admin` editor's GitHub token belongs to it ([D12](#open-decisions), [docs/ADMIN.md](docs/ADMIN.md)).
   - **At handoff,** the next Communications volunteer joins with their own personal GitHub account as an owner, and `jon-flowers` is removed.
   - *Considered and set aside:* Claude had recommended reaching GitHub only through the PTA account, citing GitHub's one-free-account-per-entity term. Jon chose direct owners (2026-10-05).
-- [ ] **A38**: Find everything else registered to the PTA Gmail - `JON` - Each service that still signs in as the PTA Gmail depends on one shared password. Known so far: Cloudflare ([A36](#phase-0---accounts--scaffold)), GitHub ([A37](#phase-0---accounts--scaffold)), Google for Nonprofits (done) and the parents' calendar ([B27](#google-workspace-for-nonprofits)).
+- [~] **A38**: Find everything else registered to the PTA Gmail - `JON` - Each service that still signs in as the PTA Gmail depends on one shared password. Known so far: Cloudflare ([A36](#phase-0---accounts--scaffold)), GitHub ([A37](#phase-0---accounts--scaffold)), Google for Nonprofits (done) and the parents' calendar ([B27](#google-workspace-for-nonprofits)).
 
-  1. [ ] `CLAUDE` runs the search in `hello@` through Claude in Chrome (Jon, 2026-10-23): Jon signs in to `hello@` in Chrome, and Claude reads only the search results. Search the PTA Gmail, or `hello@` now that its history is copied there, for `"verify your email"`, `"welcome to"` and `"account created"`.
-  2. [ ] List here what turns up, without passwords. Seen in the inbox so far: Zeffy, SignUpGenius and Animoto. Likely also Weebly, social accounts and design tools.
-  3. [ ] For each one that matters, add a second admin, then move the login to a role address.
-  4. [ ] Save the central ones in the password manager ([B33](#google-workspace-for-nonprofits)).
+  1. [x] Done 2026-10-23. `CLAUDE` runs the search in `hello@` through Claude in Chrome (Jon, 2026-10-23): Jon signs in to `hello@` in Chrome, and Claude reads only the search results. Search the PTA Gmail, or `hello@` now that its history is copied there, for `"verify your email"`, `"welcome to"` and `"account created"`.
+  2. [x] Done 2026-10-23 (`CLAUDE`, reading search results only). What signs in as the PTA Gmail, or mails it, with the latest activity seen:
+     - **Money:** Square (in use; its sign-in notices name the PTA Gmail, 2026-09), PayPal's business account with PayPal Giving Fund (in a past treasurer's name; payments until 2024), Zeffy (in use), Nonprofit Treasurer (2020) and QuickBooks (a Square sync, 2018).
+     - **Paid, and renewing on a card:** Linktree Pro, annual (2026-07), Suno (2026-09), TinyURL (paid 2023 and 2024) and Animoto (2026-10).
+     - **Buying accounts:** Amazon Business with Prime Business (2026-09), Walmart Business (2026), MyLowe's Pro Rewards (2026-09), Home Depot Pro Xtra, Sam's Club, Target and Sticker Mule (2026-09).
+     - **Website and social:** Weebly ([A29](#phase-2---real-site)), Instagram `blackshearpta` (signed up 2020), a YouTube channel (2020), the Facebook page (2019), Linktree and Google Domains (2020).
+     - **Sign-ups and mail:** SignUpGenius (in use), Mailchimp (the parents list, last used 2023), Smore Pro, Dropbox Sign (formerly HelloSign, 2021-22) and Submittable.
+     - **Signed in with Google as the PTA Gmail:** Zoom, Trello and FormsApp.
+     - **Old or one-off, nothing to do:** a Microsoft account (2017), Wix, a Justuno trial, US Games and an EPI customer portal.
+     - Animoto, TinyURL and HelloSign show up here too, though the March 2026 board thread put them on the Fundraising Gmail ([B26](#google-workspace-for-nonprofits) step 9). Each service's own account page says which address it uses.
+  3. [ ] For each one that matters, add a second admin, then move the login to a role address. Under Jon's rule the login becomes the admin account's, with the role that uses it as the second user where the service allows ([B5](#google-workspace-for-nonprofits)): `treasurer@` for the money ones, `communications@` for the website and social ones. **`CLAUDE` suggests this order:** money first (Square, PayPal, Zeffy, Amazon Business), then the paid renewals, then Weebly ([A29](#phase-2---real-site)), Instagram and SignUpGenius.
+  4. [ ] The treasurer confirms the paid renewals are still wanted: Linktree Pro, Suno, TinyURL and Animoto.
+  5. [ ] Save the central ones in the password manager ([B33](#google-workspace-for-nonprofits)).
 - [ ] **A39**: A room parent dashboard - `JON` + board + `CLAUDE` - Raised at the exec board meeting 2026-10-06. Needs details from the Room Parent Coordination chair (`roomparents@`) before anything is built.
 
   1. [ ] Ask the chair: who uses it, the coordinator only or every room parent? What does it show: classes and their room parents, sign-ups, events, contact lists, open needs? Where does that data live today: spreadsheets, SignUpGenius, email? Who keeps it updated?
@@ -546,7 +555,7 @@
   - **Why it is hard:** every option holds parents' email addresses. Self-hosting, the one that fit the constraints, also means running double opt-in and unsubscribe ourselves, and touching the DNS that carries the PTA's mail ([D12](#open-decisions)).
 - [~] **A29**: **Cutover** - `JON` + `CLAUDE` - Make the new site the PTA's only website. The pre-launch gate is already gone ([A33](#phase-2---real-site)), so the site is public.
 
-  1. [ ] Retire Weebly. It needs the login, which nobody has found yet, and the board's OK.
+  1. [ ] Retire Weebly. It needs the login and the board's OK. **The login has a trail** ([A38](#phase-0---accounts--scaffold), 2026-10-23): Weebly sent the PTA Gmail a password reset in 2021, and in September 2022 asked it to switch to a Square login, as Square did for every Weebly account. So the way in is either the Square login on the PTA Gmail, which is in use, or a password reset to the PTA Gmail.
   2. [ ] **Only after that,** remove `noindex` from all three places ([A6](#phase-0---accounts--scaffold)). Two indexed copies of the same content is a ranking mess to unwind.
   3. [ ] Switch the `.com` and `.net` redirects to 301 ([A22](#phase-2---real-site)).
   4. [ ] Submit a sitemap to Google.
