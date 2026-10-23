@@ -91,6 +91,9 @@ heading. `/little-east` uses all of it, one section per year:
       videos:
         - youtubeId: "LSkAJ5eusCo"   # the part after watch?v= or youtu.be/
           title: "The 12th Little EAST, 2025"
+        # or a TikTok: the number at the end of its address
+        # - tiktokId: "7165672308009422123"
+        #   title: "The 9th Little EAST, 2022"
       figures:                    # shown whole, never cropped: posters, banners
         - src: "../assets/little-east/2025/poster.jpg"
           alt: "What the poster shows, for a screen reader"

@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
 import VideoEmbed from '../components/sections/VideoEmbed.astro';
+import TikTokEmbed from '../components/TikTokEmbed.astro';
 import SectionGallery from '../components/SectionGallery.astro';
 import Lightbox from '../components/Lightbox.astro';
 import { isExternal } from '../lib/links';
@@ -113,7 +114,7 @@ const contents = (section: (typeof page.sections)[number]) => {
 
         {section.videos.map((video) => (
           <div class="section-video">
-            <VideoEmbed video={video} />
+            {'tiktokId' in video ? <TikTokEmbed video={video} /> : <VideoEmbed video={video} />}
           </div>
         ))}
 

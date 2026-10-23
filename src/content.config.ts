@@ -119,6 +119,17 @@ const youtubeVideo = z.object({
 });
 
 /**
+ * A TikTok video, by the number at the end of its address
+ * (tiktok.com/@account/video/<number>). An id for the same reason as YouTube's:
+ * TikTokEmbed.astro builds the embed address, so nothing pasted here can point
+ * the frame somewhere else.
+ */
+const tiktokVideo = z.object({
+  tiktokId: z.string().regex(/^\d+$/, 'Just the number at the end of the TikTok address.'),
+  title: z.string(),
+});
+
+/**
  * `image()` rather than a path string: it hands Astro's build-time pipeline the
  * file, so a page ships resized copies rather than the original. Paths are
  * relative to pages.yaml, so `../assets/little-east/2025/poster.jpg`.
@@ -133,7 +144,8 @@ const pageSection = ({ image }: SchemaContext) =>
      */
     expanded: z.boolean().optional(),
     body: z.array(z.string()).default([]),
-    videos: z.array(youtubeVideo).default([]),
+    /** Each one a YouTube video (`youtubeId`) or a TikTok (`tiktokId`). */
+    videos: z.array(z.union([youtubeVideo, tiktokVideo])).default([]),
     links: z.array(pageLink).default([]),
     /** Plain names with no destination: sponsor tiers, thank-you lists. */
     names: z.array(z.string()).default([]),

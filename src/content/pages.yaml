@@ -162,10 +162,10 @@ little-east:
       expanded: false
       # The 2022 auction link is not carried over: BiddingOwl dropped the
       # auction and the address now lands on its homepage (F21).
-      links:
-        - label: "2022 Little EAST video"
-          href: "https://www.tiktok.com/@blackshearfinearts/video/7165672308009422123"
-          note: "Opens TikTok"
+      # The video is on the Fine Arts TikTok account, @blackshearfinearts.
+      videos:
+        - tiktokId: "7165672308009422123"
+          title: "The 9th Little EAST, 2022"
       figures:
         - src: "../assets/little-east/2022/poster.jpg"
           alt: "The 2022 Little EAST poster: a one-eyed blue monster, framed by the day's activities"
