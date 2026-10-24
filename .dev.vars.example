@@ -15,26 +15,13 @@
 # accident - see devIdentity() in src/worker/access.ts for why, and
 # scripts/check-access.mjs for the tests that hold it to that.
 #
-# Use your own address: it becomes the commit author if you turn writes on.
+# Use your own address: it is what the history records as the editor.
 DEV_ADMIN_EMAIL=you@example.com
 
-# A GitHub fine-grained token with Contents: read and write.
-#
-# THERE IS NO LOCAL COPY OF THE CONTENT. /admin reads and writes through the
-# GitHub API, so a local editor session shows the real posts and - if writes are
-# on - commits real changes.
-GITHUB_TOKEN=replace-me
-
-# The branch /admin reads and writes. Defaults to main.
-#
-# Point it at a scratch branch if you are going to turn writes on, so a test
-# post lands somewhere harmless rather than on the live site.
-# GITHUB_BRANCH=some-scratch-branch
-
-# Local runs are read-only unless this says true, because a save here is a real
-# commit. Leave it off to click around the editor; turn it on deliberately, and
-# preferably with GITHUB_BRANCH set above.
-# DEV_ALLOW_WRITES=true
+# There used to be GITHUB_TOKEN, GITHUB_BRANCH and DEV_ALLOW_WRITES settings
+# here, for the Instagram list. It is in the database now, like the
+# announcements (TASKS.md A52), so a local editor needs no token and nothing it
+# saves leaves this machine. Delete those lines from an older .dev.vars.
 
 
 # ------------------------------------------------------- photos on :8787 -----

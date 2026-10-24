@@ -1,0 +1,112 @@
+---
+import { getInstagramList } from '../lib/instagram-list.mjs';
+
+/**
+ * The Instagram posts on /gallery, read from D1 on every request.
+ *
+ * A SERVER ISLAND, used as `<InstagramWall server:defer />`. The rest of
+ * /gallery stays prerendered, which matters: its photo grid is resized at
+ * build time, and rendering the whole page on request would serve the
+ * multi-megabyte originals instead (F55). Only this block is fetched when the
+ * page loads, so a change saved in /admin shows on the next visit, with no
+ * rebuild (TASKS.md A52).
+ *
+ * `cloudflare:workers` is imported here, inside the render, not at the top of
+ * the file. /gallery is prerendered in Node (astro.config.mjs), which cannot
+ * load that module at all, and a top-level import fails the whole build even
+ * though this frontmatter only ever runs on request, in the Worker.
+ *
+ * Renders nothing when the list is empty or the database is not reachable:
+ * the page never shows a row of empty boxes, and the Follow button below it
+ * still works.
+ */
+let urls: string[] = [];
+try {
+  const { env } = await import('cloudflare:workers');
+  const db = env.DB;
+  if (db) urls = (await getInstagramList(db)).urls;
+} catch (error) {
+  // Logged, not shown: a visitor gains nothing from a database error, and the
+  // photo grid and the Follow button carry the page without this block.
+  console.error('Instagram list did not load:', error);
+}
+---
+
+{
+  urls.length > 0 && (
+    <ul class="ig-wall">
+      {urls.map((url) => (
+        /*
+          Instagram's own embed markup: embed.js finds each blockquote by class
+          and swaps in an iframe. The link inside is not decoration - it is what
+          a visitor sees when the script is blocked, fails, or has not run yet.
+        */
+        <li>
+          <blockquote class="instagram-media" data-instgrm-permalink={url} data-instgrm-version="14">
+            <a href={url} target="_blank" rel="noopener">
+              View this post on Instagram
+              <span class="sr-only"> (opens in a new tab)</span>
+            </a>
+          </blockquote>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+{
+  /*
+    This block arrives after the page, so the embed script may already be
+    there from an earlier visit's navigation, or not at all. Either way, ask
+    it to process the new blockquotes rather than relying on it finding them
+    on load.
+  */
+  urls.length > 0 && (
+    <script is:inline>
+      (function () {
+        if (window.instgrm) {
+          window.instgrm.Embeds.process();
+          return;
+        }
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.instagram.com/embed.js';
+        document.body.appendChild(s);
+      })();
+    </script>
+  )
+}
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /*
+    Instagram's script rewrites each blockquote into an iframe and puts its own
+    inline styles on it, including a margin and a max-width of 540px. Those win
+    over anything here, so this only has to provide the track they sit in and
+    stop the pre-swap blockquote looking like a stray quote.
+  */
+  .ig-wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: var(--pta-gap);
+    margin: 0 0 var(--pta-gap);
+    padding: 0;
+    list-style: none;
+    justify-items: center;
+  }
+
+  .ig-wall :global(.instagram-media) {
+    margin: 0 !important;
+    max-width: 100%;
+  }
+</style>

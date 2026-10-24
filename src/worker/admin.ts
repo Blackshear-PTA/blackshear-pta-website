@@ -14,14 +14,13 @@
  * a sha for every write and a read-modify-write for the pin. All of that is
  * gone; see finding F41 in TASKS.md and migrations/0001_announcements.sql.
  *
- * The Instagram list has NOT moved. src/content/instagram.yaml is still a file
- * in the repository, rendered into /gallery at build time, and the two routes
- * at the bottom still write it through GitHub. That is why github.ts, the
- * token and the read-only dev guard all survive - in one corner, for one
- * feature, instead of on every request.
+ * SO DOES THE INSTAGRAM LIST, since 2026-10-24 (TASKS.md A52, migrations/0004).
+ * It was the last thing written through GitHub: a save was a commit and showed
+ * up after a rebuild, and it needed the GITHUB_TOKEN secret. Nothing here talks
+ * to GitHub any more, so that secret, the token behind it and the read-only
+ * guard a local run once needed are all gone.
  */
 import { devIdentity, verifyAccessJwt } from './access';
-import { readFile, writeFile, ConflictError, type RepoConfig } from './github';
 import { storeImage, type ImageEnv } from './images';
 import {
   listAll,
@@ -34,10 +33,8 @@ import {
   nowStamp,
 } from '../lib/posts.mjs';
 import type { PostFields } from '../lib/posts.mjs';
-import { parsePosts, stringifyPosts, validatePosts, MAX_POSTS } from './instagram.mjs';
-
-/** The Instagram post list /gallery renders. Still a file in the repo. */
-const INSTAGRAM_FILE = 'src/content/instagram.yaml';
+import { getInstagramList, saveInstagramList } from '../lib/instagram-list.mjs';
+import { validatePosts, MAX_POSTS } from './instagram.mjs';
 
 /** Must match `gradeSlugs` in src/lib/grades.ts. */
 const GRADES = new Set(['pre-k-3', 'pre-k-4', 'kinder', '1', '2', '3', '4', '5']);
@@ -49,11 +46,8 @@ const IMAGE_KEY = /^[0-9a-f]{32}\.(jpg|png|webp)$/;
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
 export interface AdminEnv extends ImageEnv {
-  /** Announcements. See migrations/. */
+  /** Announcements and the Instagram list. See migrations/. */
   DB?: D1Database;
-  GITHUB_TOKEN?: string;
-  GITHUB_REPO?: string;
-  GITHUB_BRANCH?: string;
   CF_ACCESS_TEAM_DOMAIN?: string;
   CF_ACCESS_AUD?: string;
   /**
@@ -62,8 +56,6 @@ export interface AdminEnv extends ImageEnv {
    * production would still change nothing.
    */
   DEV_ADMIN_EMAIL?: string;
-  /** Local development only. "true" lets a local run commit to the real repo. */
-  DEV_ALLOW_WRITES?: string;
 }
 
 const json = (data: unknown, status = 200): Response =>
@@ -71,25 +63,6 @@ const json = (data: unknown, status = 200): Response =>
     status,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
-
-/**
- * GitHub config, for the Instagram routes only.
- *
- * Read where it is needed rather than up front. It used to be resolved on every
- * request, which meant a missing token made the posts list report a
- * configuration error for a service the posts list no longer uses.
- */
-function readConfig(env: AdminEnv, needsWrite: boolean): { config: RepoConfig } | { error: string } {
-  // The repository is public, so reading instagram.yaml needs no token at all.
-  if (needsWrite && !env.GITHUB_TOKEN) {
-    return { error: 'Not configured yet. Missing Worker secret: GITHUB_TOKEN.' };
-  }
-  const [owner, repo] = (env.GITHUB_REPO ?? 'Blackshear-PTA/blackshear-pta-website').split('/');
-  if (!owner || !repo) return { error: 'GITHUB_REPO must look like owner/repo.' };
-  return {
-    config: { owner, repo, branch: env.GITHUB_BRANCH ?? 'main', token: env.GITHUB_TOKEN },
-  };
-}
 
 /**
  * Normalizes the images array off the wire. Returns null when the shape is
@@ -298,18 +271,13 @@ export async function handleAdminApi(
   }
   if (!identity) return json({ error: 'Not signed in.' }, 401);
 
-  /**
-   * A local run may now write POSTS freely, and still may not write the
-   * REPOSITORY.
-   *
-   * The old guard covered everything, because there was no local copy of the
-   * content and a save from localhost was a real commit to the real repo.
-   * Announcements are in D1 now and `wrangler dev` binds a LOCAL database, so
-   * clicking around the editor cannot publish anything - which is exactly the
-   * feedback loop F40 was missing. The Instagram list is still a file in the
-   * repository, so that half of the guard stays.
+  /*
+   * A local run writes freely. Everything the editor saves - announcements and
+   * the Instagram list - is in D1, and `wrangler dev` binds a LOCAL database,
+   * so clicking around the editor cannot publish anything. Until the Instagram
+   * list moved (A52), a local save of it was a real commit, and a guard here
+   * made it read-only unless DEV_ALLOW_WRITES was set.
    */
-  const canWriteRepo = !dev || env.DEV_ALLOW_WRITES === 'true';
 
   const route = url.pathname.replace(/^\/admin\/api\/?/, '');
   const editor = identity.email;
@@ -321,7 +289,7 @@ export async function handleAdminApi(
         // Only ever present on localhost. The editor says out loud which
         // database it is writing to, because from a dev server that is the one
         // thing you cannot tell by looking.
-        ...(dev ? { dev: true, database: 'local', canWriteRepo } : {}),
+        ...(dev ? { dev: true, database: 'local' } : {}),
       });
     }
 
@@ -418,55 +386,57 @@ export async function handleAdminApi(
     // --------------------------------------------------------- instagram
 
     /**
-     * Instagram posts on /gallery.
+     * Instagram posts on /gallery: one row in D1, read and written whole,
+     * because the list is at most six addresses (migrations/0004). A save is
+     * live on the next visit to /gallery, whose Instagram block is rendered on
+     * request (src/components/InstagramWall.astro).
      *
-     * Still markdown-era machinery: the whole file is read and written every
-     * time through the GitHub Contents API, a save is a commit, and the change
-     * appears after a rebuild. That is fine here and was never the complaint -
-     * it holds at most six lines, it changes a few times a year, and nobody is
-     * waiting on it the way they wait on an announcement. The sha is carried
-     * through for optimistic concurrency exactly as before.
+     * `updatedAt` travels with the list for optimistic concurrency, as it does
+     * for posts: the editor sends back the version it loaded, and a save that
+     * started from an older one is refused rather than allowed to undo
+     * somebody else's change.
      */
-    if (route === 'instagram' && request.method === 'GET') {
-      const configResult = readConfig(env, false);
-      if ('error' in configResult) return json({ error: configResult.error }, 503);
-      const found = await readFile(configResult.config, INSTAGRAM_FILE);
-      return json({
-        urls: found ? parsePosts(found.text) : [],
-        sha: found?.sha ?? null,
-        max: MAX_POSTS,
-      });
-    }
-
-    if (route === 'instagram' && request.method === 'PUT') {
-      if (!canWriteRepo) {
-        return json(
-          {
-            error:
-              'Local development cannot change the Instagram list. That one is still a file ' +
-              'in the repository, so saving it from here would commit to the real repo - ' +
-              'set DEV_ALLOW_WRITES=true in .dev.vars if that is what you want. ' +
-              'Announcements are not affected: those write to your local database.',
-          },
-          403,
-        );
+    if (route === 'instagram') {
+      if (!env.DB) {
+        return json({ error: 'The database is not connected, so the Instagram list cannot load.' }, 503);
       }
-      const configResult = readConfig(env, true);
-      if ('error' in configResult) return json({ error: configResult.error }, 503);
+      const db = env.DB;
+      const notMigrated = {
+        error:
+          'The Instagram list has not been moved into the database yet. Someone needs to run: ' +
+          'npx wrangler d1 migrations apply blackshear-pta --remote',
+      };
 
-      const payload = (await request.json()) as { urls?: unknown; sha?: unknown };
-      const check = validatePosts(payload.urls);
-      if (!check.ok) return json({ error: check.error }, 400);
+      if (request.method === 'GET') {
+        const list = await getInstagramList(db);
+        if (list.missing) return json(notMigrated, 503);
+        return json({ urls: list.urls, updatedAt: list.updatedAt, max: MAX_POSTS });
+      }
 
-      const written = await writeFile(
-        configResult.config,
-        INSTAGRAM_FILE,
-        stringifyPosts(check.urls),
-        `Update Instagram posts (${check.urls.length})`,
-        editor,
-        typeof payload.sha === 'string' ? payload.sha : undefined,
-      );
-      return json({ urls: check.urls, sha: written.sha });
+      if (request.method === 'PUT') {
+        const payload = (await request.json()) as { urls?: unknown; updatedAt?: unknown };
+        const check = validatePosts(payload.urls);
+        if (!check.ok) return json({ error: check.error }, 400);
+
+        if ((await getInstagramList(db)).missing) return json(notMigrated, 503);
+        const saved = await saveInstagramList(db, {
+          urls: check.urls,
+          editor,
+          expectedUpdatedAt: typeof payload.updatedAt === 'string' ? payload.updatedAt : undefined,
+          at: nowStamp(),
+        });
+        if (saved === 'conflict') {
+          return json(
+            {
+              error:
+                'Somebody else changed the Instagram list while you had it open. It has been ' +
+                'reloaded with their version; make your change again.',
+            },
+            409,
+          );
+        }
+        return json(saved);
+      }
     }
 
     // ------------------------------------------------------------ images
@@ -492,39 +462,6 @@ export async function handleAdminApi(
 
     return json({ error: 'Unknown endpoint.' }, 404);
   } catch (error) {
-    if (error instanceof ConflictError) return json({ error: error.message }, 409);
-
-    const message = (error as Error).message ?? String(error);
-
-    /**
-     * GitHub's unauthenticated hourly limit, which only the Instagram routes can
-     * reach now. It used to be reachable by opening the editor at all: a single
-     * page load spent about seven Contents API calls listing and reading posts,
-     * and an afternoon of reloads ran out the 60-per-hour budget.
-     */
-    if (/rate limit/i.test(message)) {
-      return json(
-        {
-          error: dev
-            ? "GitHub's hourly limit for requests without a token is used up. It resets " +
-              'within the hour - or add a GITHUB_TOKEN to .dev.vars to raise it. ' +
-              'This only affects the Instagram list; announcements are unaffected.'
-            : 'GitHub is rate limiting us. Wait a few minutes and reload.',
-        },
-        429,
-      );
-    }
-    if (dev && /\b401\b/.test(message)) {
-      return json(
-        {
-          error:
-            'GitHub rejected the token in .dev.vars. Reading the Instagram list needs no ' +
-            'token at all - remove the GITHUB_TOKEN line and reload. ' +
-            `(GitHub said: ${message})`,
-        },
-        500,
-      );
-    }
 
     const explained = explainDbError(error);
     return json({ error: explained.message }, explained.status);

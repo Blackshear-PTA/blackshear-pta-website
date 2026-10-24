@@ -45,22 +45,30 @@ six posts a few times a year is less work than that, and it cannot break.
 
 ## Where it lives
 
-`src/content/instagram.yaml`, an ordinary content file. `/admin` writes it
-through the same commit-per-save path as announcements, so:
+One row in the site's database, the table `instagram_list`
+(`migrations/0004_instagram_list.sql`), next to the announcements. So:
 
-- `git log src/content/instagram.yaml` says who changed it and when.
-- `git revert` undoes a mistake.
-- Hand-editing still works. Keep the shape: `- url:` entries under
-  `gallery:` → `posts:`, each in double quotes.
+- **A save shows straight away.** `/gallery` itself is prerendered, so its
+  photos stay resized, but the Instagram block is a *server island*
+  (`src/components/InstagramWall.astro`) that reads the list on every visit.
+  There is no rebuild to wait for.
+- **History** on `/admin` records who changed it and when, with the whole list
+  each time, so a mistake can be put back by hand.
+- `npm run export:posts -- --remote` writes it to `exports/instagram.json`
+  along with the announcements.
+
+Until [A52](../TASKS.md) it was `src/content/instagram.yaml`, saved as a commit
+through a GitHub token, and a change appeared only after the site rebuilt.
 
 The address pattern and the maximum are defined once in
-`src/worker/instagram.mjs` and used by the editor, the API and the build schema,
-so a hand-edited file is held to the same rule as a pasted one.
-`npm run check:instagram` round-trips the writer through the parser and asserts
-every refusal, including lookalike hosts like `instagram.com.evil.test`.
+`src/worker/instagram.mjs` and used by the editor and the API. The table holds
+the shape too: at most six entries, always a JSON list, only ever one row.
+`npm run check:instagram` asserts every refusal, including lookalike hosts like
+`instagram.com.evil.test`; `npm run check:d1` covers saving, conflicts and the
+history row.
 
 ## Turning it off
 
-Remove every post in `/admin`, or set `posts: []` in the file. The embeds and
+Remove every post in `/admin`. The embeds and
 Instagram's script both disappear — nothing is loaded from instagram.com when
 the list is empty — leaving the photo grid and the follow link.

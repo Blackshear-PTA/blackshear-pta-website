@@ -189,13 +189,11 @@ _worker_preflight() {
     printf '  %s/admin signs in as%s %s\n' "$DIM" "$RESET" "$admin"
   fi
 
-  # A token is not needed for the Instagram list to LOAD, and a bad one is worse
-  # than none: the repository is public, so reads succeed unauthenticated and
-  # fail with a bare "Bad credentials" the moment a stale token is attached.
-  # Announcements no longer touch GitHub at all.
-  if [[ -n "$token" && "${#token}" -lt 20 ]]; then
-    printf '%s  ! GITHUB_TOKEN looks like a placeholder - the Instagram list will fail to load.%s\n' "$YELLOW" "$RESET"
-    printf '%s    Delete the line; local reads need no token.%s\n' "$DIM" "$RESET"
+  # Left over from when the Instagram list was committed through GitHub. Nothing
+  # reads it any more (A52), and a GitHub token sitting in a file nobody needs
+  # it in is one more copy to leak.
+  if [[ -n "$token" ]]; then
+    printf '%s  ! .dev.vars still has a GITHUB_TOKEN. Nothing uses it now - delete the line.%s\n' "$YELLOW" "$RESET"
   fi
 
   # The announcements database.

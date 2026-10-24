@@ -149,9 +149,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         announcements is why anyone opens this page, and this is a thing you
         touch a few times a year.
 
-        It edits src/content/instagram.yaml through the same commit-per-save
-        path as everything else here, so there is no second kind of storage and
-        no second thing to back up.
+        It is a row in the same database as the announcements, so there is no
+        second kind of storage and no second thing to back up, and a save shows
+        on the photos page straight away (TASKS.md A52).
       */}
       <section class="ig-block">
         <div class="list-head">
@@ -202,9 +202,9 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
           <h2>History</h2>
         </div>
         <p class="ig-hint">
-          Every change to an announcement, newest first, with who made it. A deleted
-          post is kept here in full, so ask whoever looks after the website if one
-          needs putting back.
+          Every change to an announcement or the Instagram list, newest first, with
+          who made it. A deleted post is kept here in full, so ask whoever looks
+          after the website if one needs putting back.
         </p>
         <p class="status" data-history-status hidden role="status"></p>
         <ul class="history-list" data-history>
@@ -1609,7 +1609,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     const igInput = $<HTMLInputElement>('[data-ig-input]');
 
     let urls: string[] = [];
-    let sha: string | null = null;
+    /** The version this screen loaded; a save naming an older one is refused. */
+    let updatedAt: string | null = null;
     let max = 6;
 
     function drawIg() {
@@ -1694,12 +1695,14 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         const result = (await api('instagram', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urls, sha }),
-        })) as { urls: string[]; sha: string };
+          body: JSON.stringify({ urls, updatedAt }),
+        })) as { urls: string[]; updatedAt: string };
         urls = result.urls;
-        sha = result.sha;
+        updatedAt = result.updatedAt;
         drawIg();
-        say(igStatus, `${done} The photos page updates in about a minute.`, 'ok');
+        say(igStatus, `${done} The photos page shows it now.`, 'ok');
+        // The save wrote a history row in the same transaction; show it.
+        void afterRefresh?.();
       } catch (error) {
         // Reload rather than leave the screen showing a change that did not
         // happen - the most likely cause is somebody else having saved.
@@ -1712,11 +1715,11 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       try {
         const result = (await api('instagram')) as {
           urls: string[];
-          sha: string | null;
+          updatedAt: string | null;
           max: number;
         };
         urls = result.urls ?? [];
-        sha = result.sha;
+        updatedAt = result.updatedAt;
         max = result.max ?? 6;
         igMax.textContent = String(max);
         drawIg();
@@ -1859,7 +1862,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
         email: string;
         dev?: boolean;
         database?: string;
-        canWriteRepo?: boolean;
       };
       $('[data-who]').textContent = session.email;
 
@@ -1869,17 +1871,13 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
        * This used to warn that saving would commit to the real repository,
        * because it would. Announcements are now rows in a LOCAL database here,
        * so the warning would be false and the banner says the opposite: write
-       * whatever you like, none of it leaves this machine. The Instagram list
-       * is the one thing that still reaches the real repo, and it says so.
+       * whatever you like, none of it leaves this machine. Since the Instagram
+       * list moved into the database too (A52), that is true of everything.
        */
       if (session.dev) {
         const bar = $<HTMLElement>('[data-devbar]');
-        bar.textContent = session.canWriteRepo
-          ? 'Local development — announcements write to your local database. ' +
-            'The Instagram list still commits to the real repository.'
-          : 'Local development — announcements write to your local database and go nowhere else. ' +
-            'The Instagram list is read-only here.';
-        bar.classList.toggle('is-live', Boolean(session.canWriteRepo));
+        bar.textContent =
+          'Local development — everything here writes to your local database and goes nowhere else.';
         bar.hidden = false;
       }
     } catch (error) {
@@ -1920,9 +1918,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   .who { margin: 0; font-size: var(--text-fine); color: var(--pta-ink-muted); }
   /*
     Same stripe idiom as .guide - a colored edge on white, never a filled
-    panel. Read-only carries the quiet accent; .is-live means a save commits
-    for real, and borrows the delete button's red so it reads as a warning
-    rather than as decoration.
+    panel. There used to be a red .is-live variant for when a local save still
+    committed to the real repository; nothing does any more (A52).
   */
   .devbar {
     margin: 0 0 var(--pta-gap);
@@ -1933,10 +1930,6 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     background: var(--pta-surface);
     font-size: var(--text-fine);
     color: var(--pta-ink);
-  }
-  .devbar.is-live {
-    border-inline-start-color: #b3261e;
-    font-weight: 600;
   }
   .rule {
     height: var(--pta-rule-width);
