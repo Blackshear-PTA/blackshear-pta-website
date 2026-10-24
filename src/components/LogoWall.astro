@@ -4,13 +4,22 @@ import type { PageData } from '../types';
 import { isExternal } from '../lib/links';
 
 /**
- * A page section's sponsor logos: a grid of white tiles, each linking to the
- * sponsor's own site.
+ * A page section's sponsor logos, free-standing on the page, each linking to
+ * the sponsor's own site.
  *
- * Logos come in every shape - wide wordmarks, square badges, a few with their
- * own white margins - so each sits whole inside a tile of one fixed shape
- * rather than being cropped or stretched. The tile is always white, because
- * most logos were drawn for a white page and several have no transparency.
+ * NO TILES. They used to sit in bordered white boxes; the Fundraising chair
+ * asked for them loose on the page, as the old site had them (2026-10-24). The
+ * page is white, so the logos drawn on a white ground still blend in.
+ *
+ * EVERY LOGO GETS ABOUT THE SAME AREA, not the same width or height. Logos come
+ * in every shape: a wide wordmark sized to a box's width looks tiny, and a
+ * square badge sized to its height looks huge. Giving each one the same area
+ * and capping both sides makes a row read as even, which is what the chair's
+ * "dimension guidelines" came down to. The size comes from the file's own
+ * proportions, so a new logo needs no setting.
+ *
+ * One size for every section. Sizing by sponsorship level would be a `size`
+ * on the section scaling AREA, if the board ever wants it (TASKS.md A51).
  *
  * Not in the lightbox: a logo is a link to the business, not a picture to
  * look at.
@@ -20,14 +29,38 @@ interface Props {
 }
 
 const { logos } = Astro.props;
+
+/** The area every logo gets, in rem²: a 2:1 wordmark comes out about 9 × 4.5. */
+const AREA = 40;
+/** The most any logo may take on either side, so no shape runs away. */
+const MAX_WIDTH = 11;
+const MAX_HEIGHT = 5.5;
+
+function boxFor(width: number, height: number) {
+  const ratio = width / height;
+  let w = Math.sqrt(AREA * ratio);
+  let h = w / ratio;
+  if (w > MAX_WIDTH) { w = MAX_WIDTH; h = w / ratio; }
+  if (h > MAX_HEIGHT) { h = MAX_HEIGHT; w = h * ratio; }
+  return { w: Math.round(w * 100) / 100, h: Math.round(h * 100) / 100 };
+}
+
+const sized = logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height) }));
 ---
 
 {
-  logos.length > 0 && (
+  sized.length > 0 && (
     <ul class="logo-wall">
-      {logos.map((logo) => {
+      {sized.map((logo) => {
         const picture = (
-          <Image src={logo.src} alt={logo.name} width={320} densities={[1, 2]} loading="lazy" />
+          <Image
+            src={logo.src}
+            alt={logo.name}
+            width={Math.ceil(logo.box.w * 16)}
+            densities={[1, 2]}
+            loading="lazy"
+            style={`width:${logo.box.w}rem;height:${logo.box.h}rem`}
+          />
         );
         return (
           <li>
@@ -41,9 +74,7 @@ const { logos } = Astro.props;
                 {picture}
               </a>
             ) : (
-              <span class="tile" title={logo.name}>
-                {picture}
-              </span>
+              <span title={logo.name}>{picture}</span>
             )}
           </li>
         );
@@ -54,44 +85,37 @@ const { logos } = Astro.props;
 
 <style>
   .logo-wall {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-    gap: 0.75rem;
-    margin: 0 0 var(--pta-gap);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.75rem 2.5rem;
+    margin: 0.5rem 0 var(--pta-gap);
     padding: 0;
     list-style: none;
   }
 
   a,
-  .tile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 3 / 2;
-    padding: 0.6rem;
-    background: #fff;
-    border: var(--pta-border-width) solid var(--pta-rule);
-    border-radius: var(--pta-radius);
+  span {
+    display: block;
   }
 
   a {
-    box-shadow: var(--pta-shadow);
+    border-radius: var(--pta-radius);
     transition: transform 0.15s ease;
   }
 
-  a:hover,
-  a:focus-visible {
+  a:hover {
     transform: translateY(-2px);
+  }
+
+  a:focus-visible {
     outline: 3px solid var(--pta-accent);
-    outline-offset: 0;
+    outline-offset: 6px;
   }
 
   img {
     display: block;
-    width: auto;
-    height: auto;
     max-width: 100%;
-    max-height: 100%;
     object-fit: contain;
   }
 </style>

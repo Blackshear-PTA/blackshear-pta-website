@@ -159,9 +159,10 @@ const pageSection = ({ image }: SchemaContext) =>
     /** A grid of square thumbnails that open full size. Order is display order. */
     photos: z.array(z.object({ src: image(), alt: z.string() })).default([]),
     /**
-     * Sponsor logos, each linking to the sponsor's own site. Shown whole on a
-     * white tile, never cropped. `name` is what a screen reader hears, and the
-     * tile's tooltip; `href` is optional because a few sponsors have no site.
+     * Sponsor logos, each linking to the sponsor's own site. Shown whole and
+     * loose on the page, never cropped, each given about the same area
+     * (src/components/LogoWall.astro). `name` is what a screen reader hears, and
+     * the tooltip; `href` is optional because a few sponsors have no site.
      * The 2026-2027 sponsorship levels promise "logo and link" on this website
      * from the Community level up, which is what this is for.
      */
