@@ -600,14 +600,14 @@
   1. [x] Done 2026-10-23: `migrations/0004_instagram_list.sql`, one row holding the list, seeded with the six posts `instagram.yaml` had. Saves are recorded in the same `edits` history as posts, so `/admin`'s **History** shows them. The table refuses more than six posts, anything but a JSON list, and a second row.
   2. [x] Done 2026-10-23: `/admin`'s Instagram routes read and write it, refusing a save made from an out-of-date screen as post saves do. **`/gallery` stays prerendered**, not on demand as first planned: rendering it on request would serve its photos at full size ([F55](#f55)). Only the Instagram block is fetched on each visit, as an Astro *server island* (`src/components/InstagramWall.astro`), so a save shows on the next visit. Checked locally: a reorder in `/admin` showed on `/gallery` at once, the photos stayed resized, and a stale save got the "somebody else changed it" message.
   3. [x] Done 2026-10-23: `check:d1` covers saving, conflicts, the history row and the table's limits; `check:instagram` keeps the address rules; `export:posts` writes `exports/instagram.json` too ([A44](#phase-2---real-site)). `src/worker/github.ts` and `src/content/instagram.yaml` are deleted.
-  4. [ ] **After the PR merges and deploys:** `CLAUDE` runs `npm run db:migrate:remote` and checks `/gallery` and `/admin` by request. Until then the live `/gallery` shows the photos without the Instagram block, and `/admin` says the migration is missing.
+  4. [x] Done 2026-10-23, after [PR #61](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/61) deployed: `CLAUDE` applied migration 0004 to the live database (Jon approved it in chat). The live `/gallery` shows the six posts as embeds, newest first, and its photos are still the resized ones. `/admin` needs a sign-in, so Jon checks there that the Instagram list loads.
   5. [ ] Then nothing uses the GitHub token. `JON` deletes the `GITHUB_TOKEN` secret (Cloudflare → Workers & Pages → `blackshear-pta` → Settings → Variables and Secrets) and the admin account's `blackshear-pta-instagram` token (GitHub, signed in as the admin account → Settings → Developer settings → Fine-grained tokens). That retires D12 ([A37](#phase-0---accounts--scaffold), [docs/ADMIN.md](docs/ADMIN.md)).
 
 - [~] **A53**: Keep past events on `/calendar` - `CLAUDE` - Raised by Jon 2026-10-23: the calendar dropped every event the day after it happened, and people may need to look one up. Not a decision anyone made: the hourly refresh only fetched today onward.
 
   1. [x] Done 2026-10-23: the refresh now bakes from **August 1st, the start of the school year**, to a year ahead (`scripts/refresh-events.mjs`), so the year's past events stay. It rolls over on August 1st.
   2. [x] Done 2026-10-23: on the grid, days already past and their events are greyed out, still readable (about 7:1 contrast), and today keeps its ring. Every month from August is behind the back arrow, with no gaps. "Today" and "past" are worked out again in the visitor's browser, because the page is built in the evening, Austin time, and would otherwise ring yesterday for most of the next day. The list under the grid still shows only what is coming up.
-  3. [ ] **After the PR merges:** the next hourly refresh rewrites `src/data/events.json` with the earlier events (left out of the PR, since the refresh commits that file to `main` and it would conflict). `CLAUDE` checks `/calendar` reaches back to August.
+  3. [x] Done 2026-10-23: the 02:53 UTC scheduled refresh, the first after [PR #61](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/61) merged, rewrote `src/data/events.json` from 2026-08-01. Checked live by request: `/calendar` starts at August 2026 and shows 120 upcoming events and 36 earlier ones. The refresh took an hour to come round, not minutes ([F62](#f62)).
 
 - [ ] **A32**: **Email notifications for new announcements** - ⏸️ **Tabled 2026-09-04** - `JON` - Jon: "worried it's too complicated". RSS stays on the page meanwhile. Revisit when there is a reason to.
 
@@ -1475,6 +1475,15 @@ The general shape: *a token's name says nothing about what depends on it; check 
 - **The 2026 doc's *Video* link is the 2024 video.** `Uwveb84gNoc` is titled *11th Little EAST*. The 2025 one is `LSkAJ5eusCo`, *12th Little EAST Video (2025)*. Worth correcting in the doc if it is meant to be last year's.
 
 The general shape, again: *a shortener hides what it points at, and what it points at can change. An archive should hold the destination.*
+
+<a name="f62"></a>
+**F62 - The "hourly" calendar refresh runs every one to five hours.** Its schedule is `:20` past every hour, but on 2026-10-23 and 24 the runs started at 13:35, 18:28, 22:21, 01:41 and 02:53 UTC. GitHub documents scheduled workflows as delayable under load, especially around the top of the hour, and says queued runs can be dropped. Found while waiting for the first refresh after [A53](#phase-2---real-site) merged.
+
+- **A calendar change can take a few hours to reach the site**, which the note on `/calendar` already allows for ("may take until tomorrow").
+- **When one cannot wait**, GitHub → Actions → *Refresh calendar* → *Run workflow* runs it at once. It commits to `main` and deploys like a scheduled run.
+- **Its commit message counted every event as upcoming** once the snapshot reached back to August ("156 upcoming events"). It now gives both numbers.
+
+The general shape: *a cron schedule on a shared service is a request, not a promise.*
 
 ## Reference
 
