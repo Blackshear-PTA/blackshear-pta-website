@@ -558,7 +558,7 @@ staff-appreciation:
     - "It is one of the easiest committees to help with. Most of what we do takes an hour, and none of it needs experience."
   cta:
     label: "Volunteer with us"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+    href: "/volunteer"
   sections:
     - heading: "How to help"
       body:
@@ -591,7 +591,7 @@ campus-beautification:
     - "Work days are the easiest way in. Show up, and there is always something to do."
   cta:
     label: "Volunteer with us"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+    href: "/volunteer"
   sections:
     - heading: "How to help"
       body:
@@ -599,10 +599,10 @@ campus-beautification:
       links:
         - label: "Sign up for a work day"
           href: "https://tinyurl.com/BlackshearGardenDays"
-          note: "SignUpGenius, 2026-2027. Kids are welcome"
+          note: "SignUpGenius. The next ones are in the spring, and kids are welcome"
         - label: "Sign up to water the garden"
           href: "https://tinyurl.com/BlackshearWateringHelp"
-          note: "SignUpGenius"
+          note: "SignUpGenius, ongoing"
         - label: "What the garden committee does"
           href: "https://tinyurl.com/BlackshearGardenInfo"
           note: "Activity sheet, PDF on Google Drive"
@@ -617,15 +617,14 @@ campus-beautification:
 volunteer:
   meta:
     title: "Volunteer - Blackshear PTA"
-    description: "How to volunteer at Blackshear Elementary: the Austin ISD background check, our interest form, and the events that need help."
+    description: "How to volunteer at Blackshear Elementary: the Austin ISD background check, then the sign-ups for what needs help now."
   title: "Volunteer"
   lede: "To make a difference in someone's life you don't have to be brilliant, rich, beautiful or perfect. You just have to care."
   backdrop: campus-flagpole
   body:
     - "Two steps, in this order. Both are free and neither takes long."
-  cta:
-    label: "Fill out the interest form"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+  # No interest form any more (Fundraising chair, via Jon, 2026-10-23): only
+  # two people had filled it in. Step two is the sign-ups themselves.
   sections:
     - heading: "Step one: the background check"
       body:
@@ -635,15 +634,30 @@ volunteer:
           href: "https://austinisd.voly.org/volunteer/home.html"
           note: "Required once a year, for everyone"
       names: []
-    - heading: "Step two: tell us what you're interested in"
+    # The sign-ups open now, from the Fundraising chair (2026-10-23). Keep this
+    # list current: add each new SignUpGenius here, and take one off once its
+    # date has passed.
+    - heading: "Step two: sign up"
       body:
-        - "The interest form is how we know who to call when something comes up. You are not committing to anything by filling it in."
+        - "Pick something below and choose a time that works for you."
       links:
-        - label: "Volunteer interest survey"
-          href: "https://tinyurl.com/VolunteeratBlackshear"
-          note: "Google Form, about two minutes"
+        - label: "Little EAST volunteers"
+          href: "https://tinyurl.com/BlackshearLEVolunteer"
+          note: "Saturday, November 14. Our biggest event of the year"
+        - label: "Pies and Sides Buffet"
+          href: "https://tinyurl.com/BlackshearBuffet"
+          note: "Thursday, November 19, for the school's Thanksgiving lunch"
+        - label: "Stock the teachers' lounge"
+          href: "https://tinyurl.com/BlackshearLounge"
+          note: "Staff appreciation. Dates are on the sign-up"
+        - label: "Water the garden"
+          href: "https://tinyurl.com/BlackshearWateringHelp"
+          note: "Ongoing"
+        - label: "Garden work days"
+          href: "https://tinyurl.com/BlackshearGardenDays"
+          note: "The next ones are in the spring"
       names: []
-    - heading: "What we need help with"
+    - heading: "What each event involves"
       body:
         - "Activity sheets explain what each event involves and how much time it takes."
       # The sheets the old site's homepage linked as of 2026-10-23. The Bike Day

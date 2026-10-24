@@ -581,6 +581,7 @@
   2. [ ] **2026-2027 sponsor levels:** the old site lists this year's business sponsors without their level. The Fundraising chair says which level each bought, and `CLAUDE` groups them on `/sponsors` the way 2025-2026 is grouped.
   3. [ ] **The Beat** link in Helpful Links opens one issue (2026-10-16). Each new issue needs the link updated, unless the school has a page that always shows the latest.
   4. [ ] **2025-2026 Community Buzz:** the old site showed Figure 8 Coffee's logo linked to MASH Movers there. The new page shows MASH Movers' logo, which matches its name list; the Fundraising chair confirms.
+  5. [x] Done 2026-10-23: **`/volunteer` simplified** at the Fundraising chair's suggestion, via Jon. The interest form is gone (two people had filled it in), from there and from the Staff Appreciation and Campus Beautification buttons. Step two is now *Sign up*, listing the open SignUpGenius pages. **Keep that list current:** add each new sign-up, and take one off once its date has passed.
 
 - [ ] **A32**: **Email notifications for new announcements** - ⏸️ **Tabled 2026-09-04** - `JON` - Jon: "worried it's too complicated". RSS stays on the page meanwhile. Revisit when there is a reason to.
 
