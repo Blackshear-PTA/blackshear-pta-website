@@ -544,6 +544,7 @@
 
   - Worth making a habit afterwards: each new Buzz or newsletter gets a short announcement the same week. A flyer can go in a post as a photo through `/admin`, or as a picture in the body (`![what it says](/weekly-buzz/<date>.jpg)`) if it is added to `public/weekly-buzz/` in a PR, which keeps it uncropped.
   - **#8 (2026-10-12) has no flyer:** Weebly's copy that week was an early draft of #9's. Add it if someone has the real one.
+  - **Instagram:** `/gallery` shows the six newest @blackshearpta posts, 2026-05-17 to 2026-10-15, newest first (2026-10-23, read from the account in Chrome). Refresh them in `/admin` as new posts go up.
 - [ ] **A47**: Talk to Ms. Bell about helping her with the campus website - `JON` - The school's own website, which is separate from this PTA site and run through AISD. Added 2026-10-21.
 
   1. [ ] Ask Ms. Bell what help she wants with it.
@@ -582,6 +583,15 @@
   3. [ ] **The Beat** link in Helpful Links opens one issue (2026-10-16). Each new issue needs the link updated, unless the school has a page that always shows the latest.
   4. [ ] **2025-2026 Community Buzz:** the old site showed Figure 8 Coffee's logo linked to MASH Movers there. The new page shows MASH Movers' logo, which matches its name list; the Fundraising chair confirms.
   5. [x] Done 2026-10-23: **`/volunteer` simplified** at the Fundraising chair's suggestion, via Jon. The interest form is gone (two people had filled it in), from there and from the Staff Appreciation and Campus Beautification buttons. Step two is now *Sign up*, listing the open SignUpGenius pages. **Keep that list current:** add each new sign-up, and take one off once its date has passed.
+
+- [ ] **A52**: Move the Instagram list into the database - `CLAUDE` - Raised by Jon 2026-10-23. Saving the list in `/admin` still commits `src/content/instagram.yaml` to GitHub, so a change waits for a rebuild, depends on the `GITHUB_TOKEN` secret, and names the admin account's GitHub user in public commits. Announcements left that path for D1 in [A41](#phase-2---real-site).
+
+  1. [ ] A table for the list in a new migration, seeded from `instagram.yaml`, with saves recorded in the same `edits` history as posts.
+  2. [ ] `/admin`'s Instagram routes read and write it; `/gallery` renders on demand, like the homepage, so a save shows at once.
+  3. [ ] `check:d1` and `check:instagram` cover it; `export:posts` backs it up too ([A44](#phase-2---real-site)).
+  4. [ ] Then nothing uses the GitHub token: delete the `GITHUB_TOKEN` secret and the admin account's `blackshear-pta-instagram` token, and retire `src/worker/github.ts` and D12 ([A37](#phase-0---accounts--scaffold)).
+
+  - After PR #60 merges: it needs the migration after 0003.
 
 - [ ] **A32**: **Email notifications for new announcements** - ⏸️ **Tabled 2026-09-04** - `JON` - Jon: "worried it's too complicated". RSS stays on the page meanwhile. Revisit when there is a reason to.
 
