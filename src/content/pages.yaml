@@ -26,9 +26,8 @@ little-east:
     - "One Saturday each November, Blackshear Elementary Fine Arts Academy turns into a gallery. The halls fill with art from every grade, students perform on the front lawn, and families make things together in the craft courtyard."
     - "There is a Trashion Show, where students walk the runway in outfits made from recycled materials, a screen printing shop with that year's Little EAST design, and a silent auction. Little EAST is also an official stop on the Austin Studio Tour."
     - "It is the PTA's biggest event of the year and its largest single source of funding, so every bid and every shirt helps pay for the PTA's work at Blackshear."
-  cta:
-    label: "Join the PTA"
-    href: "https://tinyurl.com/BlackshearStore"
+  # No button here: "Join the PTA" did not fit a page about the event (Jon,
+  # 2026-10-23). The 2026 section's sign-ups are the actions that do.
   # One section per year, newest first. Each folds shut under its heading:
   # `expanded: true` on the current year only, `false` on the rest. When a new
   # year goes on top, flip the old one to `false`.
@@ -42,8 +41,33 @@ little-east:
   # year's auction, and a shortener repointed for a new year would silently
   # change what an old year's link opens (F61).
   sections:
-    - heading: "2025 - the 12th Little EAST"
+    # From the committee's LITTLE EAST 2026 planning doc and the PTA's Weekly
+    # Buzz (Jon, 2026-10-23). The performance schedule is still settling in the
+    # doc, so only the parts that are fixed are here. The poster is a stand-in
+    # until the real one is ready: replace the figure, and delete
+    # scripts/make-little-east-placeholder.mjs and the placeholder image.
+    - heading: "2026 - the 13th Little EAST: Time Warp"
       expanded: true
+      body:
+        - "Saturday, November 14, 2026, from 11am to 3pm, at Blackshear Elementary, 1712 E. 11th St. Free, open to everyone, and an official stop on the Austin Studio Tour."
+        - "This year's theme is Time Warp. Step beyond the boundaries of time, into a portal of kids' creativity. You stand on the grounds of a 135-year-old school, where history awakens through imagination: eras come alive in student art galleries and performances, reality bends in our Time Warp room, and you make your own history with hands-on arts, crafts and activities."
+        - "Every student from kindergarten to 5th grade has artwork on display. Performances run on the front lawn through the day, with the Trashion Show at 2:30, and Film Kids shows in the cafeteria all day."
+        - "Also on: the screen printing shop, with clothing and totes in this year's limited-edition design; the craft courtyard, with shrinky dinks, buttons, friendship bracelets, comic strip bookmarks, Legos, rocks to paint for our front garden, free books from Carver Library, and Blackshear T-shirts to tie-dye; the Trashion makerspace in the art room, where anyone can make wearable art from trash; the silent auction; concessions; and the 5th grade bake sale. Wear your tie-dye!"
+      links:
+        - label: "Volunteer for a shift"
+          href: "https://tinyurl.com/BlackshearLEVolunteer"
+          note: "SignUpGenius. This is THE event to volunteer for"
+        - label: "Bake for the 5th grade bake sale"
+          href: "https://tinyurl.com/Blackshear5thBakeSale"
+          note: "SignUpGenius. It raises money for our 5th graders"
+        - label: "Add it to your calendar"
+          href: "/calendar"
+      figures:
+        - src: "../assets/little-east/2026/poster-coming-soon.png"
+          alt: "A stand-in poster for the 13th annual Little EAST, in black, yellow and blue: Poster to be revealed soon! This year's theme: Time Warp. Saturday, November 14, 2026, 11am to 3pm, Blackshear Elementary, 1712 E. 11th St., free."
+          caption: "The real poster is coming soon"
+    - heading: "2025 - the 12th Little EAST"
+      expanded: false
       videos:
         - youtubeId: "LSkAJ5eusCo"
           title: "The 12th Little EAST, 2025"
@@ -274,45 +298,209 @@ sponsors:
     label: "Become a sponsor"
     href: "https://www.zeffy.com/en-US/ticketing/2026-2027-pta-memberships-and-sponsorships"
   sections:
-    # Weebly files these under "Thank you 2025-2026 Sponsors!" - unlabeled here
-    # they would read as current, which they are not.
+    - heading: "2026-2027 sponsorship levels"
+      body:
+        - "Family Buzz ($100) comes with a PTA membership and your family's name on this page. The business levels run from Community Buzz ($250) to Champion Buzz ($1,000): your logo on this page, linked to your website, mentions on social media and in our newsletters, and a vinyl banner on the school fence for a year. The chart has every detail."
+        - "Banners hang on the fence on 11th Street, Salina Street and the car rider line. Sponsors provide the final artwork as EPS, JPG, TIF, BMP, GIF, PNG or PDF, under 20MB."
+      figures:
+        - src: "../assets/sponsors/2026-2027/levels-2026-2027.jpg"
+          alt: "The 2026-2027 sponsorship levels chart. Family Buzz, $100: PTA membership for up to two people and name recognition on the PTA website. Community Buzz, $250: recognition on social media and once in our newsletters, logo and link on the PTA website, logo on the silent auction banner, and a 2 by 4 foot banner on Salina Street. Supporter Buzz, $500: the same, twice in our newsletters, with a 3 by 6 foot banner on 11th Street by the main entrance. Partner Buzz, $750: three newsletters, the 11th Street banner, and logo on the silent auction website. Champion Buzz, $1,000: four newsletters, the 11th Street banner, logo on the silent auction website, and a second 3 by 6 foot banner on the car rider line."
+          caption: "2026-2027 sponsorship levels"
+      photos:
+        - src: "../assets/sponsors/2026-2027/banners-11th-street.jpg"
+          alt: "Sponsor banners hanging on the school fence along 11th Street, by the main entrance"
+        - src: "../assets/sponsors/2026-2027/banners-salina-street.jpg"
+          alt: "Sponsor banners on the school fence along Salina Street"
+        - src: "../assets/sponsors/2026-2027/banners-car-rider-line.jpg"
+          alt: "Sponsor banners on the fence by the car rider line at the back entrance"
+    - heading: "Thank you to our 2026-2027 sponsors"
+      body:
+        - "We're already buzzing along with these sponsors this year."
+      logos:
+        - src: "../assets/sponsors/2026-2027/butler.png"
+          name: "Butler"
+          href: "https://withbutler.com"
+        - src: "../assets/sponsors/2026-2027/figure-8-coffee.jpg"
+          name: "Figure 8 Coffee Purveyors"
+          href: "https://www.figure8coffeepurveyors.com"
+        - src: "../assets/sponsors/2026-2027/designlab44.jpg"
+          name: "DesignLab44"
+          href: "https://designlab44.wixsite.com/portfolio"
+        - src: "../assets/sponsors/2026-2027/industry-eastside.jpg"
+          name: "Industry (Eastside)"
+          href: "https://eastside.industrytx.com"
+        - src: "../assets/sponsors/2026-2027/mash-movers.jpg"
+          name: "MASH Movers"
+          href: "https://mashmovers.com"
+        - src: "../assets/sponsors/2026-2027/micklethwait.jpg"
+          name: "Micklethwait Craft Meats"
+          href: "https://www.craftmeatsaustin.com"
+        - src: "../assets/sponsors/2026-2027/neuron-garage.png"
+          name: "Neuron Garage"
+          href: "https://neurongarage.com"
+        - src: "../assets/sponsors/2026-2027/snarfs.jpg"
+          name: "Snarf's Sandwiches"
+          href: "https://www.eatsnarfs.com/austin"
+        - src: "../assets/sponsors/2026-2027/snooze.png"
+          name: "Snooze, an A.M. Eatery"
+          href: "https://www.snoozeeatery.com"
+        - src: "../assets/sponsors/2026-2027/tso.jpg"
+          name: "TSO"
+          href: "https://tso.company"
+    # These families paid for recognition, so listing them is the point of the
+    # tier. Note for the board: these are children's first names with family
+    # surnames, and this page becomes searchable at cutover (F22).
+    - heading: "2026-2027 Family Buzz"
+      names:
+        - "Artie and Freya Bauerson's Family"
+        - "Ingrid and Greta Bowden's Family"
+        - "Edie Burnham's Family"
+        - "Arlo Dochtermann-Faria's Family"
+        - "Brennan Ferraris's Family"
+        - "June Flowers's Family"
+        - "Georgia Gingrich's Family"
+        - "Grayton Hall's Family"
+        - "Nate Hernandez's Family"
+        - "Ford Hoffman's Family"
+        - "Dakari and Kaia Krause Yang's Family"
+        - "June Lisska's Family"
+        - "Ellie Regan's Family"
+        - "Delaney and Declan Walsh's Family"
+    - heading: "Thank you, early donors to the 13th Little EAST silent auction"
+      body:
+        - "Our 13th Little EAST silent auction is going to be the best to date. Thank you to these early donors."
+      logos:
+        - src: "../assets/sponsors/little-east-2026/antonellis.png"
+          name: "Antonelli's Cheese Shop"
+          href: "https://www.antonellischeese.com"
+        - src: "../assets/sponsors/little-east-2026/antones.jpg"
+          name: "Antone's"
+        - src: "../assets/sponsors/little-east-2026/austin-classical-guitar.jpg"
+          name: "Austin Classical Guitar"
+          href: "https://austinclassicalguitar.org"
+        - src: "../assets/sponsors/little-east-2026/austin-symphony.jpg"
+          name: "Austin Symphony Orchestra"
+          href: "https://austinsymphony.org"
+        - src: "../assets/sponsors/little-east-2026/black-austin-tours.jpg"
+          name: "Black Austin Tours"
+          href: "https://www.blackaustintours.com"
+        - src: "../assets/sponsors/little-east-2026/cabo-bobs.png"
+          name: "Cabo Bob's"
+          href: "https://cabobobs.com"
+        - src: "../assets/sponsors/little-east-2026/cidercade.jpg"
+          name: "Cidercade"
+          href: "https://cidercade.com"
+        - src: "../assets/sponsors/little-east-2026/ciscos.jpg"
+          name: "Cisco's"
+          href: "https://www.ciscosaustin.com"
+        - src: "../assets/sponsors/little-east-2026/crux.jpg"
+          name: "Crux Climbing Center"
+          href: "https://www.cruxclimbingcenter.com"
+        - src: "../assets/sponsors/little-east-2026/designlab44.jpg"
+          name: "DesignLab44"
+          href: "https://designlab44.wixsite.com/portfolio"
+        - src: "../assets/sponsors/little-east-2026/hai-hospitality.jpg"
+          name: "HAI Hospitality"
+          href: "https://www.haihospitality.com"
+        - src: "../assets/sponsors/little-east-2026/kalimotxo.jpg"
+          name: "Kalimotxo"
+          href: "https://kalimotxoatx.com"
+        - src: "../assets/sponsors/little-east-2026/katie-ann-clay.jpg"
+          name: "Katie Ann Clay"
+          href: "https://www.katieannclay.com"
+        - src: "../assets/sponsors/little-east-2026/wildflower-center.jpg"
+          name: "Lady Bird Johnson Wildflower Center"
+          href: "https://www.wildflower.org"
+        - src: "../assets/sponsors/little-east-2026/loro.jpg"
+          name: "Loro"
+          href: "https://www.loroeats.com"
+        - src: "../assets/sponsors/little-east-2026/mothers-ruin.jpg"
+          name: "Mother's Ruin"
+          href: "https://mothersruinaustin.com"
+        - src: "../assets/sponsors/little-east-2026/neuron-garage.jpg"
+          name: "Neuron Garage"
+          href: "https://neurongarage.com"
+        - src: "../assets/sponsors/little-east-2026/pinstack.jpg"
+          name: "Pinstack"
+          href: "https://pinstackbowl.com/locations/austin-texas/"
+        - src: "../assets/sponsors/little-east-2026/sock-club.jpg"
+          name: "Sock Club"
+          href: "https://www.sockclub.com"
+        - src: "../assets/sponsors/little-east-2026/texas-performing-arts.jpg"
+          name: "Texas Performing Arts"
+          href: "https://texasperformingarts.org"
+        - src: "../assets/sponsors/little-east-2026/tiny-tails.png"
+          name: "Tiny Tails to You"
+          href: "https://www.tinytailstoyou.com"
+        - src: "../assets/sponsors/little-east-2026/tox-technique.png"
+          name: "The Tox Technique"
+          href: "https://www.thetoxtechnique.com"
+      figures:
+        - src: "../assets/sponsors/little-east-2026/donors-a-to-ch.jpg"
+          alt: "More early donors: Austin Playhouse, Austin Bouldering Project, Austin Film Society, Batch, Birds Barbershop, the Blanton Museum of Art, Bufalina, Chaparral Ice and Chipotle"
+        - src: "../assets/sponsors/little-east-2026/donors-c-to-s.jpg"
+          alt: "More early donors: Cosmic Coffee, Juan in a Million, Kindred Spirits, the Round Rock Express, Meanwhile Brewing, Sour Duck Market, Moonshine Grill and SusieCakes"
+    # Last year's sponsors stay below this year's, as on the old site.
     - heading: "Thank you to our 2025-2026 sponsors"
       body:
-        - "The 2026-2027 list is still filling up. These are the sponsors who backed us last year."
-      links: []
-      names: []
-    - heading: "Champion Buzz"
-      body: []
-      links: []
-      names:
-        - "Design Lab 44"
-        - "Enabler"
-        - "Figure 8 Coffee Purveyors"
-        - "Industry (Eastside)"
-        - "Kruger's Jewelers"
-        - "Micklethwait Craft Meats"
-        - "Neuron Garage"
-        - "ThoughtBarn"
-        - "TSO Chinese"
-    - heading: "Supporter Buzz"
-      body: []
-      links: []
-      names:
-        - "East Austin Jiu Jitsu"
-        - "Schlotzsky's"
-        - "Snooze Eatery"
-    - heading: "Community Buzz"
-      body: []
-      links: []
-      names:
-        - "Butler"
-        - "Cowboy Pools"
-        - "LA-N-D"
-        - "MASH Movers"
-    # These families paid for recognition, so listing them is the point of the
-    # tier. Note for the board: after cutover this page is indexed, and these
-    # are children's first names with family surnames. Worth a decision.
-    - heading: "Family Buzz"
+        - "The sponsors who backed us last year."
+    - heading: "2025-2026 Champion Buzz"
+      logos:
+        - src: "../assets/sponsors/2025-2026/designlab44.jpg"
+          name: "DesignLab44"
+          href: "https://designlab44.wixsite.com/portfolio"
+        - src: "../assets/sponsors/2025-2026/enabler.jpg"
+          name: "Enabler"
+          href: "https://enablerllc.com"
+        - src: "../assets/sponsors/2025-2026/figure-8-coffee.png"
+          name: "Figure 8 Coffee Purveyors"
+          href: "https://www.figure8coffeepurveyors.com"
+        - src: "../assets/sponsors/2025-2026/industry-eastside.png"
+          name: "Industry (Eastside)"
+          href: "https://eastside.industrytx.com"
+        - src: "../assets/sponsors/2025-2026/krugers.png"
+          name: "Kruger's Jewelers"
+          href: "https://www.krugersjewelers.com"
+        - src: "../assets/sponsors/2025-2026/micklethwait.jpg"
+          name: "Micklethwait Craft Meats"
+          href: "https://www.craftmeatsaustin.com"
+        - src: "../assets/sponsors/2025-2026/neuron-garage.png"
+          name: "Neuron Garage"
+          href: "https://neurongarage.com"
+        - src: "../assets/sponsors/2025-2026/thoughtbarn.jpg"
+          name: "ThoughtBarn"
+          href: "https://thoughtbarn.com"
+        - src: "../assets/sponsors/2025-2026/tso-chinese.png"
+          name: "TSO Chinese"
+          href: "https://tsochinese.com"
+    - heading: "2025-2026 Supporter Buzz"
+      logos:
+        - src: "../assets/sponsors/2025-2026/east-austin-jiu-jitsu.png"
+          name: "East Austin Jiu Jitsu"
+          href: "https://eastaustinjiujitsu.com"
+        - src: "../assets/sponsors/2025-2026/schlotzskys.png"
+          name: "Schlotzsky's"
+          href: "https://www.schlotzskys.com"
+        - src: "../assets/sponsors/2025-2026/snooze.png"
+          name: "Snooze, an A.M. Eatery"
+          href: "https://www.snoozeeatery.com"
+    - heading: "2025-2026 Community Buzz"
+      logos:
+        - src: "../assets/sponsors/2025-2026/butler.png"
+          name: "Butler"
+          href: "https://withbutler.com"
+        - src: "../assets/sponsors/2025-2026/cowboy-pools.png"
+          name: "Cowboy Pools"
+          href: "https://www.cowboypools.com"
+        - src: "../assets/sponsors/2025-2026/dolce-neve.png"
+          name: "Dolce Neve"
+        - src: "../assets/sponsors/2025-2026/la-n-d.webp"
+          name: "LA-N-D"
+          href: "https://www.la-n-d.com"
+        - src: "../assets/sponsors/2025-2026/mash-movers.jpg"
+          name: "MASH Movers"
+          href: "https://mashmovers.com"
+    - heading: "2025-2026 Family Buzz"
       body: []
       links: []
       names:
@@ -331,21 +519,28 @@ sponsors:
         - "Russell Rowden's Family"
         - "Eliana Spetalnick's Family"
         - "Lane Stonebraker's Family"
-    - heading: "PTA Partners"
-      body: []
-      links: []
-      names:
-        - "Camacho Activity Center"
-        - "David Phillips Foundation"
-        - "Drip"
-        - "Miller"
-        - "North Loop Signs"
-        - "Oh Boy Print Shop"
+    - heading: "2025-2026 PTA Partners"
+      logos:
+        - src: "../assets/sponsors/2025-2026/camacho.jpg"
+          name: "Camacho Activity Center"
+          href: "https://www.instagram.com/camachoactivitycenter/"
+        - src: "../assets/sponsors/2025-2026/david-phillips-foundation.png"
+          name: "David Phillips Foundation"
+          href: "https://www.davidphillipsfoundation.org"
+        - src: "../assets/sponsors/2025-2026/drip.webp"
+          name: "Drip"
+        - src: "../assets/sponsors/2025-2026/miller.png"
+          name: "Miller"
+        - src: "../assets/sponsors/2025-2026/north-loop-signs.jpg"
+          name: "North Loop Signs"
+          href: "http://www.northloopsigns.com"
+        - src: "../assets/sponsors/2025-2026/oh-boy-print-shop.png"
+          name: "Oh Boy Print Shop"
+          href: "https://ohboyprintshop.com"
   contact:
     name: "Lennie King"
     role: "PTA Fundraising Chair"
-    email: "hello@blackshearpta.org"
-    note: "The current site lists a direct address for Lennie that is obfuscated and could not be read. Using the PTA address until we have it."
+    email: "fundraising@blackshearpta.org"
 
 staff-appreciation:
   meta:
@@ -362,7 +557,7 @@ staff-appreciation:
     - "It is one of the easiest committees to help with. Most of what we do takes an hour, and none of it needs experience."
   cta:
     label: "Volunteer with us"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+    href: "/volunteer"
   sections:
     - heading: "How to help"
       body:
@@ -386,8 +581,8 @@ campus-beautification:
   title: "Campus Beautification"
   # NO WEEBLY PAGE EXISTS for this committee, and it was called "Garden" there.
   # Copy below is expanded from the homepage blurb. Needs a real pass from the
-  # committee. There is no garden activity sheet to link: Weebly's "GARDEN WORK
-  # DAYS" link points at the Bike Day PDF (F24), so one does not exist yet.
+  # committee. A garden activity sheet exists since the 2026-2027 year began
+  # (F24), and so do the work day and watering sign-ups linked below.
   lede: "The garden, the grounds, and every work day that keeps them going."
   backdrop: garden
   body:
@@ -395,12 +590,21 @@ campus-beautification:
     - "Work days are the easiest way in. Show up, and there is always something to do."
   cta:
     label: "Volunteer with us"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+    href: "/volunteer"
   sections:
     - heading: "How to help"
       body:
         - "Every volunteer on campus needs an annual Austin ISD background check before helping in person. It is free and takes a few minutes."
       links:
+        - label: "Sign up for a work day"
+          href: "https://tinyurl.com/BlackshearGardenDays"
+          note: "SignUpGenius. The next ones are in the spring, and kids are welcome"
+        - label: "Sign up to water the garden"
+          href: "https://tinyurl.com/BlackshearWateringHelp"
+          note: "SignUpGenius, ongoing"
+        - label: "What the garden committee does"
+          href: "https://tinyurl.com/BlackshearGardenInfo"
+          note: "Activity sheet, PDF on Google Drive"
         - label: "AISD Voly background check"
           href: "https://austinisd.voly.org/volunteer/home.html"
           note: "Required once a year for all campus volunteers"
@@ -412,15 +616,14 @@ campus-beautification:
 volunteer:
   meta:
     title: "Volunteer - Blackshear PTA"
-    description: "How to volunteer at Blackshear Elementary: the Austin ISD background check, our interest form, and the events that need help."
+    description: "How to volunteer at Blackshear Elementary: the Austin ISD background check, then the sign-ups for what needs help now."
   title: "Volunteer"
   lede: "To make a difference in someone's life you don't have to be brilliant, rich, beautiful or perfect. You just have to care."
   backdrop: campus-flagpole
   body:
     - "Two steps, in this order. Both are free and neither takes long."
-  cta:
-    label: "Fill out the interest form"
-    href: "https://tinyurl.com/VolunteeratBlackshear"
+  # No interest form any more (Fundraising chair, via Jon, 2026-10-23): only
+  # two people had filled it in. Step two is the sign-ups themselves.
   sections:
     - heading: "Step one: the background check"
       body:
@@ -430,33 +633,51 @@ volunteer:
           href: "https://austinisd.voly.org/volunteer/home.html"
           note: "Required once a year, for everyone"
       names: []
-    - heading: "Step two: tell us what you're interested in"
+    # The sign-ups open now, from the Fundraising chair (2026-10-23). Keep this
+    # list current: add each new SignUpGenius here, and take one off once its
+    # date has passed.
+    - heading: "Step two: sign up"
       body:
-        - "The interest form is how we know who to call when something comes up. You are not committing to anything by filling it in."
+        - "Pick something below and choose a time that works for you."
       links:
-        - label: "Volunteer interest survey"
-          href: "https://tinyurl.com/VolunteeratBlackshear"
-          note: "Google Form, about two minutes"
+        - label: "Little EAST volunteers"
+          href: "https://tinyurl.com/BlackshearLEVolunteer"
+          note: "Saturday, November 14. Our biggest event of the year"
+        - label: "Pies and Sides Buffet"
+          href: "https://tinyurl.com/BlackshearBuffet"
+          note: "Thursday, November 19, for the school's Thanksgiving lunch"
+        - label: "Stock the teachers' lounge"
+          href: "https://tinyurl.com/BlackshearLounge"
+          note: "Staff appreciation. Dates are on the sign-up"
+        - label: "Water the garden"
+          href: "https://tinyurl.com/BlackshearWateringHelp"
+          note: "Ongoing"
+        - label: "Garden work days"
+          href: "https://tinyurl.com/BlackshearGardenDays"
+          note: "The next ones are in the spring"
       names: []
-    - heading: "What we need help with"
+    - heading: "What each event involves"
       body:
         - "Activity sheets explain what each event involves and how much time it takes."
+      # The sheets the old site's homepage linked as of 2026-10-23. The Bike Day
+      # and bake sale ones replace older copies, and the garden and Little EAST
+      # ones did not exist when this page was built (F24).
       links:
-        - label: "Bike Day"
-          href: "https://drive.google.com/file/d/1QaYYKEFyMKMBlbAnfgmvMfEuV4LXGb64/view?usp=share_link"
+        - label: "Bike to School Day"
+          href: "https://tinyurl.com/BlackshearBikeDayInfo"
           note: "PDF on Google Drive"
         - label: "Monthly bake sales"
-          href: "https://drive.google.com/file/d/1bOjZNDvu3FY-gcppBamGhwXZhtYei9vo/view?usp=share_link"
+          href: "https://tinyurl.com/MonthlyBakeSaleInfo"
           note: "PDF on Google Drive"
         - label: "Staff appreciation"
           href: "https://drive.google.com/file/d/1B3Jrx3KjhITmpNIzltQGhJnPQLP1NF7W/view?usp=sharing"
           note: "PDF on Google Drive"
-        - label: "Campus beautification"
-          href: "/campus-beautification"
-          note: "No activity sheet yet. See the committee page"
+        - label: "Garden and campus beautification"
+          href: "https://tinyurl.com/BlackshearGardenInfo"
+          note: "PDF on Google Drive"
         - label: "Fine Arts and Little EAST"
-          href: "/little-east"
-          note: "No activity sheet yet. See the committee page"
+          href: "https://drive.google.com/file/d/1FA7C538EDs7Ivaw0mEudjCDnvX1RtdV4/view?usp=share_link"
+          note: "PDF on Google Drive"
       names: []
   contact:
     email: "hello@blackshearpta.org"

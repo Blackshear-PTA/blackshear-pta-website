@@ -26,6 +26,7 @@
     "check:mail": "node scripts/check-mail.mjs",
     "check:d1": "node --experimental-sqlite scripts/check-d1.mjs",
     "cf": "sh scripts/cf.sh",
+    "gh": "sh scripts/gh.sh",
     "cf:dev": "wrangler dev",
     "cf:deploy": "astro build && sh scripts/cf.sh wrangler deploy",
     "cf:whoami": "sh scripts/cf.sh wrangler whoami",

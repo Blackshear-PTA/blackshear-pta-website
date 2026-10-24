@@ -111,6 +111,31 @@ to a file that is not there fails the build and names the file.
 last year's to `false`, so only the newest year opens by default. Its pictures
 go in a new `src/assets/little-east/<year>/` folder.
 
+### Sponsor logos
+
+`/sponsors` shows business sponsors as a grid of logos, each linking to the
+sponsor's website. The 2026-2027 sponsorship levels promise "logo and link" on
+this site from Community Buzz up, so a new business sponsor needs both:
+
+```yaml
+      logos:
+        - src: "../assets/sponsors/2026-2027/butler.png"
+          name: "Butler"                  # what a screen reader says
+          href: "https://withbutler.com"  # optional: leave out if there is none
+```
+
+Put the file in `src/assets/sponsors/<year>/`. A logo with a wide white margin
+shows up small in its tile, so crop the margin off first. Family sponsors are
+plain names, in `names:`.
+
+### The homepage's Helpful Links
+
+The handbook, drop-off and pick-up, supply lists and the rest live under
+`helpfulLinks:` in `src/content/home.yaml`, in groups. Each link takes a
+`label`, an `href` and an optional `note`, like the Start Here tiles above it.
+Several are tinyurls on purpose: whoever runs the tinyurl points it at next
+year's document, and the site follows without an edit.
+
 **Then add it to the menu**, if it belongs there, in `src/content/site.yaml`:
 
 ```yaml

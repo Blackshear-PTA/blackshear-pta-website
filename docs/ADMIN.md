@@ -232,16 +232,18 @@ repository is public - so this is needed to SAVE it and for nothing else.
 
 A **fine-grained** token, scoped to this one repository. Not a classic token.
 
-1. GitHub -> your avatar -> **Settings** -> **Developer settings** ->
+1. Signed in to GitHub as the PTA's admin account: your avatar -> **Settings** -> **Developer settings** ->
    **Personal access tokens** -> **Fine-grained tokens** -> **Generate new**
 2. Resource owner: **Blackshear-PTA**
 3. Repository access: **Only select repositories** -> `blackshear-pta-website`
 4. Repository permissions: **Contents: Read and write**. Nothing else.
-5. Set an expiry you will actually notice. When it expires the editor stops
-   working and says so; the site itself is unaffected.
+5. Name it `blackshear-pta-instagram`. Expiration: **No expiration**, for the
+   reasons under *Token lifetime* below. An owner's token is approved
+   automatically.
 
 > Generate this from an account that will outlive one board term. A token on a
-> departing parent's personal account is a thing that breaks in August.
+> departing parent's personal account is a thing that breaks in August. That
+> account is the admin account, which owns the PTA's outside services.
 
 ### 3. Four Worker secrets
 
@@ -443,13 +445,17 @@ is written down:
 
 | | |
 |---|---|
-| Owned by | the **PTA's** GitHub account, not a board member's personal one, so it survives turnover |
+| Owned by | the PTA's **admin account** on GitHub since 2026-10-23 (the PTA's own account before that), not a board member's personal one, so it survives turnover |
 | Resource owner | the `Blackshear-PTA` organization |
 | Scope | Contents: read and write, `blackshear-pta-website` only |
 | Expiry | none |
-| Revoke at | GitHub -> PTA account -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens |
+| Name | `blackshear-pta-instagram` |
+| Revoke at | GitHub, signed in as the admin account -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens |
 
-**Revoke and reissue if** the PTA GitHub account's password is ever shared or
+Each save is one commit: the editor's address is the author, and the token's
+owner is the committer.
+
+**Revoke and reissue if** the admin account's GitHub password is ever shared or
 suspected compromised, or if unexplained commits appear in the repository
 history. Reissuing is step 2 and step 3 of the setup above and takes a few
 minutes; nothing else needs touching.

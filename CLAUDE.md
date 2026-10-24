@@ -64,6 +64,23 @@ this replaced. To store or rotate it, see the header of `scripts/cf.sh`.
 Wrangler needs Node 22 (see [`.node-version`](.node-version)); under Node 20 it
 refuses to run at all and the error says nothing about accounts.
 
+## GitHub work runs as the Communications account
+
+Since 2026-10-23 the maintainer's personal GitHub account is not in the
+`Blackshear-PTA` organization, so a plain `gh` or `git push` from this machine
+is refused there. This checkout uses the Communications role account instead,
+and the maintainer's other projects keep the personal one:
+
+- **`gh`: always through [`scripts/gh.sh`](scripts/gh.sh)**, e.g.
+  `npm run gh -- pr create ...` or `sh scripts/gh.sh pr view 60`. It reads the
+  account's token from gh for that one command, and stops if gh has no login
+  for it. Do not `gh auth switch` to it: that changes the account every other
+  project on the machine uses.
+- **`git push`** needs nothing extra. This checkout's own git config has a
+  credential helper that asks gh for the account's token, and gives commits
+  GitHub's no-reply address for it. The settings are in the header of
+  `scripts/gh.sh`.
+
 ## The task board has an inbox
 
 The published task board (its URL is in Claude's memory, not in this public

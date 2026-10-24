@@ -1,0 +1,97 @@
+---
+import { Image } from 'astro:assets';
+import type { PageData } from '../types';
+import { isExternal } from '../lib/links';
+
+/**
+ * A page section's sponsor logos: a grid of white tiles, each linking to the
+ * sponsor's own site.
+ *
+ * Logos come in every shape - wide wordmarks, square badges, a few with their
+ * own white margins - so each sits whole inside a tile of one fixed shape
+ * rather than being cropped or stretched. The tile is always white, because
+ * most logos were drawn for a white page and several have no transparency.
+ *
+ * Not in the lightbox: a logo is a link to the business, not a picture to
+ * look at.
+ */
+interface Props {
+  logos: PageData['sections'][number]['logos'];
+}
+
+const { logos } = Astro.props;
+---
+
+{
+  logos.length > 0 && (
+    <ul class="logo-wall">
+      {logos.map((logo) => {
+        const picture = (
+          <Image src={logo.src} alt={logo.name} width={320} densities={[1, 2]} loading="lazy" />
+        );
+        return (
+          <li>
+            {logo.href ? (
+              <a
+                href={logo.href}
+                title={logo.name}
+                target={isExternal(logo.href) ? '_blank' : undefined}
+                rel={isExternal(logo.href) ? 'noopener' : undefined}
+              >
+                {picture}
+              </a>
+            ) : (
+              <span class="tile" title={logo.name}>
+                {picture}
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  )
+}
+
+<style>
+  .logo-wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 var(--pta-gap);
+    padding: 0;
+    list-style: none;
+  }
+
+  a,
+  .tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 3 / 2;
+    padding: 0.6rem;
+    background: #fff;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  a {
+    box-shadow: var(--pta-shadow);
+    transition: transform 0.15s ease;
+  }
+
+  a:hover,
+  a:focus-visible {
+    transform: translateY(-2px);
+    outline: 3px solid var(--pta-accent);
+    outline-offset: 0;
+  }
+
+  img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+</style>
