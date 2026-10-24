@@ -180,6 +180,35 @@ console.log('schema and migrations:');
 }
 
 {
+  // The preview lines (0005): every Weekly Buzz opens with more than "is
+  // here!", running it again changes nothing, and a post already reworded in
+  // /admin is left alone.
+  const PREVIEWS = join(MIGRATIONS, '0005_weekly_buzz_previews.sql');
+  const opening = (post) => post.body.split(/\n\s*\n/).find((p) => !p.startsWith('![')) ?? '';
+  const db = fresh({ laterImports: true });
+  const buzz = (await listAll(db)).filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
+  const bare = buzz.filter((p) => /^PTA Weekly Buzz #\d+ is here!$/.test(opening(p)));
+  eq('every Weekly Buzz has a real preview after 0005', bare.map((p) => p.slug), []);
+  const changed = (await listEdits(db, 500)).filter((e) => e.editor.includes('migration 0005'));
+  eq('and six of them say so in the history', changed.length, 6);
+
+  db.db.exec(readFileSync(PREVIEWS, 'utf8'));
+  const again = (await listEdits(db, 500)).filter((e) => e.editor.includes('migration 0005'));
+  eq('running it again writes nothing more', again.length, 6);
+
+  // Before 0005: somebody gives #9 a preview of their own in /admin.
+  const before = new ShimDb(new DatabaseSync(':memory:'));
+  for (const name of migrationFiles().filter((n) => n < '0005')) {
+    before.db.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
+  }
+  const nine = await getAny(before, '2026-10-19-weekly-buzz-9');
+  const theirs = nine.body.replace('PTA Weekly Buzz #9 is here!\n', 'PTA Weekly Buzz #9 is here! Their own words.\n');
+  eq('(setup: a hand edit to #9)', await updatePost(before, nine.slug, { fields: { body: theirs }, expectedUpdatedAt: nine.updatedAt, ...write }), 'ok');
+  before.db.exec(readFileSync(PREVIEWS, 'utf8'));
+  eq('a post already reworded is left as it is', (await getAny(before, nine.slug)).body, theirs);
+}
+
+{
   // Re-running the import must change nothing. wrangler will not apply a
   // migration twice, but a person pasting the file into `wrangler d1 execute`
   // is exactly the situation where this needs to hold.

@@ -414,8 +414,8 @@ The same photo uploaded twice is stored once.
 Until the Instagram list moved into the database ([A52](../TASKS.md)), the
 editor saved it as a commit through a GitHub token set never to expire ([D12](../TASKS.md#open-decisions)):
 an expiring one would have broken `/admin` months later with nobody left who
-knew why. Nothing uses it now. A credential nothing uses is only exposure, so
-once A52 is live, delete both halves:
+knew why. **Both halves were deleted on 2026-10-24**, since a credential nothing
+uses is only exposure. Kept here in case a copy turns up somewhere:
 
 - the `GITHUB_TOKEN` secret on the Worker: Cloudflare dashboard -> **Workers &
   Pages** -> `blackshear-pta` -> **Settings** -> **Variables and Secrets**;
@@ -429,9 +429,6 @@ once A52 is live, delete both halves:
 | Expiry | none |
 | Name | `blackshear-pta-instagram` |
 | Revoke at | GitHub, signed in as the admin account -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens |
-
-Deleting the token before the secret is harmless: the editor no longer reads
-either.
 
 ## Two locks, on purpose
 
