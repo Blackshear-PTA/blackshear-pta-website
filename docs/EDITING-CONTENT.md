@@ -113,8 +113,8 @@ go in a new `src/assets/little-east/<year>/` folder.
 
 ### Sponsor logos
 
-`/sponsors` shows business sponsors as a grid of logos, each linking to the
-sponsor's website. The 2026-2027 sponsorship levels promise "logo and link" on
+`/sponsors` shows business sponsors as a row of logos, loose on the page with
+no boxes around them, each linking to the sponsor's website. The 2026-2027 sponsorship levels promise "logo and link" on
 this site from Community Buzz up, so a new business sponsor needs both:
 
 ```yaml
@@ -124,9 +124,18 @@ this site from Community Buzz up, so a new business sponsor needs both:
           href: "https://withbutler.com"  # optional: leave out if there is none
 ```
 
-Put the file in `src/assets/sponsors/<year>/`. A logo with a wide white margin
-shows up small in its tile, so crop the margin off first. Family sponsors are
-plain names, in `names:`.
+Put the file in `src/assets/sponsors/<year>/`. **No size to set:** every logo
+gets about the same area on the page, worked out from its own proportions, up
+to 11 × 5.5 rem (about 176 × 88 pixels). So a wide wordmark and a square badge
+come out looking the same size.
+
+- **Crop off any margin first**, white or transparent. A margin counts as part
+  of the logo and makes it look small.
+- **The file to ask a sponsor for:** PNG or SVG, ideally with a transparent
+  background, at least 400 pixels across. Anything smaller looks soft on a
+  phone or a high-resolution screen.
+
+Family sponsors are plain names, in `names:`.
 
 ### The homepage's Helpful Links
 

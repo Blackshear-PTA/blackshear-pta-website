@@ -32,8 +32,10 @@ on:
     #    take about one. Even a pathological week of daily changes is noise
     #    against that.
     #
-    # What it buys is latency: a change made at 9am appears within the hour
-    # instead of the next morning.
+    # What it buys is latency: a change made at 9am appears within a few hours
+    # instead of the next morning. Not within the hour: GitHub treats schedules
+    # as best-effort, and in practice runs start one to five hours apart (F62).
+    # For a change that cannot wait, Run workflow in the Actions tab.
     - cron: '20 * * * *'
   workflow_dispatch: # so it can be run by hand from the Actions tab
 
@@ -80,8 +82,11 @@ jobs:
           git config user.name  "blackshear-pta-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/data/events.json
-          COUNT=$(node -p "require('./src/data/events.json').events.length")
-          git commit -m "Refresh calendar ($COUNT upcoming events)"
+          # The snapshot reaches back to the start of the school year (A53), so
+          # its length is not the upcoming count any more.
+          UPCOMING=$(node -p "const d = require('./src/data/events.json'); d.events.filter((e) => e.end >= d.generated).length")
+          TOTAL=$(node -p "require('./src/data/events.json').events.length")
+          git commit -m "Refresh calendar ($UPCOMING upcoming events, $TOTAL in all)"
 
           # Retry the push, rebasing between attempts. Two quite different
           # failures land here and a rebase is the right answer to both:
@@ -91,10 +96,10 @@ jobs:
           #    with this repository - the next day's run pushed identical
           #    content without complaint. One retry would have saved a day of
           #    stale calendar.
-          #  - Somebody got there first. /admin commits announcements straight
-          #    to main, so a board member saving a post while this job runs is
-          #    a real race rather than a theoretical one, and a bare retry
-          #    would fail against it forever.
+          #  - Somebody got there first: a pull request merged while this job
+          #    ran, and a bare retry would fail against it forever. (/admin
+          #    used to commit straight to main as well; since A41 and A52 it
+          #    writes to the database instead.)
           #
           # Failing is still allowed. A missed day is harmless: the data is
           # unchanged, the site keeps serving yesterday's calendar, and
