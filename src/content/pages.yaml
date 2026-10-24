@@ -26,9 +26,8 @@ little-east:
     - "One Saturday each November, Blackshear Elementary Fine Arts Academy turns into a gallery. The halls fill with art from every grade, students perform on the front lawn, and families make things together in the craft courtyard."
     - "There is a Trashion Show, where students walk the runway in outfits made from recycled materials, a screen printing shop with that year's Little EAST design, and a silent auction. Little EAST is also an official stop on the Austin Studio Tour."
     - "It is the PTA's biggest event of the year and its largest single source of funding, so every bid and every shirt helps pay for the PTA's work at Blackshear."
-  cta:
-    label: "Join the PTA"
-    href: "https://tinyurl.com/BlackshearStore"
+  # No button here: "Join the PTA" did not fit a page about the event (Jon,
+  # 2026-10-23). The 2026 section's sign-ups are the actions that do.
   # One section per year, newest first. Each folds shut under its heading:
   # `expanded: true` on the current year only, `false` on the rest. When a new
   # year goes on top, flip the old one to `false`.
@@ -65,7 +64,7 @@ little-east:
           href: "/calendar"
       figures:
         - src: "../assets/little-east/2026/poster-coming-soon.png"
-          alt: "A stand-in poster for the 13th annual Little EAST: Buzz the yellow jacket at the center of a clock face inside a spiral of black and yellow rings, with question marks around him and the words Poster to be revealed soon! This year's theme: Time Warp. Saturday, November 14, 2026, 11am to 3pm, Blackshear Elementary, 1712 E. 11th St., free."
+          alt: "A stand-in poster for the 13th annual Little EAST, in black, yellow and blue: Poster to be revealed soon! This year's theme: Time Warp. Saturday, November 14, 2026, 11am to 3pm, Blackshear Elementary, 1712 E. 11th St., free."
           caption: "The real poster is coming soon"
     - heading: "2025 - the 12th Little EAST"
       expanded: false
