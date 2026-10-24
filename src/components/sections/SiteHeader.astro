@@ -5,7 +5,7 @@ import type { SiteData } from '../../types';
 /**
  * Site header: mark, wordmark, navigation, one primary action.
  *
- * Below 48rem the links collapse behind a Menu button. I argued against a
+ * Below 60rem the links collapse behind a Menu button. I argued against a
  * hamburger earlier on findability grounds and was overruled by the thing that
  * actually matters more: seven wrapped links plus the lockup ate most of the
  * first screen on a phone, and content you have to scroll past is worse than
@@ -207,9 +207,10 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
   .nav-list {
     display: flex;
     flex-wrap: wrap;
-    /* Right-aligned, so the last link ends on the same edge as Donate above it
-       and a nav that wraps does not leave a ragged right side. */
-    justify-content: flex-end;
+    /* Left-aligned, so the first link sits under the mark and the name above
+       it (Jon, 2026-10-23). It was right-aligned to end under Donate, which
+       left the row floating in the middle of the band at most widths. */
+    justify-content: flex-start;
     gap: 0.35rem 1.1rem;
     margin: 0;
     padding: 0;
@@ -309,7 +310,17 @@ const navId = `site-nav-${g.__ptaHeaderSeq}`;
     white-space: nowrap;
   }
 
-  @media (max-width: 47.99rem) {
+  /*
+    THE BREAKPOINT IS THE WIDTH OF THE LINKS. The links have one row of their
+    own above this width and must never wrap onto a second: a two-row nav reads
+    as two menus (Jon, 2026-10-23). Measured in the live design: the eight
+    links, at --text-fine in Bevan with their gaps, need 884px, plus the
+    header's 20px gutters, so 924px. 60rem leaves room for a classic scrollbar
+    and for the fallback font before Bevan loads. Adding or renaming a link
+    changes that number: measure again, at about 960px wide, before merging.
+    (It was 48rem, which left 768-924px wrapping into two rows.)
+  */
+  @media (max-width: 59.99rem) {
     /* Back to a single stacked column; the grid above is a desktop shape. */
     .hdr-inner {
       display: flex;
