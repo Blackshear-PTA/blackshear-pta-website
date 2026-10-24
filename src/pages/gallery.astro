@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import { getEntry } from 'astro:content';
 import PageLayout from '../layouts/PageLayout.astro';
+import InstagramWall from '../components/InstagramWall.astro';
 import littleEast from '../assets/photos/little-east.jpg';
 import littleEastAlt from '../assets/photos/little-east-alt.jpg';
 import garden from '../assets/photos/garden.jpg';
@@ -33,17 +34,6 @@ const entry = await getEntry('pages', 'gallery');
 if (!entry) throw new Error('Missing `gallery:` entry in src/content/pages.yaml.');
 
 const INSTAGRAM = 'https://www.instagram.com/blackshearpta/';
-
-/**
- * Embedded posts, chosen in /admin and stored in src/content/instagram.yaml.
- *
- * Empty by default, and the section below omits the grid entirely when it is -
- * so the page never shows a row of empty boxes, and nothing is loaded from
- * instagram.com until somebody has actually picked a post. See
- * docs/INSTAGRAM.md for why this is a chosen list rather than a live feed.
- */
-const instagram = await getEntry('instagram', 'gallery');
-const igPosts = instagram?.data.posts ?? [];
 
 /**
  * Alt text is written per photo rather than generated, because "gallery image
@@ -97,32 +87,12 @@ const photos = [
       going on in the garden.
     </p>
 
-    {
-      igPosts.length > 0 && (
-        <ul class="ig-wall">
-          {igPosts.map((post) => (
-            /*
-              Instagram's own embed markup: embed.js finds each blockquote by
-              class and swaps in an iframe. The link inside is not decoration -
-              it is what a visitor sees when the script is blocked, fails, or
-              has not run yet, which is what keeps this from being a blank box.
-            */
-            <li>
-              <blockquote
-                class="instagram-media"
-                data-instgrm-permalink={post.url}
-                data-instgrm-version="14"
-              >
-                <a href={post.url} target="_blank" rel="noopener">
-                  View this post on Instagram
-                  <span class="sr-only"> (opens in a new tab)</span>
-                </a>
-              </blockquote>
-            </li>
-          ))}
-        </ul>
-      )
-    }
+    {/*
+      The posts chosen in /admin, from the database on every request. A server
+      island, so this page stays prerendered and its photos stay resized: see
+      the note in InstagramWall.astro (TASKS.md A52).
+    */}
+    <InstagramWall server:defer />
 
     <p class="cta-row">
       <a class="cta" href={INSTAGRAM} target="_blank" rel="noopener">
@@ -131,17 +101,6 @@ const photos = [
       </a>
     </p>
 
-    {
-      /*
-        Loaded only when there is something for it to do. is:inline keeps Astro
-        from bundling a third-party URL it cannot see the contents of, and async
-        keeps it off the critical path - the fallback links are already readable
-        while it fetches.
-      */
-      igPosts.length > 0 && (
-        <script is:inline async src="https://www.instagram.com/embed.js" />
-      )
-    }
   </section>
 
   {
@@ -178,27 +137,6 @@ const photos = [
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-
-  /*
-    Instagram's script rewrites each blockquote into an iframe and puts its own
-    inline styles on it, including a margin and a max-width of 540px. Those win
-    over anything here, so this only has to provide the track they sit in and
-    stop the pre-swap blockquote looking like a stray quote.
-  */
-  .ig-wall {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
-    gap: var(--pta-gap);
-    margin: 0 0 var(--pta-gap);
-    padding: 0;
-    list-style: none;
-    justify-items: center;
-  }
-
-  .ig-wall .instagram-media {
-    margin: 0 !important;
-    max-width: 100%;
   }
 
   /*

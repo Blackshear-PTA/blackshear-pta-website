@@ -1,5 +1,5 @@
 /**
- * Blackshear PTA - export every announcement out of D1.
+ * Blackshear PTA - export every announcement, and the Instagram list, out of D1.
  *
  * Run: npm run export:posts            (the local database)
  *      npm run export:posts -- --remote (the live one)
@@ -12,11 +12,12 @@
  * reversible - the markdown it writes is the same format src/content/
  * announcements/ used, so putting the site back on files is a copy.
  *
- * Writes three things into exports/ (gitignored):
+ * Writes four things into exports/ (gitignored):
  *
  *   exports/posts/<slug>.md  one file per post, frontmatter and body
  *   exports/posts.json       the rows verbatim, including drafts
  *   exports/edits.json       the audit trail - who changed what, when
+ *   exports/instagram.json   the posts on /gallery, in order (TASKS.md A52)
  *
  * Shells out to wrangler rather than talking to the D1 HTTP API directly, so it
  * uses the login somebody already has and there is no token to issue, store or
@@ -94,6 +95,15 @@ const edits = query(
 
 const posts = rows.map(toPost);
 
+// Looked for before it is read: on a database migration 0004 has not reached,
+// the posts are still worth exporting, and a failed query would stop the run.
+const hasInstagram =
+  query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'instagram_list'").length > 0;
+const [instagramRow] = hasInstagram ? query('SELECT urls, updated_at FROM instagram_list WHERE id = 1') : [];
+const instagram = instagramRow
+  ? { urls: JSON.parse(String(instagramRow.urls)), updatedAt: String(instagramRow.updated_at) }
+  : null;
+
 // Cleared first, so a post deleted since the last export does not linger as a
 // file and get mistaken for something still live.
 rmSync(OUT, { recursive: true, force: true });
@@ -125,9 +135,15 @@ for (const post of posts) {
 
 writeFileSync(join(OUT, 'posts.json'), `${JSON.stringify(posts, null, 2)}\n`);
 writeFileSync(join(OUT, 'edits.json'), `${JSON.stringify(edits, null, 2)}\n`);
+if (instagram) writeFileSync(join(OUT, 'instagram.json'), `${JSON.stringify(instagram, null, 2)}\n`);
 
 const drafts = posts.filter((p) => p.draft).length;
 console.log(`  exports/posts/            ${posts.length} markdown files (${drafts} draft)`);
 console.log(`  exports/posts.json        ${posts.length} posts`);
 console.log(`  exports/edits.json        ${edits.length} history entries`);
+console.log(
+  instagram
+    ? `  exports/instagram.json    ${instagram.urls.length} Instagram posts`
+    : '  (no Instagram list yet - migration 0004 has not been applied to this database)',
+);
 console.log('\nexports/ is gitignored. Keep a copy somewhere that is not this machine.');

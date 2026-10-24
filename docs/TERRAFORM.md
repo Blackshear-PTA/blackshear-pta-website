@@ -107,7 +107,7 @@ Wrangler's configuration reference is explicit:
 and the secrets reference says the same thing about a deploy that does not
 mention them: "Secrets not included in the file are preserved from the previous
 version." A `wrangler deploy` triggered by Workers Builds will not drop
-`GITHUB_TOKEN` because it is absent from `wrangler.jsonc`.
+`CF_ACCESS_AUD` because it is absent from `wrangler.jsonc`.
 They are absent by design and that is fine.
 
 **The collision runs the other way.** If Terraform owned

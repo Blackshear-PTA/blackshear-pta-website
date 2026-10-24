@@ -1,23 +1,16 @@
 /**
- * Blackshear PTA - Instagram post list round trip.
+ * Blackshear PTA - Instagram post addresses.
  *
- * /admin writes src/content/instagram.yaml and Astro's content loader reads it
- * back with a real YAML parser. This checks the writer's output survives that
- * trip, and that the validator refuses the addresses people actually paste.
+ * Checks that the validator /admin runs before saving the list accepts what the
+ * Copy link button produces and refuses the addresses people actually paste.
+ * Storing the list is check-d1's job (TASKS.md A52).
  *
- * The failure this guards against is quiet: a wrong address produces a file
- * that still looks fine and renders as an empty white box on the live page.
+ * The failure this guards against is quiet: a wrong address saves without
+ * complaint and renders as an empty white box on the live page.
  *
  * Run: npm run check:instagram
  */
-import {
-  parsePosts,
-  stringifyPosts,
-  validatePosts,
-  normalizeUrl,
-  POST_URL,
-  MAX_POSTS,
-} from '../src/worker/instagram.mjs';
+import { validatePosts, normalizeUrl, POST_URL, MAX_POSTS } from '../src/worker/instagram.mjs';
 
 let failures = 0;
 function check(name, actual, expected) {
@@ -32,21 +25,7 @@ function check(name, actual, expected) {
 const A = 'https://www.instagram.com/p/ABC123xyz/';
 const B = 'https://www.instagram.com/reel/Def456_-A/';
 
-console.log('round trip:');
-check('empty list survives', parsePosts(stringifyPosts([])), []);
-check('one post survives', parsePosts(stringifyPosts([A])), [A]);
-check('order is preserved', parsePosts(stringifyPosts([B, A])), [B, A]);
-check('a full list survives', parsePosts(stringifyPosts(Array(MAX_POSTS).fill(A))), Array(MAX_POSTS).fill(A));
-
-console.log('\nparses what a human might have typed:');
-check("single quotes", parsePosts(`gallery:\n  posts:\n    - url: '${A}'\n`), [A]);
-check('no quotes', parsePosts(`gallery:\n  posts:\n    - url: ${A}\n`), [A]);
-check('odd indentation', parsePosts(`gallery:\n  posts:\n- url: "${A}"\n`), [A]);
-check('comments and blanks ignored', parsePosts(`# a comment\n\ngallery:\n  posts:\n    - url: "${A}"\n`), [A]);
-check('empty file', parsePosts(''), []);
-check('missing file', parsePosts(undefined), []);
-
-console.log('\naccepts (stored form on the right - normalizing may add a trailing slash):');
+console.log('accepts (stored form on the right - normalizing may add a trailing slash):');
 for (const [name, url, stored] of [
   ['a /p/ permalink', A, A],
   ['a /reel/ permalink', B, B],

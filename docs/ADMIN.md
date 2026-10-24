@@ -47,10 +47,11 @@ move cost.
   history as JSON. This is the one real new obligation: rows in a managed
   database are not backed up by every clone the way files in git were.
 
-The Instagram list on `/gallery` was **not** moved. It is still
-`src/content/instagram.yaml`, still saved as a commit, and still appears after a
-rebuild - it holds at most six lines, changes a few times a year, and nobody is
-waiting on it.
+The Instagram list on `/gallery` followed later ([A52](../TASKS.md)). It is one
+row in the same database (`migrations/0004`), a save shows on the next visit to
+`/gallery`, its changes appear under **History**, and the export includes it. It
+used to be `src/content/instagram.yaml`, saved as a commit through a GitHub
+token; nothing in the editor talks to GitHub any more.
 
 ## Setup checklist
 
@@ -71,9 +72,9 @@ done any time; 4 onwards is the Access work.
       Cloudflare will let you complete the wizard during a degradation and then
       lose the result.
 - [ ] **8.** Copy the **AUD tag** and note your **team domain**.
-- [ ] **9.** Create the fine-grained GitHub token (section 2 below). Only the
-      Instagram list needs it now.
-- [ ] **10.** Set the three Worker secrets (section 3 below).
+- [ ] **9.** *(Retired.)* This used to be a GitHub token for the Instagram
+      list. Nothing needs one now (section 2 below).
+- [ ] **10.** Set the two Access Worker secrets (section 3 below).
 - [ ] **11.** Create the photo bucket:
       `npx wrangler r2 bucket create blackshear-pta-images`
 - [ ] **12.** Create the announcements database and apply the migrations
@@ -224,39 +225,22 @@ on the application, select it and turn instant authentication off; attach a
 small policy naming one admin address with **Require -> Login Methods ->
 One-time PIN**. Remove all of it again afterwards.
 
-### 2. A GitHub token for the Instagram list
+### 2. A GitHub token (retired)
 
-Only the Instagram list on /gallery still writes to the repository; announcements
-do not touch GitHub at all. The editor loads that list without a token - the
-repository is public - so this is needed to SAVE it and for nothing else.
+There used to be a step here creating a fine-grained GitHub token, so the editor
+could save the Instagram list as a commit. The list is in the database now
+([A52](../TASKS.md)) and nothing in the editor writes to the repository, so no
+token is needed. If one is still set up, see *The old GitHub token* below for
+what to delete.
 
-A **fine-grained** token, scoped to this one repository. Not a classic token.
-
-1. Signed in to GitHub as the PTA's admin account: your avatar -> **Settings** -> **Developer settings** ->
-   **Personal access tokens** -> **Fine-grained tokens** -> **Generate new**
-2. Resource owner: **Blackshear-PTA**
-3. Repository access: **Only select repositories** -> `blackshear-pta-website`
-4. Repository permissions: **Contents: Read and write**. Nothing else.
-5. Name it `blackshear-pta-instagram`. Expiration: **No expiration**, for the
-   reasons under *Token lifetime* below. An owner's token is approved
-   automatically.
-
-> Generate this from an account that will outlive one board term. A token on a
-> departing parent's personal account is a thing that breaks in August. That
-> account is the admin account, which owns the PTA's outside services.
-
-### 3. Four Worker secrets
+### 3. Two Worker secrets
 
 From the repository directory, so wrangler targets the right Worker:
 
 ```sh
-npx wrangler secret put GITHUB_TOKEN            # the token from step 2
 npx wrangler secret put CF_ACCESS_TEAM_DOMAIN   # e.g. blackshearpta.cloudflareaccess.com
 npx wrangler secret put CF_ACCESS_AUD           # the AUD tag from step 1
 ```
-
-`GITHUB_REPO` and `GITHUB_BRANCH` default to
-`Blackshear-PTA/blackshear-pta-website` and `main`; set them only to override.
 
 > **`wrangler secret put` fails with error 10215** when the Worker's newest
 > version is not the deployed one, which happens after any branch preview
@@ -425,23 +409,17 @@ Photos are stored by content hash and served from `/images/<hash>.<ext>` through
 the Worker, so there is no second hostname and no public bucket to configure.
 The same photo uploaded twice is stored once.
 
-## Token lifetime
+## The old GitHub token
 
-The GitHub token is deliberately set to **never expire**, and that is a
-considered trade rather than an oversight.
+Until the Instagram list moved into the database ([A52](../TASKS.md)), the
+editor saved it as a commit through a GitHub token set never to expire ([D12](../TASKS.md#open-decisions)):
+an expiring one would have broken `/admin` months later with nobody left who
+knew why. Nothing uses it now. A credential nothing uses is only exposure, so
+once A52 is live, delete both halves:
 
-An expiring token fails in the worst possible way for this project: it stops
-working months later, `/admin` breaks, nobody remembers why, and the site starts
-going stale - which is exactly the failure ([F18](../TASKS.md)) this editor exists
-to prevent. The board turns over annually and there is no guarantee anyone will
-be around who knows what a PAT is.
-
-Against that, the exposure is narrow. The token is scoped to **Contents: write
-on one already-public repository**. A leak would let someone commit to the PTA
-website - no personal data, no money, and every change revertible in git.
-
-Because nothing will ever force a rotation, the compensating control is that it
-is written down:
+- the `GITHUB_TOKEN` secret on the Worker: Cloudflare dashboard -> **Workers &
+  Pages** -> `blackshear-pta` -> **Settings** -> **Variables and Secrets**;
+- the token itself, as described here:
 
 | | |
 |---|---|
@@ -452,13 +430,8 @@ is written down:
 | Name | `blackshear-pta-instagram` |
 | Revoke at | GitHub, signed in as the admin account -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens |
 
-Each save is one commit: the editor's address is the author, and the token's
-owner is the committer.
-
-**Revoke and reissue if** the admin account's GitHub password is ever shared or
-suspected compromised, or if unexplained commits appear in the repository
-history. Reissuing is step 2 and step 3 of the setup above and takes a few
-minutes; nothing else needs touching.
+Deleting the token before the secret is harmless: the editor no longer reads
+either.
 
 ## Two locks, on purpose
 
@@ -501,7 +474,7 @@ payloads are all refused.
 | `Your sign-in session expired` | The Access session lapsed. Reload; you will be asked to sign in again. |
 | Login page offers only "Sign in with Cloudflare" | No identity provider is configured. Section 1, step 0. |
 | `Not signed in.` on **localhost** | Expected. Access is enforced at Cloudflare's edge and does not exist locally. See "Running it locally" below. |
-| `Local development cannot change the Instagram list.` | Expected. That list is still a file in the repo. Announcements write to your local database and are unaffected. Below. |
+| `The Instagram list has not been moved into the database yet` | Migration 0004 has not been applied to this database. `npm run db:migrate:remote` (live) or `npm run db:migrate` (local). Until then `/gallery` shows the photos without the Instagram block. |
 | Photos 404 on **localhost** | `wrangler dev` uses an empty local bucket. `npm run dev:images` fills it. |
 | `The announcements database is not connected.` | The D1 binding is missing, or the migrations have never been applied. Section 5. |
 | Google says access is blocked, or that the app can only be used within its organization | A personal Google account was chosen. Sign in again and pick the `@blackshearpta.org` account. See below. |
@@ -537,8 +510,8 @@ dev worker
 That checks `.dev.vars`, says which pieces will not work and why, **sets up the
 local announcements database**, seeds the local photo bucket, and starts the
 Workers runtime on :8787. `http://localhost:8787/admin` then opens the real
-editor. No GitHub token is needed — the repository is public and reads work
-unauthenticated. A stale `GITHUB_TOKEN` line is worse than none; delete it.
+editor. No GitHub token is needed; nothing in the editor talks to GitHub. If
+`.dev.vars` still has a `GITHUB_TOKEN` line, delete it.
 
 `DEV_ADMIN_EMAIL` is honoured **only** on a loopback hostname, so it is inert in
 production; the hostname is the control, not the variable. `npm run
@@ -559,9 +532,8 @@ Two things follow:
   expected; `npm run db:migrate` never overwrites what is already there.
 - To start over, delete `.wrangler/state` and run `dev worker` again.
 
-The **Instagram list** is the exception and is still read-only locally, because
-it is still a file in the repository. Set `DEV_ALLOW_WRITES=true` in `.dev.vars`
-if you really mean to commit to it from a dev server.
+The **Instagram list** is in the same local database, so the same holds for it:
+change it freely, and `/gallery` on :8787 shows the change on the next load.
 
 ## The one confusing thing a board member will hit
 

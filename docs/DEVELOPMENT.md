@@ -188,10 +188,9 @@ by mistake — the hostname is the lock, not the variable. See `devIdentity()` i
 `src/worker/access.ts`, and `npm run check:access` for the tests holding it to
 that.
 
-You do **not** need a GitHub token for this. Announcements never touch GitHub,
-and the Instagram list loads without one because the repository is public. If
-you have a stale `GITHUB_TOKEN` line in `.dev.vars`, delete it — an invalid
-token is worse than none, and the editor will tell you so.
+You do **not** need a GitHub token for this: nothing in the editor talks to
+GitHub. If you have an old `GITHUB_TOKEN` line in `.dev.vars`, delete it;
+`dev worker` will remind you.
 
 **Announcements are fully writable locally, and write nowhere else.** `wrangler
 dev` binds a *local* D1 database under `.wrangler/state`, so creating, editing,
@@ -205,10 +204,9 @@ the editor the one part of the site with no feedback loop shorter than a deploy
 (F40). Your local posts drift from production from the first edit; that is
 expected. To start over, delete `.wrangler/state` and run `dev worker` again.
 
-**The Instagram list is still read-only locally**, because it is still a file in
-the repository. `DEV_ALLOW_WRITES=true` in `.dev.vars` enables it, along with a
-`GITHUB_TOKEN` that has **Contents: write**. The editor's banner says which of
-the two states it is in.
+**The Instagram list is writable locally too.** It is a row in the same local
+database (A52), and `/gallery` on :8787 reads it on every load, so a change in
+the editor shows there on the next reload.
 
 **Photos.** `wrangler dev` binds a *local* R2 bucket, not the production one, so
 it starts empty and every photo 404s. `dev worker` fills it automatically; the

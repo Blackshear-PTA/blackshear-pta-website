@@ -66,7 +66,11 @@ export interface EventSnapshot {
   source: string;
   /** YYYY-MM-DD the snapshot was taken. */
   generated: string;
-  window: unknown;
+  /**
+   * YYYY-MM-DD bounds of what was baked. `from` is the first day of the school
+   * year, so the grid can reach back to it (scripts/refresh-events.mjs).
+   */
+  window: { from: string; to: string };
   events: SerializedEvent[];
 }
 

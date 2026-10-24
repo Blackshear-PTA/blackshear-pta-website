@@ -42,6 +42,7 @@ import {
   nowStamp,
 } from '../src/lib/posts.mjs';
 import { renderMarkdown } from '../src/lib/markdown.mjs';
+import { getInstagramList, saveInstagramList, HISTORY_SLUG } from '../src/lib/instagram-list.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MIGRATIONS = join(root, 'migrations');
@@ -636,6 +637,98 @@ console.log('\npost bodies render:');
   const db = fresh();
   const save = await getAny(db, '2026-07-30-save-blackshear');
   eq('an imported body renders as three paragraphs', (html(save.body).match(/<p>/g) ?? []).length, 3);
+}
+
+// ------------------------------------------------------- the Instagram list
+
+console.log('\nthe Instagram list (A52):');
+{
+  const P = (id) => `https://www.instagram.com/p/${id}/`;
+
+  // What 0004 seeds: the six posts the YAML file held when it moved.
+  const db = fresh();
+  const seeded = await getInstagramList(db);
+  eq('the migration seeds the six posts that were in the YAML file', seeded.urls.length, 6);
+  eq('newest first, as the gallery showed them', seeded.urls[0], P('DehjUoYlTlY'));
+  eq('and it is not reported missing', seeded.missing, false);
+
+  // Before 0004 is applied: the gallery must render, and the editor must say why.
+  const before = new ShimDb(new DatabaseSync(':memory:'));
+  eq('a database without the table reads as missing, not as an error', await getInstagramList(before), {
+    urls: [],
+    updatedAt: null,
+    missing: true,
+  });
+
+  // A save, with the version the editor loaded.
+  const saved = await saveInstagramList(db, {
+    urls: [P('A1'), P('B2')],
+    editor: EDITOR,
+    expectedUpdatedAt: seeded.updatedAt,
+    at: '2026-10-24T12:00:00Z',
+  });
+  eq('a save naming the current version is accepted', saved, {
+    urls: [P('A1'), P('B2')],
+    updatedAt: '2026-10-24T12:00:00Z',
+  });
+  eq('and reads back in the order saved', (await getInstagramList(db)).urls, [P('A1'), P('B2')]);
+
+  const history = (await listEdits(db, 500)).filter((e) => e.slug === HISTORY_SLUG);
+  eq('it leaves one history row', history.length, 1);
+  eq('saying who, and how many posts', [history[0]?.editor, history[0]?.title], [EDITOR, 'Instagram posts (2)']);
+  eq('with the whole list in the detail', JSON.parse(history[0]?.detail ?? '{}').urls, [P('A1'), P('B2')]);
+
+  // Somebody else saved in between: nothing written, nothing recorded.
+  eq(
+    'a save naming an older version is a conflict',
+    await saveInstagramList(db, {
+      urls: [P('C3')],
+      editor: EDITOR,
+      expectedUpdatedAt: seeded.updatedAt,
+      at: '2026-10-24T12:05:00Z',
+    }),
+    'conflict',
+  );
+  eq('and the list is untouched', (await getInstagramList(db)).urls, [P('A1'), P('B2')]);
+  eq(
+    'and no history row is written for the change that did not happen',
+    (await listEdits(db, 500)).filter((e) => e.slug === HISTORY_SLUG).length,
+    1,
+  );
+
+  // An empty list is a real choice (the gallery then shows only the photos).
+  eq(
+    'an empty list saves',
+    (await saveInstagramList(db, { urls: [], editor: EDITOR, expectedUpdatedAt: '2026-10-24T12:00:00Z' }))
+      ?.urls,
+    [],
+  );
+
+  // A database that somehow has the table but not the row: a first save
+  // without a version must work, rather than conflict forever.
+  const bare = fresh();
+  bare.db.exec('DELETE FROM instagram_list');
+  eq('a missing row reads as an empty list', (await getInstagramList(bare)).urls, []);
+  eq('and a save with no version creates it', (await saveInstagramList(bare, { urls: [P('A1')], editor: EDITOR }))?.urls, [
+    P('A1'),
+  ]);
+
+  // The table's CHECKs, which hold even against a hand-run UPDATE.
+  await rejects(
+    'more than six posts is refused by the database',
+    () => db.prepare('UPDATE instagram_list SET urls = ? WHERE id = 1').bind(JSON.stringify(Array(7).fill(P('A1')))).run(),
+    /CHECK/,
+  );
+  await rejects(
+    'a value that is not a JSON list is refused',
+    () => db.prepare('UPDATE instagram_list SET urls = ? WHERE id = 1').bind('{"a":1}').run(),
+    /CHECK/,
+  );
+  await rejects(
+    'there is only ever one row',
+    () => db.prepare('INSERT INTO instagram_list (id, urls) VALUES (2, ?)').bind('[]').run(),
+    /CHECK/,
+  );
 }
 
 // ------------------------------------------------------------------- helpers

@@ -3,7 +3,7 @@
 #
 #   npm run cf -- wrangler d1 execute blackshear-pta --remote --command "SELECT 1"
 #   npm run cf:whoami
-#   sh scripts/cf.sh npx wrangler secret put GITHUB_TOKEN
+#   sh scripts/cf.sh npx wrangler d1 migrations list blackshear-pta --remote
 #
 # WHY. Until 2026-10-16 the token was exported from ~/.zshenv on the
 # maintainer's machine, so every shell there carried a PTA credential: other

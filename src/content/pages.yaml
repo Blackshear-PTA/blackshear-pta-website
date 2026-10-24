@@ -635,7 +635,8 @@ volunteer:
       names: []
     # The sign-ups open now, from the Fundraising chair (2026-10-23). Keep this
     # list current: add each new SignUpGenius here, and take one off once its
-    # date has passed.
+    # date has passed. "Stock the teachers' lounge" came off 2026-10-23: the
+    # event was cancelled (Fundraising chair, via Jon).
     - heading: "Step two: sign up"
       body:
         - "Pick something below and choose a time that works for you."
@@ -646,9 +647,6 @@ volunteer:
         - label: "Pies and Sides Buffet"
           href: "https://tinyurl.com/BlackshearBuffet"
           note: "Thursday, November 19, for the school's Thanksgiving lunch"
-        - label: "Stock the teachers' lounge"
-          href: "https://tinyurl.com/BlackshearLounge"
-          note: "Staff appreciation. Dates are on the sign-up"
         - label: "Water the garden"
           href: "https://tinyurl.com/BlackshearWateringHelp"
           note: "Ongoing"
@@ -755,5 +753,5 @@ calendar:
   # from src/data/events.json, which the schema cannot express. Text still lives
   # here so it edits the same way as every other page.
   body:
-    - "The PTA calendar lives in Google Calendar. This page shows what is coming up; the buttons below put the whole thing in the calendar app you already use, so it updates itself."
+    - "The PTA calendar lives in Google Calendar. This page shows the whole school year, with days already past greyed out; the buttons below put the calendar in the app you already use, so it updates itself."
   sections: []

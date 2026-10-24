@@ -47,6 +47,19 @@ const FEED = `https://calendar.google.com/calendar/ical/${encodeURIComponent(CAL
 /** How far ahead to bake. Longer costs bytes; nobody plans a bake sale in 2028. */
 const MONTHS_AHEAD = 12;
 
+/**
+ * How far BACK to bake: to the start of the school year, August 1st (zero-based
+ * month 7), so the year's past events stay on /calendar, greyed out, for anyone
+ * looking one up. The window used to start today, which made every event
+ * vanish the morning after it happened (Jon, 2026-10-23, TASKS.md A53).
+ *
+ * A school year rather than a rolling few months because that is the span
+ * people look back over - "when was the last bake sale?" - and it costs little:
+ * a few dozen events by the spring. In July the whole of the year just ended is
+ * still there; on August 1st it rolls over.
+ */
+const SCHOOL_YEAR_STARTS = 7;
+
 const compiled = execFileSync(
   join(root, 'node_modules/.bin/esbuild'),
   [join(root, 'src/lib/ical.ts'), '--format=esm', '--target=es2022'],
@@ -64,10 +77,12 @@ if (!response.ok) {
   process.exit(1);
 }
 
-const from = new Date();
-// Start of today, not this instant, so an event already under way still shows.
-from.setUTCHours(0, 0, 0, 0);
-const to = new Date(from);
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
+const from = new Date(
+  Date.UTC(today.getUTCFullYear() - (today.getUTCMonth() < SCHOOL_YEAR_STARTS ? 1 : 0), SCHOOL_YEAR_STARTS, 1),
+);
+const to = new Date(today);
 to.setUTCMonth(to.getUTCMonth() + MONTHS_AHEAD);
 
 const { events, skipped } = parseCalendar(await response.text(), from, to);
@@ -106,7 +121,7 @@ const snapshot = {
    * want. It is also what /calendar shows as "updated", so it needs to be true
    * rather than merely stable.
    */
-  generated: from.toISOString().slice(0, 10),
+  generated: today.toISOString().slice(0, 10),
   window: { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) },
   events: events.map((e) => ({
     id: e.id,

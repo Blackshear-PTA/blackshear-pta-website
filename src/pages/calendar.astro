@@ -93,9 +93,9 @@ const labels = {
 const labelsFor = (allDay: boolean) => (allDay ? labels.allDay : labels.zoned);
 const timeLabel = fmt({ hour: 'numeric', minute: '2-digit' });
 
-// The snapshot's window starts at the day it was generated, which may be a few
-// days back if the Action has not run. Filter again here so a stale snapshot
-// still cannot show a meeting that already happened.
+// The list below is "what is next", so it starts today. The snapshot reaches
+// back to the start of the school year for the grid, which greys those days
+// out (A53); this filter is what keeps them out of the list.
 const startOfToday = new Date();
 startOfToday.setHours(0, 0, 0, 0);
 
@@ -150,7 +150,7 @@ const spansDays = (event: Event) => {
     <a class="cta cta-quiet" href={subscribe}>Subscribe in Apple or Outlook</a>
   </p>
 
-  <CalendarGrid events={snapshot.events} />
+  <CalendarGrid events={snapshot.events} since={snapshot.window.from} />
 
   {/*
     The agenda list stays, collapsed. The grid is better for "what is happening
@@ -206,7 +206,8 @@ const spansDays = (event: Event) => {
   <section class="section-block">
     <div class="rule" role="presentation"></div>
     <p class="prose note-line">
-      Showing {upcoming.length} events, updated {updated}. The calendar is kept in Google and
+      Showing {upcoming.length} upcoming events and {snapshot.events.length - upcoming.length} earlier
+      this school year, updated {updated}. The calendar is kept in Google and
       refreshed here daily, so a change made this morning may take until tomorrow to appear.{' '}
       <a href={viewInGoogle} target="_blank" rel="noopener">
         View the full calendar in Google
