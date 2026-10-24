@@ -48,13 +48,16 @@ const hasPictures = page.sections.some((s) => s.figures.length > 0 || s.photos.l
  * What a folded section holds, under its heading, so someone can tell which
  * year is worth opening without opening them all.
  */
+const logoCount = (section: (typeof page.sections)[number]) =>
+  section.logos.length + section.moreLogos.length;
+
 const contents = (section: (typeof page.sections)[number]) => {
   const pictures = section.figures.length + section.photos.length;
   return [
     section.videos.length === 1 && 'Video',
     section.videos.length > 1 && `${section.videos.length} videos`,
     pictures > 0 && `${pictures} ${pictures === 1 ? 'picture' : 'pictures'}`,
-    section.logos.length > 0 && `${section.logos.length} ${section.logos.length === 1 ? 'logo' : 'logos'}`,
+    logoCount(section) > 0 && `${logoCount(section)} ${logoCount(section) === 1 ? 'logo' : 'logos'}`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -141,6 +144,7 @@ const contents = (section: (typeof page.sections)[number]) => {
         )}
 
         <LogoWall logos={section.logos} />
+        <LogoWall logos={section.moreLogos} size="small" />
 
         <SectionGallery
           figures={section.figures}

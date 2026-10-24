@@ -135,6 +135,10 @@ come out looking the same size.
   background, at least 400 pixels across. Anything smaller looks soft on a
   phone or a high-resolution screen.
 
+**A smaller second row:** a section can also take `moreLogos:`, in the same
+shape as `logos:`. They show under the main logos at about 80% of the size, for a
+lower tier in the same thank-you, such as the auction's smaller donors.
+
 Family sponsors are plain names, in `names:`.
 
 ### The homepage's Helpful Links
