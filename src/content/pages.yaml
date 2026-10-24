@@ -755,5 +755,5 @@ calendar:
   # from src/data/events.json, which the schema cannot express. Text still lives
   # here so it edits the same way as every other page.
   body:
-    - "The PTA calendar lives in Google Calendar. This page shows what is coming up; the buttons below put the whole thing in the calendar app you already use, so it updates itself."
+    - "The PTA calendar lives in Google Calendar. This page shows the whole school year, with days already past greyed out; the buttons below put the calendar in the app you already use, so it updates itself."
   sections: []

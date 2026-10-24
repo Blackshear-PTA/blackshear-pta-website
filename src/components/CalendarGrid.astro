@@ -37,11 +37,15 @@ type CalendarEvent = SerializedEvent;
 
 interface Props {
   events: CalendarEvent[];
-  /** How many months of history to keep reachable behind the arrows. */
-  monthsBack?: number;
+  /**
+   * YYYY-MM-DD the snapshot starts on - the first day of the school year. Every
+   * month from there is reachable behind the arrows, including one with no
+   * events, so going back a month never skips one.
+   */
+  since?: string;
 }
 
-const { events, monthsBack = 1 } = Astro.props;
+const { events, since } = Astro.props;
 
 const TZ = 'America/Chicago';
 
@@ -227,17 +231,31 @@ for (const event of events) {
 const todayKey = dayKey(new Date());
 const [todayYear, todayMonth] = todayKey.split('-').map(Number) as [number, number, number];
 
-/** Every month worth showing: a little history, plus everything with events. */
-const monthKeys = new Set<string>();
-for (let back = monthsBack; back > 0; back -= 1) {
-  const d = new Date(Date.UTC(todayYear, todayMonth - 1 - back, 1));
-  monthKeys.add(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
-}
-monthKeys.add(`${todayYear}-${String(todayMonth).padStart(2, '0')}`);
-for (const key of byDay.keys()) monthKeys.add(key.slice(0, 7));
-
-const monthList = [...monthKeys].sort();
 const currentMonth = `${todayYear}-${String(todayMonth).padStart(2, '0')}`;
+
+/**
+ * Every month from the start of the snapshot to its last event, with no gaps:
+ * the school year so far, greyed out (Jon, 2026-10-23, TASKS.md A53), this
+ * month, and the year ahead. A month with nothing in it is still a month, and
+ * the arrows skipping one would read as the calendar jumping.
+ */
+const eventMonths = [...byDay.keys()].map((key) => key.slice(0, 7));
+const firstMonth = [since?.slice(0, 7), currentMonth, ...eventMonths]
+  .filter((key): key is string => Boolean(key))
+  .sort()[0]!;
+const lastMonth = [currentMonth, ...eventMonths].sort().at(-1)!;
+
+const monthList: string[] = [];
+let [cursorYear, cursorMonth] = firstMonth.split('-').map(Number) as [number, number];
+// The cap is a backstop against a malformed key looping forever; the real span
+// is about two school years at most.
+while (monthList.length < 36) {
+  const key = `${cursorYear}-${String(cursorMonth).padStart(2, '0')}`;
+  monthList.push(key);
+  if (key >= lastMonth) break;
+  cursorMonth += 1;
+  if (cursorMonth > 12) { cursorMonth = 1; cursorYear += 1; }
+}
 
 const monthNameFmt = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
@@ -347,7 +365,14 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
             <tr>
               {week.map((cell) => (
                 <td
-                  class:list={['cell', { blank: cell.day === null, today: cell.key === todayKey }]}
+                  class:list={[
+                    'cell',
+                    {
+                      blank: cell.day === null,
+                      today: cell.key === todayKey,
+                      past: cell.key !== null && cell.key < todayKey,
+                    },
+                  ]}
                   data-day={cell.key ?? undefined}
                 >
                   {cell.day !== null && (
@@ -471,7 +496,28 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
   const empty = document.querySelector<HTMLElement>('[data-cal-empty]');
   if (grids.length && label) {
     const keys = grids.map((g) => g.dataset.month!);
-    let index = Math.max(0, grids.findIndex((g) => !g.hidden));
+
+    /*
+     * "Today" again, in the reader's browser. The page is built when the
+     * calendar refresh commits, about once a day at an hour that is evening in
+     * Austin, so the build's idea of today is wrong for most of the next day:
+     * yesterday would still be ringed, and still not greyed out. The built
+     * classes stay for anyone without JavaScript; this corrects them.
+     */
+    const todayKey = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    document.querySelectorAll<HTMLElement>('.month-grid td[data-day]').forEach((cell) => {
+      const day = cell.dataset.day!;
+      cell.classList.toggle('today', day === todayKey);
+      cell.classList.toggle('past', day < todayKey);
+    });
+
+    const current = keys.indexOf(todayKey.slice(0, 7));
+    let index = current >= 0 ? current : Math.max(0, grids.findIndex((g) => !g.hidden));
     const startIndex = index;
 
     function show(to: number) {
@@ -847,6 +893,20 @@ const months = monthList.map((key) => ({ key, ...buildMonth(key) }));
     font-weight: var(--pta-display-weight);
   }
   .cell.today .daynum { color: var(--pta-accent); }
+
+  /*
+    Days already gone: kept for reference (TASKS.md A53), but stepped back so
+    the eye lands on what is still coming. Muted colors rather than opacity,
+    which would take the text below AA; these all still clear it (about 7:1).
+    The class is set at build and corrected in the browser - see the script.
+  */
+  .cell.past { background: #f7f7f5; }
+  .cell.past .daynum { color: var(--pta-ink-muted); }
+  .cell.past .pill {
+    --tone-bg: #ecebe8;
+    --tone-edge: #c4c2bc;
+    color: var(--pta-ink-muted);
+  }
 
   /*
     A square holds about four lines of event text before the week it is in has
