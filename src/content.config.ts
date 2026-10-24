@@ -159,6 +159,16 @@ const pageSection = ({ image }: SchemaContext) =>
       .default([]),
     /** A grid of square thumbnails that open full size. Order is display order. */
     photos: z.array(z.object({ src: image(), alt: z.string() })).default([]),
+    /**
+     * Sponsor logos, each linking to the sponsor's own site. Shown whole on a
+     * white tile, never cropped. `name` is what a screen reader hears, and the
+     * tile's tooltip; `href` is optional because a few sponsors have no site.
+     * The 2026-2027 sponsorship levels promise "logo and link" on this website
+     * from the Community level up, which is what this is for.
+     */
+    logos: z
+      .array(z.object({ src: image(), name: z.string(), href: z.url().optional() }))
+      .default([]),
   });
 
 const pages = defineCollection({
@@ -289,6 +299,23 @@ const home = defineCollection({
       heading: z.string(),
       /** How many to show on the homepage before "see all". */
       limit: z.number().int().positive().default(4),
+    }),
+    /**
+     * The links families keep asking for - the handbook, drop-off and pick-up,
+     * supply lists - in one place on the homepage, grouped. They used to live
+     * on the old site's homepage and the PTA's Linktree. `anchor` is the id the
+     * Start Here tile jumps to.
+     */
+    helpfulLinks: z.object({
+      heading: z.string(),
+      anchor: z.string().regex(/^[a-z][a-z0-9-]*$/, 'Lowercase letters, digits and hyphens: it becomes #anchor.'),
+      intro: z.string().optional(),
+      groups: z.array(
+        z.object({
+          heading: z.string(),
+          links: z.array(quickAction).min(1),
+        }),
+      ),
     }),
     getInvolved: z.object({
       heading: z.string(),

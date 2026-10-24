@@ -130,10 +130,17 @@ function migrationFiles() {
     .sort();
 }
 
-function fresh({ withImport = true } = {}) {
+/**
+ * A database built from the migrations. The tests below were written against
+ * the five posts 0002 imports, so later content imports (0003, the Weekly
+ * Buzz) are left out unless asked for: they add real posts, and every count
+ * below would have to change with each one. They get their own checks.
+ */
+function fresh({ withImport = true, laterImports = false } = {}) {
   const raw = new DatabaseSync(':memory:');
   for (const name of migrationFiles()) {
     if (!withImport && name.startsWith('0002_')) continue;
+    if (!laterImports && name.includes('_import_') && !name.startsWith('0002_')) continue;
     raw.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
   }
   return new ShimDb(raw);
@@ -147,11 +154,28 @@ const write = { editor: EDITOR };
 console.log('schema and migrations:');
 {
   try {
-    fresh();
+    fresh({ laterImports: true });
     pass(`every migration applies (${migrationFiles().join(', ')})`);
   } catch (error) {
     fail('every migration applies', String(error?.message ?? error));
   }
+}
+
+{
+  // The Weekly Buzz import (0003): safe to re-run like 0002, every post
+  // published, and every flyer it points at shipped in public/weekly-buzz/.
+  const db = fresh({ laterImports: true });
+  const before = await listAll(db);
+  db.db.exec(readFileSync(join(MIGRATIONS, '0003_import_weekly_buzz.sql'), 'utf8'));
+  const after = await listAll(db);
+  eq('the Weekly Buzz import is safe to re-run', after.length, before.length);
+  const buzz = after.filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
+  eq('it holds Weekly Buzz #1 to #9', buzz.length, 9);
+  eq('none of them is a draft', buzz.some((p) => p.draft), false);
+  const flyers = buzz.flatMap((p) => [...p.body.matchAll(/\]\((\/weekly-buzz\/[^)]+)\)/g)].map((m) => m[1]));
+  const shipped = new Set(readdirSync(join(root, 'public/weekly-buzz')).map((f) => `/weekly-buzz/${f}`));
+  const missing = flyers.filter((f) => !shipped.has(f));
+  eq('every flyer it shows is in public/weekly-buzz/', missing.join(', '), '');
 }
 
 {

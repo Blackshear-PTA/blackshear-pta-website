@@ -129,19 +129,31 @@ export function gradeLabels(grades: readonly string[]): string[] {
 }
 
 /**
- * First paragraph, for a listing. The body is markdown, so this strips the
- * handful of inline markers that would otherwise show up as literal asterisks
- * in a summary. Not a markdown parser and not trying to be - the post's own
- * page renders the real thing through src/lib/markdown.mjs.
+ * First paragraph with words in it, for a listing. The body is markdown, so
+ * this strips the handful of inline markers that would otherwise show up as
+ * literal asterisks in a summary. Not a markdown parser and not trying to be -
+ * the post's own page renders the real thing through src/lib/markdown.mjs.
+ *
+ * "With words in it" because a post can open with a picture: each Weekly Buzz
+ * starts with its flyer, and its first paragraph alone strips to nothing.
  */
 export function excerpt(post: Post, maxChars = 240): string {
-  const first = (post.body ?? '').trim().split(/\n\s*\n/)[0] ?? '';
-  const plain = first
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[*_`#>]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const strip = (paragraph: string) =>
+    paragraph
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      // A heading's or quote's leading marker, and emphasis anywhere. Not every
+      // '#': "Weekly Buzz #9" keeps its number.
+      .replace(/^\s*(#{1,6}|>)\s*/, '')
+      .replace(/[*_`]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const plain =
+    (post.body ?? '')
+      .trim()
+      .split(/\n\s*\n/)
+      .map(strip)
+      .find((paragraph) => paragraph !== '') ?? '';
   if (plain.length <= maxChars) return plain;
   const cut = plain.slice(0, maxChars);
   return `${cut.slice(0, cut.lastIndexOf(' ')) || cut}…`;

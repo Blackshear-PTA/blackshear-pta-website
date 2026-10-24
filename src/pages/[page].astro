@@ -4,6 +4,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import VideoEmbed from '../components/sections/VideoEmbed.astro';
 import TikTokEmbed from '../components/TikTokEmbed.astro';
 import SectionGallery from '../components/SectionGallery.astro';
+import LogoWall from '../components/LogoWall.astro';
 import Lightbox from '../components/Lightbox.astro';
 import { isExternal } from '../lib/links';
 
@@ -53,6 +54,7 @@ const contents = (section: (typeof page.sections)[number]) => {
     section.videos.length === 1 && 'Video',
     section.videos.length > 1 && `${section.videos.length} videos`,
     pictures > 0 && `${pictures} ${pictures === 1 ? 'picture' : 'pictures'}`,
+    section.logos.length > 0 && `${section.logos.length} ${section.logos.length === 1 ? 'logo' : 'logos'}`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -137,6 +139,8 @@ const contents = (section: (typeof page.sections)[number]) => {
             ))}
           </ul>
         )}
+
+        <LogoWall logos={section.logos} />
 
         <SectionGallery
           figures={section.figures}

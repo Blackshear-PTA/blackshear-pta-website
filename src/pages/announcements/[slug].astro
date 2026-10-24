@@ -342,6 +342,19 @@ const bodyHtml = renderMarkdown(post.body);
   }
 
   /*
+    A picture written into the body as markdown - each Weekly Buzz opens with
+    its flyer, served from public/weekly-buzz/. Never wider than the column,
+    and shown whole: a flyer is mostly words.
+  */
+  .prose :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  /*
    * Lists and links have to be restored here. Tailwind's base layer strips
    * list markers and link styling from every element on the site, and a post
    * body is the one place where markdown, not a component, decides the markup.

@@ -43,16 +43,90 @@ home:
       - label: "Calendar"
         href: "/calendar"
         note: "Meetings, bake sales, and school events"
-      - label: "Sign up for the newsletter"
-        href: "https://tinyurl.com/BlackshearNewsletterSignup"
-      - label: "Help with school supplies"
-        href: "https://tinyurl.com/BlackshearSuppliesHelp"
+      # Replaced "Sign up for the newsletter" on 2026-10-23 (Jon): it fed a
+      # Mailchimp list last used in 2023. PTA news now goes out as the Weekly
+      # Buzz, which lands in Announcements below.
+      - label: "Little EAST"
+        href: "/little-east"
+        note: "Saturday, November 14, 11am to 3pm"
+      # "Help with school supplies" moved into Helpful Links, which this tile
+      # jumps to (Jon, 2026-10-23).
+      - label: "Helpful links"
+        href: "#helpful-links"
+        note: "The handbook, drop-off and pick-up, supply lists and more"
 
   # The posts themselves are in the site's database and are edited at /admin.
   # Only the heading and how many to show on the homepage are set here.
   announcements:
     heading: "Announcements"
     limit: 4
+
+  # Everything the old site's "Important School Links" block and the PTA's
+  # Linktree carried, in one place (Jon, 2026-10-23). The tinyurls are kept on
+  # purpose here, unlike the Little EAST archive (F61): these are this year's
+  # documents, and whoever runs the tinyurl points it at next year's.
+  helpfulLinks:
+    heading: "Helpful links for families"
+    anchor: "helpful-links"
+    intro: "The documents and pages families ask for most, from the school and from the PTA."
+    groups:
+      - heading: "From the school"
+        links:
+          - label: "Family handbook"
+            href: "https://tinyurl.com/BlackshearFamilyHandbook"
+            note: "Caregiver and student handbook, PDF"
+          - label: "Arrival and dismissal"
+            href: "https://tinyurl.com/BlackshearArrivalDismissal"
+            note: "Drop-off and pick-up times and routes"
+          - label: "School supply lists"
+            href: "https://tinyurl.com/BlackshearSchoolSupplies"
+            note: "2026-2027, every grade, PDF"
+          - label: "The Beat, the school newsletter"
+            href: "https://austinisdtx.edurooms.com/newsletters/blackshear-elementary-school/newsletters/the-beat-184694"
+            note: "The latest issue"
+          - label: "Blackshear Elementary website"
+            href: "https://blackshear.austinschools.org"
+          - label: "The school on Instagram"
+            href: "https://www.instagram.com/blackshear11th/"
+            note: "@blackshear11th"
+      - heading: "Supporting students and staff"
+        links:
+          - label: "$20 student Fine Arts donation"
+            href: "https://tinyurl.com/BlackshearStore"
+            note: "Two extra fine arts classes a week for every student. Pay what you can, in the Yellow Jacket Store"
+          - label: "Help with school supplies"
+            href: "https://tinyurl.com/BlackshearSuppliesHelp"
+            note: "The school's Amazon wish list"
+          - label: "Teacher and staff favorite things"
+            href: "https://tinyurl.com/BlackshearStaffFavs"
+            note: "2026-2027, for gifts and thank-yous"
+          - label: "Stock the staff treat cart"
+            href: "https://tinyurl.com/BlackshearStaff"
+            note: "SignUpGenius"
+      - heading: "Little EAST, November 14"
+        links:
+          - label: "Volunteer for a shift"
+            href: "https://tinyurl.com/BlackshearLEVolunteer"
+            note: "SignUpGenius"
+          - label: "Bake for the 5th grade bake sale"
+            href: "https://tinyurl.com/Blackshear5thBakeSale"
+            note: "SignUpGenius"
+          - label: "Everything about Little EAST"
+            href: "/little-east"
+      - heading: "From the PTA"
+        links:
+          - label: "The Weekly Buzz"
+            href: "/announcements"
+            note: "Every week's PTA news, in Announcements"
+          - label: "What PTA volunteers do"
+            href: "https://tinyurl.com/PTAVolunteerInfo"
+            note: "A one-page overview"
+          - label: "Garden work days"
+            href: "https://tinyurl.com/BlackshearGardenDays"
+            note: "SignUpGenius, 2026-2027"
+          - label: "The PTA on Instagram"
+            href: "https://www.instagram.com/blackshearpta/"
+            note: "@blackshearpta"
 
   getInvolved:
     heading: "How to get involved"

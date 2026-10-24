@@ -1,0 +1,151 @@
+---
+import { uid } from '../../uid';
+import { isExternal } from '../../lib/links';
+import type { HomeData } from '../../types';
+
+interface Props {
+  helpfulLinks: HomeData['helpfulLinks'];
+}
+
+const { helpfulLinks } = Astro.props;
+
+// Unique per render, like every section heading: /preview puts every design on
+// one page. The section's own id is the content's `anchor` instead, because
+// the Start Here tile links to it by name - on /preview the first design's
+// copy wins, which is the one that matters.
+const headingId = uid('helpful-links-heading');
+---
+
+{/*
+  The handbook, drop-off and pick-up, supply lists and the rest: what the old
+  site's "Important School Links" block and the PTA's Linktree each carried,
+  gathered in one place. Same tile as Start Here, smaller, in labelled groups,
+  so a parent scanning for "handbook" finds it under "From the school".
+*/}
+
+<section class="helpful-links" id={helpfulLinks.anchor} aria-labelledby={headingId}>
+  <h2 id={headingId}>{helpfulLinks.heading}</h2>
+  {helpfulLinks.intro && <p class="intro">{helpfulLinks.intro}</p>}
+  <div class="groups">
+    {
+      helpfulLinks.groups.map((group) => (
+        <div class="group">
+          <h3>{group.heading}</h3>
+          <ul>
+            {group.links.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  target={isExternal(item.href) ? '_blank' : undefined}
+                  rel={isExternal(item.href) ? 'noopener' : undefined}
+                >
+                  <span class="label">
+                    {item.label}
+                    {isExternal(item.href) && <span class="sr-only"> (opens in a new tab)</span>}
+                  </span>
+                  {item.note && <span class="note">{item.note}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .helpful-links {
+    padding-block: var(--pta-section-y);
+    /* Room above the heading when the Start Here tile jumps here. */
+    scroll-margin-top: var(--pta-gap);
+  }
+
+  h2 {
+    margin: 0 0 var(--pta-gap);
+    font-family: var(--pta-font-display);
+    font-size: var(--text-title);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--pta-display-tracking);
+    text-transform: var(--pta-display-transform);
+  }
+
+  .intro {
+    margin: 0 0 var(--pta-gap);
+    max-width: var(--pta-measure);
+  }
+
+  .groups {
+    display: grid;
+    gap: calc(var(--pta-gap) * 1.5);
+  }
+
+  /* Mobile-first: one column of groups until there is room for two. */
+  @media (min-width: 52rem) {
+    .groups {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-family: var(--pta-font-display);
+    font-size: var(--text-body);
+    font-weight: var(--pta-display-weight);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--pta-nav-transform);
+  }
+
+  ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-height: 44px;
+    padding: 0.65rem var(--pta-gap);
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+    box-shadow: var(--pta-shadow);
+    color: var(--pta-ink);
+    text-decoration: none;
+  }
+
+  a:hover,
+  a:focus-visible {
+    background: var(--pta-accent);
+    color: var(--pta-ink-on-accent);
+  }
+
+  .label {
+    font-family: var(--pta-font-display);
+    font-weight: var(--pta-display-weight);
+  }
+
+  .note {
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+
+  a:hover .note,
+  a:focus-visible .note {
+    color: inherit;
+  }
+</style>
