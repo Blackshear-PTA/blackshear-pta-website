@@ -170,9 +170,9 @@ const pageSection = ({ image }: SchemaContext) =>
       .array(z.object({ src: image(), name: z.string(), href: z.url().optional() }))
       .default([]),
     /**
-     * A second row of logos under `logos`, drawn smaller: a lower tier in the
-     * same thank-you, such as the auction's smaller donors (the Fundraising
-     * chair, 2026-10-24). Same fields as `logos`.
+     * More logos after `logos`, in the same rows but drawn smaller: a lower
+     * tier in the same thank-you, such as the auction's smaller donors (the
+     * Fundraising chair, 2026-10-24). Same fields as `logos`.
      */
     moreLogos: z
       .array(z.object({ src: image(), name: z.string(), href: z.url().optional() }))

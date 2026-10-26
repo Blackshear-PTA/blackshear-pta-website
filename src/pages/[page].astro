@@ -143,8 +143,7 @@ const contents = (section: (typeof page.sections)[number]) => {
           </ul>
         )}
 
-        <LogoWall logos={section.logos} />
-        <LogoWall logos={section.moreLogos} size="small" />
+        <LogoWall logos={section.logos} moreLogos={section.moreLogos} />
 
         <SectionGallery
           figures={section.figures}

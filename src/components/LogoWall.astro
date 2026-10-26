@@ -18,18 +18,23 @@ import { isExternal } from '../lib/links';
  * "dimension guidelines" came down to. The size comes from the file's own
  * proportions, so a new logo needs no setting.
  *
- * `size="small"` draws every logo at about 80% of that, for a lower tier shown
- * under the main one: a section's `moreLogos` (TASKS.md A51).
+ * `moreLogos` are a lower tier, drawn at about 80% of that size (TASKS.md
+ * A51). They go in the SAME list, straight after `logos`, so the rows run on
+ * without a gap. As a second list they started on a new line, which left a
+ * hole at the end of the first whenever its last row was short (Jon,
+ * 2026-10-26). The smaller size is what marks the tier.
  *
  * Not in the lightbox: a logo is a link to the business, not a picture to
  * look at.
  */
+type Logos = PageData['sections'][number]['logos'];
+
 interface Props {
-  logos: PageData['sections'][number]['logos'];
-  size?: 'regular' | 'small';
+  logos: Logos;
+  moreLogos?: Logos;
 }
 
-const { logos, size = 'regular' } = Astro.props;
+const { logos, moreLogos = [] } = Astro.props;
 
 /** The area every logo gets, in rem²: a 2:1 wordmark comes out about 9 × 4.5. */
 const AREA = 40;
@@ -37,23 +42,26 @@ const AREA = 40;
 const MAX_WIDTH = 11;
 const MAX_HEIGHT = 5.5;
 /** Width and height for the smaller tier: 80% each way, about two thirds the area. */
-const SCALE = size === 'small' ? 0.8 : 1;
+const SMALL = 0.8;
 
-function boxFor(width: number, height: number) {
+function boxFor(width: number, height: number, scale: number) {
   const ratio = width / height;
   let w = Math.sqrt(AREA * ratio);
   let h = w / ratio;
   if (w > MAX_WIDTH) { w = MAX_WIDTH; h = w / ratio; }
   if (h > MAX_HEIGHT) { h = MAX_HEIGHT; w = h * ratio; }
-  return { w: Math.round(w * SCALE * 100) / 100, h: Math.round(h * SCALE * 100) / 100 };
+  return { w: Math.round(w * scale * 100) / 100, h: Math.round(h * scale * 100) / 100 };
 }
 
-const sized = logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height) }));
+const sized = [
+  ...logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height, 1) })),
+  ...moreLogos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height, SMALL) })),
+];
 ---
 
 {
   sized.length > 0 && (
-    <ul class:list={['logo-wall', { small: size === 'small' }]}>
+    <ul class="logo-wall">
       {sized.map((logo) => {
         const picture = (
           <Image
@@ -95,11 +103,6 @@ const sized = logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.s
     margin: 0.5rem 0 var(--pta-gap);
     padding: 0;
     list-style: none;
-  }
-
-  /* A step down from the tier above it, so the two read as separate rows. */
-  .logo-wall.small {
-    margin-top: 2.25rem;
   }
 
   a,
