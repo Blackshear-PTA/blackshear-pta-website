@@ -358,7 +358,7 @@ resources need, which the generated docs state per resource:
 | `cloudflare_zero_trust_access_application` | Not listed in the docs - confirm at token creation |
 | `cloudflare_ruleset` | Not listed in the docs - confirm at token creation |
 
-Like the GitHub token in [D12](../TASKS.md#open-decisions), it should be owned by
+Like the editor's old GitHub token in [D12](../TASKS.md#open-decisions) (retired 2026-10-24), it should be owned by
 the **PTA** account rather than a board member's, for the same reason. Unlike
 that token, it is worth an expiry: a Cloudflare token with DNS write is a
 materially bigger exposure than Contents-write on an already-public repo, and

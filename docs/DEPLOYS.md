@@ -48,6 +48,13 @@ Two consequences for this document:
   code that depends on them** — a Worker whose binding names a database that
   does not exist fails to deploy at all, which is the same hard failure
   F29 records for the R2 bucket.
+- **Content imports go the other way round.** A migration that adds posts
+  pointing at pictures in `public/` (the Weekly Buzz ones) is applied *after*
+  the deploy that ships the pictures, or the posts go live with broken images.
+  Each such file says so in its header.
+- **Nothing is applied to the live database without Jon's OK in chat.** The
+  agent's safety check treats `db:migrate:remote` as a production deploy and
+  refuses it otherwise; ask, then run it.
 
 ## Skipping builds that cannot change the site
 
