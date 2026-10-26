@@ -306,13 +306,19 @@ sponsors:
         - src: "../assets/sponsors/2026-2027/levels-2026-2027.jpg"
           alt: "The 2026-2027 sponsorship levels chart. Family Buzz, $100: PTA membership for up to two people and name recognition on the PTA website. Community Buzz, $250: recognition on social media and once in our newsletters, logo and link on the PTA website, logo on the silent auction banner, and a 2 by 4 foot banner on Salina Street. Supporter Buzz, $500: the same, twice in our newsletters, with a 3 by 6 foot banner on 11th Street by the main entrance. Partner Buzz, $750: three newsletters, the 11th Street banner, and logo on the silent auction website. Champion Buzz, $1,000: four newsletters, the 11th Street banner, logo on the silent auction website, and a second 3 by 6 foot banner on the car rider line."
           caption: "2026-2027 sponsorship levels"
+      # This year's banners, photographed by the Fundraising chair (2026-10-26),
+      # in order along the fence from the main building. They replace last
+      # year's photos from the old site. Four of the eight she sent: the other
+      # four repeat these views.
       photos:
-        - src: "../assets/sponsors/2026-2027/banners-11th-street.jpg"
-          alt: "Sponsor banners hanging on the school fence along 11th Street, by the main entrance"
-        - src: "../assets/sponsors/2026-2027/banners-salina-street.jpg"
-          alt: "Sponsor banners on the school fence along Salina Street"
-        - src: "../assets/sponsors/2026-2027/banners-car-rider-line.jpg"
-          alt: "Sponsor banners on the fence by the car rider line at the back entrance"
+        - src: "../assets/sponsors/2026-2027/fence-main-entrance.jpg"
+          alt: "The school's main building behind the front fence, hung with banners: the PTA's Little EAST banner, then Thoughtbarn, Hush House and Design Lab 44"
+        - src: "../assets/sponsors/2026-2027/fence-thoughtbarn-to-snooze.jpg"
+          alt: "A row of sponsor banners on the school fence: Thoughtbarn, Hush House, Design Lab 44, Figure Eight Coffee Purveyors, TSO's free crab rangoons offer, Snooze and The Growth Mindset Camp"
+        - src: "../assets/sponsors/2026-2027/fence-snooze-to-mash.jpg"
+          alt: "Further along the fence: banners for Snooze, The Growth Mindset Camp, Micklethwait Barbecue, Industry, Kruger's Diamond Jewelers and MASH"
+        - src: "../assets/sponsors/2026-2027/fence-micklethwait-to-big-bend.jpg"
+          alt: "The far end of the fence under a tree: banners for Micklethwait, Industry, Kruger's Diamond Jewelers, MASH, Thayne's Baking Co. and Big Bend Coffee Roasters"
     - heading: "Thank you to our 2026-2027 sponsors"
       body:
         - "We're already buzzing along with these sponsors this year."
