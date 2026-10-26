@@ -69,9 +69,19 @@ src/data/events.json              committed
 src/pages/calendar.astro          rendered at build time
 ```
 
-`.github/workflows/refresh-events.yml` runs this daily at 09:20 UTC and commits
-the result **if and only if it changed**. That commit is what triggers
+`.github/workflows/refresh-events.yml` runs this every hour at 20 past and
+commits the result **if and only if it changed**. That commit is what triggers
 Cloudflare to rebuild, so refreshing the data and publishing it are one step.
+"Every hour" is what it asks for: GitHub treats schedules as best-effort, and
+in practice runs start one to five hours apart (F62 in [`../TASKS.md`](../TASKS.md)).
+For a change that cannot wait, **Actions → Refresh calendar → Run workflow**.
+
+**What it bakes:** from August 1st, the start of the school year, to twelve
+months ahead (A53). On the month grid, days already past are greyed out but
+kept, so an event can still be looked up; today has a ring, and both are worked
+out again in the visitor's browser, because the page is built at whatever hour
+the refresh lands. The list under the grid shows only what is coming up. On
+August 1st the window rolls over to the new school year.
 
 The workflow runs `npm run check:ical` *before* the refresh, so a parser
 regression keeps yesterday's good snapshot rather than committing a broken one.

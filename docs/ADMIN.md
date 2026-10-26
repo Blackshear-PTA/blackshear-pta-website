@@ -295,8 +295,10 @@ npx wrangler d1 create blackshear-pta
 reason as the bucket above: it defaults the binding to `blackshear_pta` and the
 code reads **`env.DB`**, which is already declared in `wrangler.jsonc`.
 
-Then create the tables and import the original five posts. Local and remote are
-tracked separately, so both need doing:
+Then create the tables and load what the migrations carry: the original five
+posts, the Weekly Buzz and the Instagram list. Local and remote are tracked
+separately, so both need doing, and the remote one waits for Jon's OK in chat
+([DEPLOYS.md](DEPLOYS.md)):
 
 ```sh
 npm run db:migrate                 # your machine

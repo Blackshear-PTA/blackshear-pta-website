@@ -250,8 +250,10 @@ src/content.config.ts      the schema all of the above is validated against
                            BUILD-TIME ONLY - never import it from a route
 src/data/events.json       calendar snapshot, generated - never edit by hand
 
-migrations/                the announcements database: schema, then the import
-                           of the five posts that used to be markdown files
+migrations/                the site's database: the announcements schema, the
+                           posts that used to be markdown files, the Weekly Buzz
+                           imports (one migration per week's post), and the
+                           Instagram list
 
 src/styles/global.css      brand primitives plus the --pta-* token contract
 src/themes/                one CSS token block per theme, plus registry.ts

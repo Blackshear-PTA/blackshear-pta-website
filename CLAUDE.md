@@ -81,6 +81,16 @@ and the maintainer's other projects keep the personal one:
   GitHub's no-reply address for it. The settings are in the header of
   `scripts/gh.sh`.
 
+## Live database changes wait for Jon's OK
+
+Announcements, the Weekly Buzz and the Instagram list live in D1, and changes
+to them that are not made in `/admin` ship as files in `migrations/`. Applying
+one to the live database (`npm run db:migrate:remote`) needs Jon to say so in
+chat, each time: the agent's safety check treats it as a production deploy and
+blocks it otherwise. A migration whose posts point at pictures in `public/` is
+applied only after the deploy that ships the pictures. See
+[`docs/DEPLOYS.md`](docs/DEPLOYS.md).
+
 ## The task board has an inbox
 
 The published task board (its URL is in Claude's memory, not in this public
