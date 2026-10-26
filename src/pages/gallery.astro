@@ -5,13 +5,14 @@ import PageLayout from '../layouts/PageLayout.astro';
 import InstagramWall from '../components/InstagramWall.astro';
 import littleEast from '../assets/photos/little-east.jpg';
 import littleEastAlt from '../assets/photos/little-east-alt.jpg';
-import garden from '../assets/photos/garden.jpg';
 import gardenAlt from '../assets/photos/garden-alt.jpg';
 import bakeSale from '../assets/photos/bake-sale.jpg';
 import campusFlagpole from '../assets/photos/campus-flagpole.jpg';
 import campusFrontWalk from '../assets/photos/campus-front-walk.jpg';
 import campusFrontage from '../assets/photos/campus-frontage.jpg';
 import campusSideEntrance from '../assets/photos/campus-side-entrance.jpg';
+// The same photo /sponsors shows: one file, so a newer one replaces both.
+import frontFence from '../assets/sponsors/2026-2027/fence-main-entrance.jpg';
 
 /**
  * /gallery - an explicit route rather than a pages.yaml entry, because the grid
@@ -46,16 +47,25 @@ const INSTAGRAM = 'https://www.instagram.com/blackshearpta/';
  */
 const EAGER_ROWS = 3;
 
+/**
+ * In Jon's order (2026-10-26), left to right a row at a time: the campus
+ * first, then the art, the garden and a bake sale. The sponsor banners on the
+ * front fence took the raised garden bed's place; that photo is still used
+ * elsewhere on the site.
+ */
 const photos = [
+  { src: campusFrontWalk, alt: 'The front walkway and entrance of Blackshear Elementary' },
+  { src: campusFlagpole, alt: 'The flagpole and main building on the Blackshear campus' },
+  { src: campusFrontage, alt: 'The E. 11th Street frontage of the school' },
+  {
+    src: frontFence,
+    alt: "Sponsor banners on the front fence, with the main building behind: the PTA's Little EAST banner, then Thoughtbarn, Hush House and Design Lab 44",
+  },
+  { src: campusSideEntrance, alt: 'The side entrance to the Blackshear building' },
   { src: littleEast, alt: 'Student paintings covering a wall at Blackshear' },
-  { src: littleEastAlt, alt: 'A second wall of student artwork hung for Little EAST' },
-  { src: garden, alt: 'A raised garden bed of black-eyed Susans and lantana' },
   { src: gardenAlt, alt: 'Another view of the school garden beds in summer' },
   { src: bakeSale, alt: 'Trays of baked goods laid out on a PTA bake sale table' },
-  { src: campusFlagpole, alt: 'The flagpole and main building on the Blackshear campus' },
-  { src: campusFrontWalk, alt: 'The front walkway and entrance of Blackshear Elementary' },
-  { src: campusFrontage, alt: 'The E. 11th Street frontage of the school' },
-  { src: campusSideEntrance, alt: 'The side entrance to the Blackshear building' },
+  { src: littleEastAlt, alt: 'A second wall of student artwork hung for Little EAST' },
 ];
 ---
 
