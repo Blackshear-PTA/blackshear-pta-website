@@ -163,15 +163,18 @@ console.log('schema and migrations:');
 }
 
 {
-  // The Weekly Buzz import (0003): safe to re-run like 0002, every post
-  // published, and every flyer it points at shipped in public/weekly-buzz/.
+  // The Weekly Buzz imports (0003 for #1 to #9, then one a week from 0006):
+  // safe to re-run like 0002, every post published, and every flyer they
+  // point at shipped in public/weekly-buzz/.
   const db = fresh({ laterImports: true });
   const before = await listAll(db);
-  db.db.exec(readFileSync(join(MIGRATIONS, '0003_import_weekly_buzz.sql'), 'utf8'));
+  for (const name of migrationFiles().filter((n) => /_import_weekly_buzz/.test(n))) {
+    db.db.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
+  }
   const after = await listAll(db);
-  eq('the Weekly Buzz import is safe to re-run', after.length, before.length);
+  eq('the Weekly Buzz imports are safe to re-run', after.length, before.length);
   const buzz = after.filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
-  eq('it holds Weekly Buzz #1 to #9', buzz.length, 9);
+  eq('they hold Weekly Buzz #1 to #10', buzz.length, 10);
   eq('none of them is a draft', buzz.some((p) => p.draft), false);
   const flyers = buzz.flatMap((p) => [...p.body.matchAll(/\]\((\/weekly-buzz\/[^)]+)\)/g)].map((m) => m[1]));
   const shipped = new Set(readdirSync(join(root, 'public/weekly-buzz')).map((f) => `/weekly-buzz/${f}`));

@@ -18,34 +18,45 @@ import { isExternal } from '../lib/links';
  * "dimension guidelines" came down to. The size comes from the file's own
  * proportions, so a new logo needs no setting.
  *
- * One size for every section. Sizing by sponsorship level would be a `size`
- * on the section scaling AREA, if the board ever wants it (TASKS.md A51).
+ * `moreLogos` are a lower tier, drawn at about 80% of that size (TASKS.md
+ * A51). They go in the SAME list, straight after `logos`, so the rows run on
+ * without a gap. As a second list they started on a new line, which left a
+ * hole at the end of the first whenever its last row was short (Jon,
+ * 2026-10-26). The smaller size is what marks the tier.
  *
  * Not in the lightbox: a logo is a link to the business, not a picture to
  * look at.
  */
+type Logos = PageData['sections'][number]['logos'];
+
 interface Props {
-  logos: PageData['sections'][number]['logos'];
+  logos: Logos;
+  moreLogos?: Logos;
 }
 
-const { logos } = Astro.props;
+const { logos, moreLogos = [] } = Astro.props;
 
 /** The area every logo gets, in rem²: a 2:1 wordmark comes out about 9 × 4.5. */
 const AREA = 40;
 /** The most any logo may take on either side, so no shape runs away. */
 const MAX_WIDTH = 11;
 const MAX_HEIGHT = 5.5;
+/** Width and height for the smaller tier: 80% each way, about two thirds the area. */
+const SMALL = 0.8;
 
-function boxFor(width: number, height: number) {
+function boxFor(width: number, height: number, scale: number) {
   const ratio = width / height;
   let w = Math.sqrt(AREA * ratio);
   let h = w / ratio;
   if (w > MAX_WIDTH) { w = MAX_WIDTH; h = w / ratio; }
   if (h > MAX_HEIGHT) { h = MAX_HEIGHT; w = h * ratio; }
-  return { w: Math.round(w * 100) / 100, h: Math.round(h * 100) / 100 };
+  return { w: Math.round(w * scale * 100) / 100, h: Math.round(h * scale * 100) / 100 };
 }
 
-const sized = logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height) }));
+const sized = [
+  ...logos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height, 1) })),
+  ...moreLogos.map((logo) => ({ ...logo, box: boxFor(logo.src.width, logo.src.height, SMALL) })),
+];
 ---
 
 {

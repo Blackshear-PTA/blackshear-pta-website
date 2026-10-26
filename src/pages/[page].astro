@@ -48,13 +48,16 @@ const hasPictures = page.sections.some((s) => s.figures.length > 0 || s.photos.l
  * What a folded section holds, under its heading, so someone can tell which
  * year is worth opening without opening them all.
  */
+const logoCount = (section: (typeof page.sections)[number]) =>
+  section.logos.length + section.moreLogos.length;
+
 const contents = (section: (typeof page.sections)[number]) => {
   const pictures = section.figures.length + section.photos.length;
   return [
     section.videos.length === 1 && 'Video',
     section.videos.length > 1 && `${section.videos.length} videos`,
     pictures > 0 && `${pictures} ${pictures === 1 ? 'picture' : 'pictures'}`,
-    section.logos.length > 0 && `${section.logos.length} ${section.logos.length === 1 ? 'logo' : 'logos'}`,
+    logoCount(section) > 0 && `${logoCount(section)} ${logoCount(section) === 1 ? 'logo' : 'logos'}`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -140,7 +143,7 @@ const contents = (section: (typeof page.sections)[number]) => {
           </ul>
         )}
 
-        <LogoWall logos={section.logos} />
+        <LogoWall logos={section.logos} moreLogos={section.moreLogos} />
 
         <SectionGallery
           figures={section.figures}
@@ -347,17 +350,29 @@ const contents = (section: (typeof page.sections)[number]) => {
   .links a:hover .note,
   .links a:focus-visible .note { color: inherit; }
 
-  /* Sponsor tiers read as a list of equals, so they wrap rather than stack:
-     fifteen family names in a single column is a lot of scrolling for a page
-     whose job is to say thank you. */
+  /* Sponsor tiers read as a list of equals, so they sit side by side rather
+     than stack: fifteen family names in a single column is a lot of scrolling
+     for a page whose job is to say thank you.
+
+     Two columns, not as many as fit. At four, the longer names wrapped onto a
+     second line and the rows stopped lining up (Jon, 2026-10-24). Two wide
+     columns keep every family name, and most board entries, on one line.
+
+     Newspaper columns rather than a grid, so an alphabetical list reads down
+     the first column and then the second, not back and forth across a row. */
   .names {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    gap: 0.4rem var(--pta-gap);
+    columns: 1;
+    column-gap: var(--pta-gap);
     max-width: var(--pta-container);
   }
 
+  @media (min-width: 40rem) {
+    .names { columns: 2; }
+  }
+
   .names li {
+    break-inside: avoid;
+    margin-bottom: 0.4rem;
     font-size: var(--text-body);
   }
 
