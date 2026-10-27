@@ -123,6 +123,21 @@ export function coverImage(post: Post): PostImage | null {
   return images.find((image) => image.key === cover) ?? images[0] ?? null;
 }
 
+/**
+ * A photo's own shape, for the pages to draw it whole: a poster or a flyer
+ * uploaded uncropped, which Jon expects to be a common kind of post
+ * (2026-10-27). Returned as two custom properties, `--w` and `--h`, which each
+ * page's CSS turns into a width with its own height limit, and paired with the
+ * `is-whole` class.
+ *
+ * Undefined for a photo with no recorded size. Those all predate whole uploads
+ * and were cropped to 3:2, so the 3:2 box the pages fall back to is exactly
+ * their shape.
+ */
+export function photoShape(image: PostImage): string | undefined {
+  return image.width && image.height ? `--w: ${image.width}; --h: ${image.height}` : undefined;
+}
+
 /** Display labels for a post's grades. Empty means the whole school. */
 export function gradeLabels(grades: readonly string[]): string[] {
   return grades.map((slug) => GRADE_LABELS[slug as GradeSlug] ?? slug);

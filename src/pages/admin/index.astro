@@ -20,9 +20,11 @@ import { gradeSlugs, GRADE_LABELS } from '../../lib/grades';
  * - The dialog cannot be dismissed by clicking away from it. That gesture is
  *   the single most common way people lose a half-written post, and there is no
  *   upside to supporting it.
- * - Photos are cropped before they are uploaded, with the crop shown. A cover
- *   photo is displayed at 3:2 everywhere, and finding that out after publishing
- *   is a bad way to find it out.
+ * - Photos are checked before they are uploaded, with the result shown. A
+ *   photo is either cropped to 3:2, which is how a cropped photo is displayed
+ *   everywhere, or kept whole at its own shape: posters, flyers and anything
+ *   with words on it (Jon, 2026-10-27). Finding out how it looks after
+ *   publishing is a bad way to find it out.
  */
 const theme = getTheme(siteThemeId);
 const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
@@ -407,18 +409,34 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   */}
   <dialog class="sheet crop" data-crop-dialog aria-labelledby="crop-title">
     <div class="sheet-head">
-      <h2 id="crop-title">Check the crop</h2>
+      <h2 id="crop-title">Check the photo</h2>
     </div>
     <div class="sheet-body">
       <p class="hint" data-crop-count></p>
-      <p class="hint">
-        Photos are shown as a wide rectangle across the site. Drag to move, and zoom
-        if you need to. What you see here is exactly what will appear.
+      <fieldset class="crop-mode">
+        <legend class="sr-only">How to show it</legend>
+        <label class="check">
+          <input type="radio" name="crop-mode" value="crop" data-crop-mode />
+          <span>Crop to a wide photo</span>
+        </label>
+        <label class="check">
+          <input type="radio" name="crop-mode" value="whole" data-crop-mode />
+          <span>Keep the whole picture</span>
+        </label>
+      </fieldset>
+      <p class="hint" data-crop-hint-crop>
+        Shown as a wide rectangle across the site. Drag to move, and zoom if you
+        need to. What you see here is exactly what will appear.
+      </p>
+      <p class="hint" data-crop-hint-whole hidden>
+        Shown whole, at its own shape, with nothing cut off. Best for posters,
+        flyers and anything with words on it. Very tall pictures are shown smaller
+        in lists, so they do not fill the screen.
       </p>
       <div class="crop-stage" data-crop-stage>
         <img data-crop-img alt="" />
       </div>
-      <label class="zoom">
+      <label class="zoom" data-crop-zoom-row>
         <span>Zoom</span>
         <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom />
       </label>
@@ -469,7 +487,8 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   const allGrades = $<HTMLInputElement>('[data-all-grades]');
   const gradesWrap = $<HTMLElement>('[data-grades]');
 
-  interface Photo { key: string; alt: string }
+  /** `width`/`height` are the uploaded file's own, recorded since whole photos. */
+  interface Photo { key: string; alt: string; width?: number; height?: number }
 
   /**
    * The post being edited. null means the form is creating a new one.
@@ -963,13 +982,52 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   const cropCount = $<HTMLElement>('[data-crop-count]');
   const cropStatus = $<HTMLElement>('[data-crop-status]');
 
-  /** Output size for a cover. 3:2, matching how photos are displayed. */
+  const cropZoomRow = $<HTMLElement>('[data-crop-zoom-row]');
+  const cropModes = [...document.querySelectorAll<HTMLInputElement>('[data-crop-mode]')];
+
+  /** Output size for a cropped photo. 3:2, matching how cropped photos are displayed. */
   const OUT_W = 1600;
   const OUT_H = Math.round((OUT_W * 2) / 3);
+  /** A whole picture is shrunk to this on its longest side, and never enlarged. */
+  const OUT_LONG = 1600;
 
   let queue: File[] = [];
   let bitmap: ImageBitmap | null = null;
   let view: CropView = { zoom: 1, x: 0, y: 0 };
+  let mode: 'crop' | 'whole' = 'crop';
+
+  /**
+   * Switches the dialog between cropping and keeping the picture whole. Whole,
+   * the stage takes the picture's own shape and shows all of it, and there is
+   * nothing to drag or zoom.
+   */
+  function setMode(next: 'crop' | 'whole') {
+    mode = next;
+    for (const radio of cropModes) radio.checked = radio.value === next;
+    const whole = next === 'whole';
+    $<HTMLElement>('[data-crop-hint-crop]').hidden = whole;
+    $<HTMLElement>('[data-crop-hint-whole]').hidden = !whole;
+    cropZoomRow.hidden = whole;
+    cropStage.classList.toggle('is-whole', whole);
+    // Its own shape, and no taller than 55vh: the width follows from the
+    // height cap, so a tall flyer leaves room for the description and buttons.
+    const shape = whole && bitmap ? `${bitmap.width} / ${bitmap.height}` : '';
+    cropStage.style.aspectRatio = shape;
+    cropStage.style.width = shape ? `min(100%, 55vh * ${shape})` : '';
+    if (whole) {
+      cropImg.style.width = '100%';
+      cropImg.style.height = '100%';
+      cropImg.style.transform = '';
+    } else {
+      requestAnimationFrame(() => center());
+    }
+  }
+
+  for (const radio of cropModes) {
+    radio.addEventListener('change', () => {
+      if (radio.checked) setMode(radio.value === 'whole' ? 'whole' : 'crop');
+    });
+  }
 
   /** The geometry this page needs, in the shape lib/crop expects. */
   function geometry() {
@@ -983,7 +1041,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   }
 
   function paint() {
-    if (!bitmap) return;
+    if (!bitmap || mode === 'whole') return;
     const geo = geometry();
     view = clampView({ ...geo, view });
     const scale = baseScale(geo) * view.zoom;
@@ -1001,6 +1059,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
   let dragging = false;
   let last = { x: 0, y: 0 };
   cropStage.addEventListener('pointerdown', (event) => {
+    if (mode === 'whole') return;
     dragging = true;
     last = { x: event.clientX, y: event.clientY };
     cropStage.setPointerCapture(event.pointerId);
@@ -1040,8 +1099,11 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     cropZoom.value = '1';
     view = { zoom: 1, x: 0, y: 0 };
     if (!cropDialog.open) cropDialog.showModal();
-    // Wait for layout so the stage has a measurable size.
-    requestAnimationFrame(() => center());
+    // A picture taller than it is wide is most often a flyer or a poster, and
+    // cropping one to a wide band cuts its words off, so those start whole.
+    // Either way the choice is shown and one tap changes it. setMode waits for
+    // layout before centring a crop, so the stage has a measurable size.
+    setMode(bitmap.height > bitmap.width ? 'whole' : 'crop');
   }
 
   $('[data-crop-skip]').addEventListener('click', () => {
@@ -1059,17 +1121,29 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     }
     say(cropStatus, 'Uploading…', 'busy');
     try {
-      // The exact region the person is looking at, in original-image pixels.
-      // Shared with scripts/check-crop.mjs so the arithmetic that ships is the
-      // arithmetic that is tested.
-      const { sx, sy, sw, sh } = sourceRect({ ...geometry(), view });
-
       const canvas = document.createElement('canvas');
-      canvas.width = OUT_W;
-      canvas.height = OUT_H;
       const context = canvas.getContext('2d');
       if (!context) throw new Error('Could not process that image.');
-      context.drawImage(bitmap, sx, sy, sw, sh, 0, 0, OUT_W, OUT_H);
+      if (mode === 'whole') {
+        const scale = Math.min(1, OUT_LONG / Math.max(bitmap.width, bitmap.height));
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        // White under it first: a JPEG has no transparency, and a PNG flyer's
+        // see-through parts would otherwise come out black.
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      } else {
+        // The exact region the person is looking at, in original-image pixels.
+        // Shared with scripts/check-crop.mjs so the arithmetic that ships is the
+        // arithmetic that is tested.
+        const { sx, sy, sw, sh } = sourceRect({ ...geometry(), view });
+        canvas.width = OUT_W;
+        canvas.height = OUT_H;
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, OUT_W, OUT_H);
+        context.drawImage(bitmap, sx, sy, sw, sh, 0, 0, OUT_W, OUT_H);
+      }
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, 'image/jpeg', 0.82),
       );
@@ -1079,7 +1153,7 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
       body.append('file', new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
       const result = (await api('images', { method: 'POST', body })) as { key: string };
 
-      photos.push({ key: result.key, alt });
+      photos.push({ key: result.key, alt, width: canvas.width, height: canvas.height });
       if (!cover) cover = result.key;
       renderPhotos();
       queue.shift();
@@ -2191,7 +2265,28 @@ const grades = gradeSlugs.map((slug) => ({ slug, label: GRADE_LABELS[slug] }));
     user-select: none;
     -webkit-user-drag: none;
   }
+  /* Whole: the stage takes the picture's shape (set from the script), shows
+     all of it, and has nothing to drag. Capped so a tall flyer still leaves
+     room for the description and the buttons. */
+  .crop-stage.is-whole {
+    cursor: default;
+    margin-inline: auto;
+  }
+  .crop-stage.is-whole img {
+    position: static;
+    display: block;
+    object-fit: contain;
+  }
+  .crop-mode {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
   .zoom { display: flex; align-items: center; gap: 0.6rem; margin-block-end: var(--pta-gap); }
+  .zoom[hidden] { display: none; }
   .zoom input { flex: 1; }
   .sr-only {
     position: absolute;

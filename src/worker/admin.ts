@@ -32,7 +32,7 @@ import {
   slugFor,
   nowStamp,
 } from '../lib/posts.mjs';
-import type { PostFields } from '../lib/posts.mjs';
+import type { PostFields, PostImage } from '../lib/posts.mjs';
 import { getInstagramList, saveInstagramList } from '../lib/instagram-list.mjs';
 import { validatePosts, MAX_POSTS } from './instagram.mjs';
 
@@ -68,18 +68,25 @@ const json = (data: unknown, status = 200): Response =>
  * Normalizes the images array off the wire. Returns null when the shape is
  * wrong, so a malformed payload is a clear message rather than a crash.
  */
-function readImages(value: unknown): Array<{ key: string; alt: string }> | null {
+function readImages(value: unknown): PostImage[] | null {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) return null;
-  const out: Array<{ key: string; alt: string }> = [];
+  const out: PostImage[] = [];
   for (const item of value) {
     if (!item || typeof item !== 'object') return null;
-    const { key, alt } = item as { key?: unknown; alt?: unknown };
+    const { key, alt, width, height } = item as Record<string, unknown>;
     if (typeof key !== 'string') return null;
-    out.push({ key, alt: typeof alt === 'string' ? alt : '' });
+    const image: PostImage = { key, alt: typeof alt === 'string' ? alt : '' };
+    // Optional, and dropped rather than refused when malformed: a missing size
+    // only means the photo is drawn at 3:2, as every photo was until it existed.
+    if (isPixels(width) && isPixels(height)) Object.assign(image, { width, height });
+    out.push(image);
   }
   return out;
 }
+
+const isPixels = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= 10000;
 
 type Payload = Record<string, unknown>;
 
@@ -142,7 +149,7 @@ async function readFields(
         return { ok: false, error: 'Every photo needs a description. Add one for each.' };
       }
     }
-    fields.images = images.map((image) => ({ key: image.key, alt: image.alt.trim() }));
+    fields.images = images.map((image) => ({ ...image, alt: image.alt.trim() }));
   }
 
   if (has('cover')) {

@@ -374,11 +374,22 @@ how the old markdown files were protected without anyone thinking about it.
 
 Drag photos onto the box, or click it to choose. Several at once is fine.
 
-**Every photo is cropped before it is uploaded, and you approve the crop.**
-Photos are shown as a wide rectangle across the site, so a portrait shot of one
-child becomes a band across their middle unless somebody aims it. The crop step
-shows the exact frame, lets you drag and zoom, and asks for the description at
-the same time. Nothing is uploaded until you confirm it.
+**Every photo is checked before it is uploaded, and you choose how it shows.**
+The check step asks for the description and offers two ways to show the photo:
+
+- **Crop to a wide photo.** Shown as a wide 3:2 rectangle across the site, so a
+  portrait shot of one child becomes a band across their middle unless somebody
+  aims it. The step shows the exact frame and lets you drag and zoom.
+- **Keep the whole picture.** Shown at its own shape with nothing cut off: for
+  posters, flyers and anything with words on it, like the Weekly Buzz. Very
+  tall pictures are drawn smaller in lists so one flyer does not fill the
+  screen: up to 36rem tall on `/announcements`, 24rem on the homepage, 48rem on
+  the post itself. A picture taller than it is wide starts on this option.
+
+Nothing is uploaded until you confirm it. Each photo's size is saved with it
+(since 2026-10-27), which is how the pages know its shape before it loads.
+Photos from before that have no size, and are drawn at 3:2, which is what the
+crop made them.
 
 A post can hold **several photos**. One is the **cover**, which is what appears
 on the homepage and in lists; the rest form a gallery on the post's own page.
@@ -410,6 +421,13 @@ requirement a well-meaning volunteer is most likely to skip.
 Photos are stored by content hash and served from `/images/<hash>.<ext>` through
 the Worker, so there is no second hostname and no public bucket to configure.
 The same photo uploaded twice is stored once.
+
+**Pictures already in the repository** go into the bucket with
+`scripts/upload-photos.mjs`, under the same content-hash names, so a migration
+can attach them to posts; the Weekly Buzz flyers became covers that way
+(migration 0008). Uploading to the live bucket needs the API token to have
+*Workers R2 Storage: Edit*. `--local` fills the bucket `wrangler dev` uses
+instead, with no token.
 
 ## The old GitHub token
 

@@ -212,6 +212,47 @@ console.log('schema and migrations:');
 }
 
 {
+  // Flyers as photos (0008): every Weekly Buzz that had pictures in its text
+  // now has them as photos, the first as its cover, each with its size, and
+  // none left in the text to show twice. Running it again changes nothing, and
+  // a post that already has photos is left alone.
+  const FLYERS = join(MIGRATIONS, '0008_weekly_buzz_flyers_as_photos.sql');
+  const db = fresh({ laterImports: true });
+  const buzz = (await listAll(db)).filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
+  eq('no Weekly Buzz has a picture left in its text after 0008', buzz.filter((p) => p.body.includes('](/weekly-buzz/')).map((p) => p.slug), []);
+  eq('nine have covers, all but #8', buzz.filter((p) => p.cover).length, 9);
+  eq('every cover is its post\'s first photo', buzz.every((p) => !p.cover || p.images[0]?.key === p.cover), true);
+  eq('every photo has a description and a size', buzz.flatMap((p) => p.images).every((i) => i.alt && i.width && i.height), true);
+  eq('#10 keeps all three pictures, flyer first', (await getAny(db, '2026-10-26-weekly-buzz-10')).images.map((i) => i.width), [1000, 900, 900]);
+  eq('#8 is untouched', (await getAny(db, '2026-10-12-weekly-buzz-8')).images, []);
+  const edits = () => listEdits(db, 500).then((all) => all.filter((e) => e.editor.includes('migration 0008')).length);
+  eq('and nine say so in the history', await edits(), 9);
+  db.db.exec(readFileSync(FLYERS, 'utf8'));
+  eq('running it again writes nothing more', await edits(), 9);
+
+  // Before 0008: somebody gives #9 a photo of their own in /admin.
+  const before = new ShimDb(new DatabaseSync(':memory:'));
+  for (const name of migrationFiles().filter((n) => n < '0008')) {
+    before.db.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
+  }
+  const nine = await getAny(before, '2026-10-19-weekly-buzz-9');
+  const theirs = [{ key: '0123456789abcdef0123456789abcdef.jpg', alt: 'Their own photo' }];
+  eq('(setup: a photo added to #9)', await updatePost(before, nine.slug, { fields: { images: theirs, cover: theirs[0].key }, expectedUpdatedAt: nine.updatedAt, ...write }), 'ok');
+  before.db.exec(readFileSync(FLYERS, 'utf8'));
+  const after = await getAny(before, nine.slug);
+  eq('a post that already has photos is left as it is', [after.images, after.body], [theirs, nine.body]);
+}
+
+{
+  // The Little EAST poster announcement (0007): a draft, so nothing public
+  // until Jon publishes it, with the poster whole as its cover.
+  const db = fresh({ laterImports: true });
+  const poster = await getAny(db, '2026-10-27-little-east-poster');
+  eq('the poster announcement is a draft', poster?.draft, true);
+  eq('with the poster as its cover, at its size', [poster?.cover === poster?.images[0]?.key, poster?.images[0]?.width, poster?.images[0]?.height], [true, 1143, 1600]);
+}
+
+{
   // Re-running the import must change nothing. wrangler will not apply a
   // migration twice, but a person pasting the file into `wrangler d1 execute`
   // is exactly the situation where this needs to hold.
@@ -626,6 +667,40 @@ console.log('\nfield round trip:');
   eq('valid JSON reads back', (await getAny(db, 'x-1')).grades, ['1', '2']);
   eq('a malformed row degrades to empty, not a crash', toPost({ slug: 's', grades: 'not json', images: '{' }).grades, []);
   eq('...and images too', toPost({ slug: 's', images: 'not json' }).images, []);
+}
+
+{
+  // A photo kept whole records its size, so the pages can draw it at its own
+  // shape. Both or neither, and anything that is not a sensible pixel count is
+  // dropped rather than refused: without a size the photo is drawn at 3:2.
+  const db = fresh({ withImport: false });
+  const images = [
+    { key: 'whole.jpg', alt: 'A flyer', width: 618, height: 800 },
+    { key: 'old.jpg', alt: 'An older photo' },
+  ];
+  await createPost(db, {
+    fields: { slug: 'sizes-1', title: 'S', date: '2026-06-01', body: 'b', images, cover: 'whole.jpg' },
+    ...write,
+  });
+  eq('a photo size round-trips, and a photo without one stays without', (await getAny(db, 'sizes-1')).images, images);
+  eq(
+    'a half or nonsense size is dropped',
+    toPost({
+      slug: 's',
+      images: JSON.stringify([
+        { key: 'a.jpg', alt: 'A', width: 618 },
+        { key: 'b.jpg', alt: 'B', width: -1, height: 800 },
+        { key: 'c.jpg', alt: 'C', width: 1.5, height: 800 },
+        { key: 'd.jpg', alt: 'D', width: '618', height: '800' },
+      ]),
+    }).images,
+    [
+      { key: 'a.jpg', alt: 'A' },
+      { key: 'b.jpg', alt: 'B' },
+      { key: 'c.jpg', alt: 'C' },
+      { key: 'd.jpg', alt: 'D', width: 618, height: 800 },
+    ],
+  );
 }
 
 // --------------------------------------------------------- rendering a body
