@@ -11,6 +11,7 @@ import {
   postPath,
   coverImage,
   imageUrl,
+  photoShape,
   excerpt,
 } from '../../lib/announcements';
 import { siteThemeId, getTheme } from '../../themes/registry';
@@ -71,30 +72,37 @@ const theme = getTheme(siteThemeId);
 
       <ul>
         {
-          posts.map((post) => (
-            <li>
-              <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
-              <h2>
-                <a href={postPath(post)}>{post.title}</a>
-              </h2>
-              <PostBadges pinned={post.pinned} grades={post.grades} />
-              {coverImage(post) && (
-                <a class="photo-link" href={postPath(post)} tabindex="-1" aria-hidden="true">
-                  <img
-                    class="photo"
-                    src={imageUrl(coverImage(post)!.key)}
-                    alt={coverImage(post)!.alt}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-              )}
-              <p class="body">{excerpt(post)}</p>
-              <p class="link">
-                <a href={postPath(post)}>Read the full post</a>
-              </p>
-            </li>
-          ))
+          posts.map((post) => {
+            const cover = coverImage(post);
+            const shape = cover && photoShape(cover);
+            return (
+              <li>
+                <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
+                <h2>
+                  <a href={postPath(post)}>{post.title}</a>
+                </h2>
+                <PostBadges pinned={post.pinned} grades={post.grades} />
+                {cover && (
+                  <a class="photo-link" href={postPath(post)} tabindex="-1" aria-hidden="true">
+                    <img
+                      class:list={['photo', { 'is-whole': shape }]}
+                      style={shape}
+                      src={imageUrl(cover.key)}
+                      alt={cover.alt}
+                      width={cover.width}
+                      height={cover.height}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
+                )}
+                <p class="body">{excerpt(post)}</p>
+                <p class="link">
+                  <a href={postPath(post)}>Read the full post</a>
+                </p>
+              </li>
+            );
+          })
         }
       </ul>
     </div>
@@ -196,6 +204,17 @@ const theme = getTheme(siteThemeId);
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
     background: var(--pta-surface-alt);
+  }
+
+  /* A photo uploaded whole - a poster, a flyer - at its own shape, uncropped.
+     The column's width, but no taller than 36rem, so one tall flyer does not
+     fill a phone screen on its own, and never wider than the file, so a small
+     one is not blown up. Its size is recorded at upload, so the box is still
+     reserved before it loads. */
+  .photo.is-whole {
+    width: min(100%, var(--w) * 1px, 36rem * var(--w) / var(--h));
+    aspect-ratio: var(--w) / var(--h);
+    height: auto;
   }
 
   .body {

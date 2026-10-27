@@ -7,6 +7,7 @@ import {
   postPath,
   coverImage,
   imageUrl,
+  photoShape,
   excerpt,
   type Post,
 } from '../../lib/announcements';
@@ -48,6 +49,7 @@ const headingId = uid('announcements-heading');
     {
       posts.map((post) => {
         const cover = coverImage(post);
+        const shape = cover && photoShape(cover);
         return (
           <li>
             <time datetime={postDate(post.date).toISOString()}>{formatDate(post.date)}</time>
@@ -57,7 +59,16 @@ const headingId = uid('announcements-heading');
             <PostBadges pinned={post.pinned} grades={post.grades} />
             {cover && (
               <a class="cover" href={postPath(post)} tabindex="-1" aria-hidden="true">
-                <img src={imageUrl(cover.key)} alt={cover.alt} loading="lazy" decoding="async" />
+                <img
+                  class:list={{ 'is-whole': shape }}
+                  style={shape}
+                  src={imageUrl(cover.key)}
+                  alt={cover.alt}
+                  width={cover.width}
+                  height={cover.height}
+                  loading="lazy"
+                  decoding="async"
+                />
               </a>
             )}
             <p>{excerpt(post)}</p>
@@ -137,6 +148,16 @@ const headingId = uid('announcements-heading');
     border: var(--pta-border-width) solid var(--pta-rule);
     border-radius: var(--pta-radius);
     background: var(--pta-surface-alt);
+  }
+
+  /* Uploaded whole - a poster, a flyer - so drawn at its own shape and never
+     cropped, and never wider than the file. No taller than 24rem here, against
+     36rem on /announcements: this block shows four posts, and four full-height
+     Weekly Buzz flyers would push everything below it a long way down. The
+     recorded size reserves the box. */
+  .cover img.is-whole {
+    width: min(100%, var(--w) * 1px, 24rem * var(--w) / var(--h));
+    aspect-ratio: var(--w) / var(--h);
   }
 
   p {

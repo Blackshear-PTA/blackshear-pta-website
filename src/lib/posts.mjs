@@ -19,7 +19,7 @@
  * .run(), plus batch() for atomicity. D1 provides it in production and in
  * `wrangler dev`; check-d1.mjs provides a thin node:sqlite shim.
  *
- * @typedef {{ key: string, alt: string }} PostImage
+ * @typedef {{ key: string, alt: string, width?: number, height?: number }} PostImage
  */
 
 /** Columns every read selects, in a fixed order. */
@@ -105,6 +105,27 @@ function readJsonArray(value) {
   }
 }
 
+/**
+ * A photo's own size in pixels, kept with it since 2026-10-27.
+ *
+ * Until then every photo was cropped to 3:2 on its way in, so the site could
+ * draw a 3:2 box before the file arrived. A poster or a flyer uploaded whole
+ * has its own shape, and the pages need it to reserve the right space and to
+ * show it uncropped (src/lib/announcements.ts, coverShape). Photos from before
+ * have no size and are still drawn at 3:2, which is what they are.
+ *
+ * Both or neither: a width without a height cannot give a shape.
+ */
+function withSize(image, source) {
+  const size = (value) => {
+    const n = Number(value);
+    return Number.isInteger(n) && n > 0 && n <= 10000 ? n : 0;
+  };
+  const width = size(source?.width);
+  const height = size(source?.height);
+  return width && height ? { ...image, width, height } : image;
+}
+
 /** A database row as the shape the rest of the site renders. */
 export function toPost(row) {
   return {
@@ -115,7 +136,7 @@ export function toPost(row) {
     linkLabel: row.link_label ? String(row.link_label) : null,
     images: readJsonArray(row.images)
       .filter((image) => image && typeof image === 'object')
-      .map((image) => ({ key: String(image.key ?? ''), alt: String(image.alt ?? '') }))
+      .map((image) => withSize({ key: String(image.key ?? ''), alt: String(image.alt ?? '') }, image))
       .filter((image) => image.key),
     cover: row.cover ? String(row.cover) : null,
     grades: readJsonArray(row.grades).map(String),
@@ -133,7 +154,9 @@ function toColumn(field, value) {
     const list = Array.isArray(value) ? value : [];
     return JSON.stringify(
       field === 'images'
-        ? list.map((image) => ({ key: String(image?.key ?? ''), alt: String(image?.alt ?? '').trim() }))
+        ? list.map((image) =>
+            withSize({ key: String(image?.key ?? ''), alt: String(image?.alt ?? '').trim() }, image),
+          )
         : list.map(String),
     );
   }

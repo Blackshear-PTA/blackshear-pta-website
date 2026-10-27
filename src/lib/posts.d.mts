@@ -11,6 +11,13 @@
 export interface PostImage {
   key: string;
   alt: string;
+  /**
+   * Pixel size, both or neither. Recorded since 2026-10-27, when a photo could
+   * first be uploaded whole instead of cropped to 3:2; absent on older photos,
+   * which are all 3:2. See withSize() in posts.mjs.
+   */
+  width?: number;
+  height?: number;
 }
 
 /** A post as every consumer sees it. Nulls, not undefineds: these are columns. */

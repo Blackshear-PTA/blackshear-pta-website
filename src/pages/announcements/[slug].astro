@@ -10,6 +10,7 @@ import {
   postDate,
   coverImage,
   imageUrl,
+  photoShape,
   excerpt,
 } from '../../lib/announcements';
 import { renderMarkdown } from '../../lib/markdown.mjs';
@@ -115,8 +116,20 @@ const bodyHtml = renderMarkdown(post.body);
 
         {
           cover && (
-            <button class="shot cover" type="button" data-shot={cover.key}>
-              <img src={imageUrl(cover.key)} alt={cover.alt} loading="eager" decoding="async" />
+            <button
+              class:list={['shot', 'cover', { 'is-whole': photoShape(cover) }]}
+              style={photoShape(cover)}
+              type="button"
+              data-shot={cover.key}
+            >
+              <img
+                src={imageUrl(cover.key)}
+                alt={cover.alt}
+                width={cover.width}
+                height={cover.height}
+                loading="eager"
+                decoding="async"
+              />
               <span class="sr-only">View this photo full size</span>
             </button>
           )
@@ -147,7 +160,11 @@ const bodyHtml = renderMarkdown(post.body);
               <ul>
                 {gallery.map((image) => (
                   <li>
-                    <button class="shot" type="button" data-shot={image.key}>
+                    <button
+                      class:list={['shot', { 'is-whole': photoShape(image) }]}
+                      type="button"
+                      data-shot={image.key}
+                    >
                       <img src={imageUrl(image.key)} alt={image.alt} loading="lazy" decoding="async" />
                       <span class="sr-only">View this photo full size</span>
                     </button>
@@ -333,6 +350,19 @@ const bodyHtml = renderMarkdown(post.body);
     margin-block: var(--pta-gap);
   }
 
+  /* A cover uploaded whole - a poster, a flyer - at its own shape, never
+     cropped: this is the page people open to read it. The column's width, up
+     to 48rem tall, and never wider than the file. The width goes on the
+     button rather than the picture, so the border hugs the picture. */
+  .cover.is-whole {
+    width: min(100%, var(--w) * 1px, 48rem * var(--w) / var(--h));
+  }
+
+  .cover.is-whole img {
+    aspect-ratio: var(--w) / var(--h);
+    height: auto;
+  }
+
   .prose {
     max-width: var(--pta-measure);
   }
@@ -434,6 +464,13 @@ const bodyHtml = renderMarkdown(post.body);
   }
 
   .gallery .shot { width: 100%; }
+
+  /* The gallery keeps its even 3:2 tiles, but a picture uploaded whole is
+     fitted inside its tile rather than cropped, so a flyer's words are not cut
+     off. It opens full size like the rest. */
+  .gallery .shot.is-whole img {
+    object-fit: contain;
+  }
 
   .sr-only {
     position: absolute;
