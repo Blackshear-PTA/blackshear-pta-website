@@ -21,13 +21,14 @@
  *
  *   node scripts/upload-photos.mjs <file>...            print each name and size
  *   node scripts/upload-photos.mjs --upload <file>...   put them in the bucket
- *   node scripts/upload-photos.mjs --verify <file>...   check the live site serves them
+ *   node scripts/upload-photos.mjs --verify <file>...   check the live site serves the
+ *                                                       same bytes, by their hash
  *   node scripts/upload-photos.mjs --local <file>...    put them in the local bucket
  *                                                       that `wrangler dev` uses
  *
  * --upload goes through scripts/cf.sh, and needs the PTA's API token to have
- * *Workers R2 Storage: Edit*. Until 2026-10-27 it had Read only, since nothing
- * outside /admin wrote photos. Run it with Node 22, like everything wrangler.
+ * *Workers R2 Storage: Edit*, which Jon added on 2026-10-27 for this (it had
+ * Read only before). Run it with Node 22, like everything wrangler.
  */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -132,11 +133,15 @@ if (UPLOAD || LOCAL) {
 }
 
 if (VERIFY) {
+  // The whole file, hashed, rather than a HEAD and its Content-Length: the
+  // name is the hash, so this proves the bytes served are the bytes meant,
+  // and a response with no length cannot pass by saying nothing.
   console.log('');
   for (const row of rows) {
-    const response = await fetch(`${ORIGIN}/images/${row.key}`, { method: 'HEAD' });
-    const size = Number(response.headers.get('content-length'));
-    const ok = response.ok && (!size || size === row.bytes);
+    const response = await fetch(`${ORIGIN}/images/${row.key}`);
+    const served = response.ok ? Buffer.from(await response.arrayBuffer()) : Buffer.alloc(0);
+    const hash = createHash('sha256').update(served).digest('hex').slice(0, 32);
+    const ok = response.ok && row.key.startsWith(`${hash}.`);
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${ORIGIN}/images/${row.key} (${response.status})`);
     if (!ok) failed = true;
   }
