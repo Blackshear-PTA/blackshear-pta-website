@@ -14,12 +14,21 @@
  *
  * One per page. The groups keep each year's photos to themselves, so "next" on
  * the last 2025 photo stops rather than wandering into 2024.
+ *
+ * Zoom, for pictures bigger than the screen can fit. Fitting a tall poster into
+ * a laptop's height shows it no larger than the page already did, which is no
+ * use to someone who opened it to read the small print (Jon, 2026-10-27). The
+ * Zoom button, or a tap on the picture, shows it at up to its own size in a
+ * box that scrolls. Offered only when that is meaningfully bigger, so an
+ * already-small photo is never blown up into a blur.
  */
 ---
 
 <dialog class="lightbox" data-lightbox-dialog aria-label="Photo viewer">
   <figure class="lb-figure">
-    <img data-lb-img alt="" />
+    <div class="lb-frame" data-lb-frame>
+      <img data-lb-img alt="" />
+    </div>
     <figcaption>
       <span data-lb-caption></span>
       <span class="lb-count" data-lb-count></span>
@@ -33,6 +42,7 @@
     <button type="button" class="lb-btn" data-lb-next>
       Next <span aria-hidden="true">&rarr;</span>
     </button>
+    <button type="button" class="lb-btn" data-lb-zoom aria-pressed="false" hidden>Zoom in</button>
     <button type="button" class="lb-btn lb-close" data-lb-close>Close</button>
   </div>
 </dialog>
@@ -46,15 +56,65 @@
     const count = dialog.querySelector<HTMLElement>('[data-lb-count]')!;
     const prev = dialog.querySelector<HTMLButtonElement>('[data-lb-prev]')!;
     const next = dialog.querySelector<HTMLButtonElement>('[data-lb-next]')!;
+    const frame = dialog.querySelector<HTMLElement>('[data-lb-frame]')!;
+    const zoom = dialog.querySelector<HTMLButtonElement>('[data-lb-zoom]')!;
 
     let group: HTMLAnchorElement[] = [];
     let index = 0;
+
+    /**
+     * Zoomed, the picture fills the viewer's width, which on a laptop is about
+     * twice its fitted size, and scrolls up and down. A phone's viewer is barely
+     * wider than the fitted picture, so below this width it goes to three times
+     * the viewer and scrolls both ways. Never past the file's own size.
+     */
+    const PHONE_WIDTH = 640;
+
+    const setZoom = (on: boolean) => {
+      // Class first: the width is measured once the frame scrolls, so a
+      // scrollbar that takes up room is already out of it.
+      frame.classList.toggle('is-zoomed', on);
+      const width = frame.clientWidth < PHONE_WIDTH ? frame.clientWidth * 3 : frame.clientWidth;
+      img.style.width = on ? `${Math.min(img.naturalWidth, width)}px` : '';
+      zoom.textContent = on ? 'Fit to screen' : 'Zoom in';
+      zoom.setAttribute('aria-pressed', String(on));
+    };
+
+    // Worth offering only when zooming would show the picture at least a
+    // quarter bigger than it is fitted. `contain` scales by the tighter side.
+    img.addEventListener('load', () => {
+      const box = img.getBoundingClientRect();
+      const fitted = Math.min(box.width / img.naturalWidth, box.height / img.naturalHeight);
+      zoom.hidden = !(fitted < 0.8);
+      frame.classList.toggle('can-zoom', !zoom.hidden);
+    });
+
+    // A tap on the picture zooms in towards that spot, and a second tap fits it
+    // back. Scrolling a zoomed picture on a phone does not count as a tap.
+    img.addEventListener('click', (event) => {
+      if (zoom.hidden) return;
+      if (frame.classList.contains('is-zoomed')) {
+        setZoom(false);
+        return;
+      }
+      const box = img.getBoundingClientRect();
+      const fx = (event.clientX - box.left) / box.width;
+      const fy = (event.clientY - box.top) / box.height;
+      setZoom(true);
+      frame.scrollLeft = fx * frame.scrollWidth - frame.clientWidth / 2;
+      frame.scrollTop = fy * frame.scrollHeight - frame.clientHeight / 2;
+    });
+
+    zoom.addEventListener('click', () => setZoom(!frame.classList.contains('is-zoomed')));
 
     const show = (i: number) => {
       index = Math.max(0, Math.min(group.length - 1, i));
       const link = group[index];
       if (!link) return;
       const alt = link.querySelector('img')?.alt ?? '';
+      setZoom(false);
+      zoom.hidden = true;
+      frame.classList.remove('can-zoom');
       img.src = link.href;
       img.alt = alt;
       caption.textContent = link.dataset.caption || alt;
@@ -95,7 +155,10 @@
 
     // Drop the image on close, so a large photo is not held for a page that has
     // moved on, and the next open never flashes the previous photo.
-    dialog.addEventListener('close', () => img.removeAttribute('src'));
+    dialog.addEventListener('close', () => {
+      setZoom(false);
+      img.removeAttribute('src');
+    });
   }
 </script>
 
@@ -131,13 +194,32 @@
     gap: 0.5rem;
   }
 
-  /* Contained, never cropped: this is the one place the whole photo shows. */
-  .lb-figure img {
+  .lb-frame {
     flex: 1;
     min-height: 0;
+  }
+
+  /* Contained, never cropped: this is the one place the whole photo shows. */
+  .lb-frame img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  /* Zoomed: the picture at the width the script sets, in a box that scrolls. */
+  .lb-frame.is-zoomed {
+    overflow: auto;
+  }
+
+  .lb-frame.is-zoomed img {
+    max-width: none;
+    height: auto;
+    cursor: zoom-out;
+  }
+
+  .lb-frame.can-zoom:not(.is-zoomed) img {
+    cursor: zoom-in;
   }
 
   figcaption {

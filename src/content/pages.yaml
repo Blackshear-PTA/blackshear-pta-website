@@ -43,11 +43,18 @@ little-east:
   sections:
     # From the committee's LITTLE EAST 2026 planning doc and the PTA's Weekly
     # Buzz (Jon, 2026-10-23). The performance schedule is still settling in the
-    # doc, so only the parts that are fixed are here. The poster is a stand-in
-    # until the real one is ready: replace the figure, and delete
-    # scripts/make-little-east-placeholder.mjs and the placeholder image.
+    # doc, so only the parts that are fixed are here.
+    #
+    # The official poster arrived 2026-10-27 and replaced the "coming soon"
+    # stand-in. It is the section's `poster`, shown large above the text, rather
+    # than a figure at the bottom like past years' (Jon). When this year is
+    # folded, it can move down into `figures` with the others.
     - heading: "2026 - the 13th Little EAST: Time Warp"
       expanded: true
+      poster:
+        src: "../assets/little-east/2026/poster.jpg"
+        alt: "The 2026 Little EAST poster, Time Warp: Blackshear's yellowjacket mascot stands at the mouth of a school hallway drawn as a portal, among melting clocks and hourglasses. Join us for the 13th annual Little EAST, Blackshear Fine Arts Academy. Saturday, November 14th, 2026, 11am to 3pm, 1712 E. 11th St., free and open to the public. Student performances, Trashion Show, screen printing, craft activities, student art and a silent auction. Along the bottom, the logos of Film Kids, Diverse Space Dance Theatre, Beat4Beat, the Austin Studio Tour, Fe Press, UT's Shakespeare at Winedale and Groundwork Music Project, and a QR code for the silent auction."
+        caption: "The official 2026 poster"
       body:
         - "Saturday, November 14, 2026, from 11am to 3pm, at Blackshear Elementary, 1712 E. 11th St. Free, open to everyone, and an official stop on the Austin Studio Tour."
         - "This year's theme is Time Warp. Step beyond the boundaries of time, into a portal of kids' creativity. You stand on the grounds of a 135-year-old school, where history awakens through imagination: eras come alive in student art galleries and performances, reality bends in our Time Warp room, and you make your own history with hands-on arts, crafts and activities."
@@ -62,10 +69,6 @@ little-east:
           note: "SignUpGenius. It raises money for our 5th graders"
         - label: "Add it to your calendar"
           href: "/calendar"
-      figures:
-        - src: "../assets/little-east/2026/poster-coming-soon.png"
-          alt: "A stand-in poster for the 13th annual Little EAST, in black, yellow and blue: Poster to be revealed soon! This year's theme: Time Warp. Saturday, November 14, 2026, 11am to 3pm, Blackshear Elementary, 1712 E. 11th St., free."
-          caption: "The real poster is coming soon"
     - heading: "2025 - the 12th Little EAST"
       expanded: false
       videos:

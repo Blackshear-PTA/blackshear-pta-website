@@ -86,6 +86,10 @@ heading. `/little-east` uses all of it, one section per year:
 ```yaml
     - heading: "2025 - the 12th Little EAST"
       expanded: true              # folds: true starts open, false starts closed
+      poster:                     # optional: one picture, large, above the text
+        src: "../assets/little-east/2026/poster.jpg"
+        alt: "What the poster says and shows, for a screen reader"
+        caption: "The official 2026 poster"   # optional
       body:
         - "One line about the year."
       videos:
@@ -110,6 +114,11 @@ to a file that is not there fails the build and names the file.
 **When a new Little EAST year goes on top,** give it `expanded: true` and change
 last year's to `false`, so only the newest year opens by default. Its pictures
 go in a new `src/assets/little-east/<year>/` folder.
+
+`poster` is for the year that is coming up: it shows about 30rem wide, big
+enough to read the date and address without opening it, and a click opens it in
+the photo viewer, where *Zoom in* shows the small print. Once the year is over,
+move its poster down into `figures` with the others.
 
 ### Sponsor logos
 

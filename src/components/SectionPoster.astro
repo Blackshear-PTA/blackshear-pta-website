@@ -1,0 +1,71 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { PageData } from '../types';
+
+/**
+ * A section's `poster`: one picture, large, above the section's text.
+ *
+ * Big enough that the date, the hours and the address read without opening it,
+ * since that is what most people look at a poster for. Shown whole, like
+ * `figures`, and a link to the full-size file in the same lightbox group as the
+ * section's other pictures, for the small print and the sponsor logos.
+ */
+interface Props {
+  poster: NonNullable<PageData['sections'][number]['poster']>;
+  group: string;
+}
+
+const { poster, group } = Astro.props;
+
+/** Display width in CSS pixels on a wide screen; a phone gets the full column. */
+const WIDTH = 480;
+
+/** The same full-size copy SectionGallery opens: re-encoded, not resized. */
+const href = (await getImage({ src: poster.src, format: 'webp', quality: 80 })).src;
+---
+
+<figure class="section-poster">
+  <a href={href} data-lightbox={group} data-caption={poster.caption}>
+    <Image
+      src={poster.src}
+      alt={poster.alt}
+      width={Math.min(WIDTH, poster.src.width)}
+      densities={[1, 2]}
+    />
+  </a>
+  {/* The hint is here and not in `caption`, which the lightbox shows too,
+       where "tap to enlarge" would be telling you to do what you just did. */}
+  <figcaption>
+    {poster.caption && <>{poster.caption}. </>}Tap or click it to see it bigger.
+  </figcaption>
+</figure>
+
+<style>
+  .section-poster {
+    margin: 0 0 var(--pta-gap);
+  }
+
+  /* The width is on the link, not the picture: a percentage max-width on an
+     image inside a shrink-to-fit link has nothing to resolve against, and the
+     poster collapses to its border. */
+  .section-poster a {
+    display: block;
+    width: 30rem;
+    max-width: 100%;
+    cursor: zoom-in;
+  }
+
+  .section-poster img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: var(--pta-border-width) solid var(--pta-rule);
+    border-radius: var(--pta-radius);
+  }
+
+  figcaption {
+    margin-block-start: 0.35rem;
+    font-size: var(--text-fine);
+    color: var(--pta-ink-muted);
+  }
+</style>

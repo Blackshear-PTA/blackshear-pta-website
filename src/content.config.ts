@@ -142,6 +142,15 @@ const pageSection = ({ image }: SchemaContext) =>
      * and the section is always shown, like every page before this one.
      */
     expanded: z.boolean().optional(),
+    /**
+     * One poster or flyer shown large at the top of the section, before the
+     * text, big enough to read without opening it; it still opens full size in
+     * the lightbox. For the current year's poster (Jon, 2026-10-27). Past years
+     * keep theirs in `figures`, smaller, at the bottom.
+     */
+    poster: z
+      .object({ src: image(), alt: z.string(), caption: z.string().optional() })
+      .optional(),
     body: z.array(z.string()).default([]),
     /** Each one a YouTube video (`youtubeId`) or a TikTok (`tiktokId`). */
     videos: z.array(z.union([youtubeVideo, tiktokVideo])).default([]),

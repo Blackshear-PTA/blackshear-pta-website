@@ -4,6 +4,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import VideoEmbed from '../components/sections/VideoEmbed.astro';
 import TikTokEmbed from '../components/TikTokEmbed.astro';
 import SectionGallery from '../components/SectionGallery.astro';
+import SectionPoster from '../components/SectionPoster.astro';
 import LogoWall from '../components/LogoWall.astro';
 import Lightbox from '../components/Lightbox.astro';
 import { isExternal } from '../lib/links';
@@ -42,7 +43,9 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const page = entry.data;
 
-const hasPictures = page.sections.some((s) => s.figures.length > 0 || s.photos.length > 0);
+const hasPictures = page.sections.some(
+  (s) => s.poster || s.figures.length > 0 || s.photos.length > 0,
+);
 
 /**
  * What a folded section holds, under its heading, so someone can tell which
@@ -52,7 +55,7 @@ const logoCount = (section: (typeof page.sections)[number]) =>
   section.logos.length + section.moreLogos.length;
 
 const contents = (section: (typeof page.sections)[number]) => {
-  const pictures = section.figures.length + section.photos.length;
+  const pictures = (section.poster ? 1 : 0) + section.figures.length + section.photos.length;
   return [
     section.videos.length === 1 && 'Video',
     section.videos.length > 1 && `${section.videos.length} videos`,
@@ -113,6 +116,8 @@ const contents = (section: (typeof page.sections)[number]) => {
             </span>
           </summary>
         )}
+        {section.poster && <SectionPoster poster={section.poster} group={`section-${index}`} />}
+
         {section.body.map((paragraph) => (
           <p class="prose">{paragraph}</p>
         ))}
