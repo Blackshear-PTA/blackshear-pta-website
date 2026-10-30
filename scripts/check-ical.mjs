@@ -5,8 +5,10 @@
  *
  * These are the cases that are easy to get wrong and invisible when you do:
  * an all-day event shifting a day across timezones, a monthly rule landing on
- * the 31st of a 30-day month, EXDATE not actually removing anything, and a
- * VTIMEZONE block being read as two events named after DST transitions.
+ * the 31st of a 30-day month, EXDATE not actually removing anything, a
+ * VTIMEZONE block being read as two events named after DST transitions, a
+ * moved occurrence showing on both its old date and its new one, and a repeat
+ * drifting an hour when the clocks change (F63 in TASKS.md).
  */
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -42,6 +44,9 @@ const ics = (body) =>
 const WINDOW = [new Date('2026-01-01T00:00:00Z'), new Date('2027-12-31T00:00:00Z')];
 const run = (body, win = WINDOW) => parseCalendar(ics(body), win[0], win[1]);
 const days = (r) => r.events.map((e) => e.start.toISOString().slice(0, 10));
+const starts = (r) => r.events.map((e) => e.start.toISOString());
+/** The date as a Chicago wall calendar shows it, for timed events. */
+const localDays = (r) => r.events.map((e) => e.start.toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }));
 
 console.log('iCal parser\n');
 
@@ -107,6 +112,71 @@ check('EXDATE removes an occurrence',
 check('STATUS:CANCELLED is dropped',
   run('BEGIN:VEVENT\r\nUID:k\r\nSUMMARY:X\r\nSTATUS:CANCELLED\r\nDTSTART;VALUE=DATE:20260903\r\nDTEND;VALUE=DATE:20260904\r\nEND:VEVENT').events.length,
   0);
+
+// --- repeats in local time, and edited occurrences (F63) --------------------
+// Modelled on the real feed's "Tea with Tiona": 7:40am on the 4th Thursday,
+// with some months moved. Google writes an edited occurrence as its own VEVENT
+// whose RECURRENCE-ID names the slot it replaces, in local time with a TZID.
+const tea = (rule) => [
+  'BEGIN:VEVENT', 'UID:tea', 'SUMMARY:Tea',
+  'DTSTART;TZID=America/Chicago:20261022T074000', 'DTEND;TZID=America/Chicago:20261022T084000',
+  `RRULE:FREQ=MONTHLY;BYDAY=4TH;${rule}`, 'END:VEVENT',
+];
+const teaMoved = (from, to, extra = []) => [
+  'BEGIN:VEVENT', 'UID:tea', 'SUMMARY:Tea', ...extra,
+  `DTSTART;TZID=America/Chicago:${to}T074000`, `DTEND;TZID=America/Chicago:${to}T084000`,
+  `RECURRENCE-ID;TZID=America/Chicago:${from}T074000`, 'END:VEVENT',
+];
+
+// 7:40am is 12:40Z in October (CDT) but 13:40Z after the clocks go back on
+// Nov 1. Holding the UTC time fixed instead shows every winter one at 6:40.
+check('a repeat keeps its local time across DST',
+  starts(run(tea('COUNT=3').join('\r\n'))),
+  ['2026-10-22T12:40:00.000Z', '2026-11-26T13:40:00.000Z', '2026-12-24T13:40:00.000Z']);
+
+// The bug that was reported: Oct 22 moved to Oct 29 showed on both days. The
+// edited copy comes first, as it does in the real feed.
+check('a moved occurrence shows once, on its new date',
+  starts(run([...teaMoved('20261022', '20261029'), ...tea('COUNT=3')].join('\r\n'))),
+  ['2026-10-29T12:40:00.000Z', '2026-11-26T13:40:00.000Z', '2026-12-24T13:40:00.000Z']);
+
+check('a moved occurrence in winter shows once',
+  starts(run([...tea('COUNT=3'), ...teaMoved('20261126', '20261119')].join('\r\n'))),
+  ['2026-10-22T12:40:00.000Z', '2026-11-19T13:40:00.000Z', '2026-12-24T13:40:00.000Z']);
+
+check('a canceled occurrence is removed',
+  starts(run([...tea('COUNT=3'), ...teaMoved('20261126', '20261126', ['STATUS:CANCELLED'])].join('\r\n'))),
+  ['2026-10-22T12:40:00.000Z', '2026-12-24T13:40:00.000Z']);
+
+check('EXDATE removes a winter occurrence of a zoned repeat',
+  starts(run([...tea('COUNT=3').slice(0, -1), 'EXDATE;TZID=America/Chicago:20261126T074000', 'END:VEVENT'].join('\r\n'))),
+  ['2026-10-22T12:40:00.000Z', '2026-12-24T13:40:00.000Z']);
+
+check('a moved all-day occurrence shows once',
+  days(run([
+    'BEGIN:VEVENT', 'UID:s', 'SUMMARY:S', 'DTSTART;VALUE=DATE:20260907', 'DTEND;VALUE=DATE:20260908',
+    'RRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=3', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:s', 'SUMMARY:S', 'DTSTART;VALUE=DATE:20260915', 'DTEND;VALUE=DATE:20260916',
+    'RECURRENCE-ID;VALUE=DATE:20260914', 'END:VEVENT',
+  ].join('\r\n'))),
+  ['2026-09-07', '2026-09-15', '2026-09-21']);
+
+// Moved to before the window: the edited copy is out of range, but the slot
+// it left is in range and must still be cleared.
+check('an occurrence moved out of the window still clears its slot',
+  days(run([
+    'BEGIN:VEVENT', 'UID:w', 'SUMMARY:W', 'DTSTART;VALUE=DATE:20260907', 'DTEND;VALUE=DATE:20260908',
+    'RRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=3', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:w', 'SUMMARY:W', 'DTSTART;VALUE=DATE:20260909', 'DTEND;VALUE=DATE:20260910',
+    'RECURRENCE-ID;VALUE=DATE:20260914', 'END:VEVENT',
+  ].join('\r\n'), [new Date('2026-09-10T00:00:00Z'), WINDOW[1]])),
+  ['2026-09-21']);
+
+// 7pm on a Tuesday is already Wednesday in UTC. Matching BYDAY against the UTC
+// date put this meeting on Mondays.
+check('an evening repeat stays on its weekday',
+  localDays(run('BEGIN:VEVENT\r\nUID:v\r\nSUMMARY:V\r\nDTSTART;TZID=America/Chicago:20260908T190000\r\nDTEND;TZID=America/Chicago:20260908T200000\r\nRRULE:FREQ=WEEKLY;BYDAY=TU;COUNT=2\r\nEND:VEVENT')),
+  ['2026-09-08', '2026-09-15']);
 
 // A VTIMEZONE has BEGIN:STANDARD / BEGIN:DAYLIGHT children carrying DTSTART and
 // RRULE. Splitting the file carelessly turns those into events.

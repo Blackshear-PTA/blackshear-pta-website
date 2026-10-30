@@ -88,7 +88,7 @@ const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 /** Prefilter pair. Declared once: rebuilding a regex per event is most of the
  *  cost the prefilter exists to avoid. */
 const QUICK_START = /^DTSTART[^:\r\n]*:(\d{8})/m;
-const RECURS = /^(?:RRULE|RDATE)[;:]/m;
+const RECURS = /^(?:RRULE|RDATE|RECURRENCE-ID)[;:]/m;
 
 /**
  * RFC 5545 folds long lines by inserting CRLF followed by one space or tab.
@@ -130,6 +130,25 @@ function parseLine(line: string): Line | null {
 }
 
 /**
+ * One formatter per zone. Building an Intl.DateTimeFormat costs far more than
+ * using one, and `expand` converts every occurrence of a zoned rule.
+ */
+const wallClockFormats = new Map<string, Intl.DateTimeFormat>();
+function wallClockFormat(timeZone: string): Intl.DateTimeFormat {
+  let format = wallClockFormats.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+    wallClockFormats.set(timeZone, format);
+  }
+  return format;
+}
+
+/**
  * Local wall-clock time in a named zone to a UTC instant.
  *
  * There is no way to ask JavaScript this directly, so: assume the wall clock IS
@@ -145,12 +164,7 @@ function zonedToUtc(
   const asUtc = Date.UTC(y, mo - 1, d, h, mi, s);
   let guess = asUtc;
   for (let pass = 0; pass < 2; pass += 1) {
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hour12: false,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-    }).formatToParts(new Date(guess));
+    const parts = wallClockFormat(timeZone).formatToParts(new Date(guess));
     const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
     // Intl renders midnight as hour 24 in some engines.
     const hour = get('hour') % 24;
@@ -160,7 +174,15 @@ function zonedToUtc(
   return new Date(guess);
 }
 
-/** Parses a DATE or DATE-TIME value into a UTC instant. */
+/**
+ * Parses a DATE or DATE-TIME value into a UTC instant.
+ *
+ * Also returns the wall-clock reading the instant came from, and the zone that
+ * reading is in, because a rule repeats the wall clock rather than the instant
+ * (see `expand`). The wall clock is carried as a Date whose UTC fields hold the
+ * local ones, so the rule arithmetic stays plain getUTC* calls. All-day and UTC
+ * values are their own wall clock, in UTC.
+ */
 function parseDateValue(value: string, params: Record<string, string>, calendarTz: string) {
   const dateOnly = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
   if (dateOnly && params.VALUE === 'DATE') {
@@ -168,19 +190,21 @@ function parseDateValue(value: string, params: Record<string, string>, calendarT
     // Midnight UTC, not midnight local. An all-day event is a calendar square,
     // not an instant, and anchoring it to a zone makes it jump a day for
     // anyone reading from another one.
-    return { date: new Date(Date.UTC(+y!, +m! - 1, +d!)), allDay: true };
+    const date = new Date(Date.UTC(+y!, +m! - 1, +d!));
+    return { date, allDay: true, wall: date, zone: 'UTC' };
   }
 
   const dt = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/.exec(value);
   if (!dt) return null;
   const [, y, mo, d, h, mi, s, zulu] = dt;
   const nums = [+y!, +mo!, +d!, +h!, +mi!, +s!] as const;
+  const wall = new Date(Date.UTC(nums[0], nums[1] - 1, nums[2], nums[3], nums[4], nums[5]));
 
-  if (zulu) return { date: new Date(Date.UTC(nums[0], nums[1] - 1, nums[2], nums[3], nums[4], nums[5])), allDay: false };
+  if (zulu) return { date: wall, allDay: false, wall, zone: 'UTC' };
   // No Z and no TZID means floating local time; the calendar's own zone is the
   // only sensible reading.
   const tz = params.TZID ?? calendarTz;
-  return { date: zonedToUtc(nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], tz), allDay: false };
+  return { date: zonedToUtc(nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], tz), allDay: false, wall, zone: tz };
 }
 
 interface Rule {
@@ -250,21 +274,30 @@ function ordinalWeekdayDates(year: number, month: number, ordinal: number, weekd
  * Walks the recurrence forward from DTSTART rather than trying to jump to the
  * window, because COUNT is defined over occurrences from the start and any
  * shortcut has to reproduce the same sequence anyway.
+ *
+ * Walks it in the event's own wall-clock time (`wall`, in `zone`), not in UTC,
+ * because the wall clock is what a rule repeats: "7:40am on the 4th Thursday"
+ * is 7:40 in November too, though the instant moves an hour when the clocks go
+ * back. Repeating the UTC time instead put every winter occurrence an hour
+ * early, and would put an evening event late enough to be past midnight UTC on
+ * the wrong day altogether (F63 in TASKS.md).
  */
-function expand(start: Date, rule: Rule, from: Date, to: Date): Date[] {
+function expand(start: Date, wall: Date, zone: string, rule: Rule, from: Date, to: Date): Date[] {
   const out: Date[] = [];
-  const hours = start.getUTCHours();
-  const minutes = start.getUTCMinutes();
-  const seconds = start.getUTCSeconds();
+  const hours = wall.getUTCHours();
+  const minutes = wall.getUTCMinutes();
+  const seconds = wall.getUTCSeconds();
 
   let emitted = 0;
-  let cursorYear = start.getUTCFullYear();
-  let cursorMonth = start.getUTCMonth() + 1;
-  let cursorDay = start.getUTCDate();
+  let cursorYear = wall.getUTCFullYear();
+  let cursorMonth = wall.getUTCMonth() + 1;
+  let cursorDay = wall.getUTCDate();
   const limit = rule.until && rule.until < to ? rule.until : to;
 
   const push = (y: number, mo: number, d: number): boolean => {
-    const at = new Date(Date.UTC(y, mo - 1, d, hours, minutes, seconds));
+    const at = zone === 'UTC'
+      ? new Date(Date.UTC(y, mo - 1, d, hours, minutes, seconds))
+      : zonedToUtc(y, mo, d, hours, minutes, seconds, zone);
     if (at < start) return true;
     if (at > limit) return false;
     if (rule.byMonth.length && !rule.byMonth.includes(mo)) return true;
@@ -282,7 +315,7 @@ function expand(start: Date, rule: Rule, from: Date, to: Date): Date[] {
       cursorMonth = next.getUTCMonth() + 1;
       cursorDay = next.getUTCDate();
     } else if (rule.freq === 'WEEKLY') {
-      const weekdays = rule.byDay.length ? rule.byDay.map((b) => b.weekday) : [start.getUTCDay()];
+      const weekdays = rule.byDay.length ? rule.byDay.map((b) => b.weekday) : [wall.getUTCDay()];
       // Sunday of the cursor's week, so BYDAY members come out in order.
       const cursor = new Date(Date.UTC(cursorYear, cursorMonth - 1, cursorDay));
       const weekStart = new Date(cursor);
@@ -307,7 +340,7 @@ function expand(start: Date, rule: Rule, from: Date, to: Date): Date[] {
               : ordinalWeekdayDates(cursorYear, cursorMonth, b.ordinal, b.weekday))
         : rule.byMonthDay.length
           ? rule.byMonthDay
-          : [start.getUTCDate()];
+          : [wall.getUTCDate()];
       let stop = false;
       for (const day of [...new Set(days)].sort((a, b) => a - b)) {
         // Skips 31 in a 30-day month rather than rolling into the next, which
@@ -319,13 +352,13 @@ function expand(start: Date, rule: Rule, from: Date, to: Date): Date[] {
       cursorMonth += rule.interval;
       while (cursorMonth > 12) { cursorMonth -= 12; cursorYear += 1; }
     } else {
-      const month = rule.byMonth.length ? rule.byMonth[0]! : start.getUTCMonth() + 1;
+      const month = rule.byMonth.length ? rule.byMonth[0]! : wall.getUTCMonth() + 1;
       const days = rule.byDay.length
         ? rule.byDay.flatMap((b) =>
             b.ordinal === null
               ? monthWeekdayDates(cursorYear, month, b.weekday)
               : ordinalWeekdayDates(cursorYear, month, b.ordinal, b.weekday))
-        : [start.getUTCDate()];
+        : [wall.getUTCDate()];
       let stop = false;
       for (const day of [...new Set(days)].sort((a, b) => a - b)) {
         if (!push(cursorYear, month, day)) { stop = true; break; }
@@ -363,7 +396,14 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
 
   const events: CalendarEvent[] = [];
   const skipped: ParseResult['skipped'] = [];
-  /** RECURRENCE-ID entries: one occurrence of a series, moved or edited. */
+  /** The slot of each occurrence a rule generated, as `uid@epoch-ms`. */
+  const slotOf = new Map<CalendarEvent, string>();
+  /**
+   * RECURRENCE-ID entries: one occurrence of a series, moved, edited or
+   * canceled. Keyed by the instant of the slot it replaces, never by the
+   * value's text - Google writes it in local time with a TZID, which as a
+   * string can never match the UTC slot it means (F63 in TASKS.md).
+   */
   const overrides = new Set<string>();
 
   // Split on the VEVENT boundary. VTIMEZONE blocks contain their own DTSTART
@@ -377,7 +417,9 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
     // in the window - and fully parsing each one costs more than the whole rest
     // of the job. A single regex for the start date, plus "does it repeat",
     // is enough to discard them. Recurring events always go the long way,
-    // because a 2020 DTSTART with a yearly rule is still current.
+    // because a 2020 DTSTART with a yearly rule is still current. So do
+    // edited occurrences: one moved to before the window still has to cancel
+    // the slot it left, or that slot comes back.
     if (!RECURS.test(block)) {
       const quick = QUICK_START.exec(block);
       if (quick && `${quick[1]}` < fromStamp) continue;
@@ -391,6 +433,16 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
     if (!summaryLine || !startLine) continue;
 
     const summary = unescapeText(summaryLine.value).trim();
+    const uid = find('UID')?.value ?? summary;
+
+    // Before the CANCELLED check: a canceled occurrence is an override too,
+    // and the slot it cancels has to be dropped like any other.
+    const recurrenceId = find('RECURRENCE-ID');
+    if (recurrenceId) {
+      const slot = parseDateValue(recurrenceId.value, recurrenceId.params, calendarTz);
+      if (slot) overrides.add(`${uid}@${slot.date.getTime()}`);
+    }
+
     if (find('STATUS')?.value === 'CANCELLED') continue;
 
     const startParsed = parseDateValue(startLine.value, startLine.params, calendarTz);
@@ -404,10 +456,6 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
     const duration = endParsed
       ? Math.max(0, endParsed.date.getTime() - startParsed.date.getTime())
       : startParsed.allDay ? 86_400_000 : 3_600_000;
-
-    const uid = find('UID')?.value ?? summary;
-    const recurrenceId = find('RECURRENCE-ID');
-    if (recurrenceId) overrides.add(`${uid}@${recurrenceId.value}`);
 
     const location = find('LOCATION')?.value;
     const description = find('DESCRIPTION')?.value;
@@ -446,19 +494,22 @@ export function parseCalendar(raw: string, from: Date, to: Date): ParseResult {
       }
     }
 
-    for (const at of expand(startParsed.date, rule, from, to)) {
+    for (const at of expand(startParsed.date, startParsed.wall, startParsed.zone, rule, from, to)) {
       if (excluded.has(at.getTime())) continue;
-      events.push(build(at));
+      const event = build(at);
+      slotOf.set(event, `${uid}@${at.getTime()}`);
+      events.push(event);
     }
   }
 
   // An occurrence with its own RECURRENCE-ID entry is already in the list as
-  // that edited copy; drop the one the rule generated so it does not appear
-  // twice, once at the old time and once at the new.
+  // that edited copy (or was canceled); drop the one the rule generated so it
+  // does not appear twice, once at the old time and once at the new. Only
+  // generated occurrences are candidates, so an edited copy moved onto another
+  // overridden slot is never mistaken for the thing it replaced.
   const deduped = events.filter((e) => {
-    const stamp = e.start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    const uid = e.id.slice(0, e.id.lastIndexOf('@'));
-    return !overrides.has(`${uid}@${stamp}`);
+    const slot = slotOf.get(e);
+    return slot === undefined || !overrides.has(slot);
   });
 
   deduped.sort((a, b) => a.start.getTime() - b.start.getTime());

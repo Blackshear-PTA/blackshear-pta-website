@@ -132,6 +132,8 @@ to get wrong and invisible when you do:
 | TZID across DST, both directions | A fixed offset is right half the year |
 | Monthly on the 31st in a 30-day month | RFC 5545 says skip; naive date maths invents an event in March |
 | EXDATE actually removes something | A canceled meeting that still shows is worse than no calendar |
+| A moved meeting shows once, on its new date | Google sends it as its own entry naming the slot it replaces, in local time; matched as text, it never matches and the meeting shows on both days (F63) |
+| A repeat keeps its local time across DST | Repeating the UTC time puts every winter meeting an hour early, and a 7pm one on the wrong weekday (F63) |
 | VTIMEZONE not read as events | Those blocks contain their own `DTSTART` and `RRULE`, and a careless split turns them into two events named after DST transitions |
 
 ### The bug worth knowing about
