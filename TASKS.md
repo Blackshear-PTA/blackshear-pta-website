@@ -1513,6 +1513,16 @@ The general shape, again: *a shortener hides what it points at, and what it poin
 
 The general shape: *a cron schedule on a shared service is a request, not a promise.*
 
+<a name="f63"></a>
+**F63 - Moved meetings showed on both days, and repeating meetings an hour early all winter.** Jon spotted *Tea with Tiona* on both Oct 22 and Oct 29 on 2026-10-30, where Google Calendar has only the 29th. It was two bugs in `src/lib/ical.ts`, both there since the calendar was first built:
+
+- **A moved meeting never replaced the slot it left.** Google sends a moved occurrence as its own entry, whose `RECURRENCE-ID` names the slot it replaces in Chicago time (`TZID=America/Chicago:20261022T074000`). The parser compared that text with the slot's UTC stamp (`20261022T124000Z`), which can never match, so both showed. It now compares instants. A canceled occurrence sent the same way is now removed too, and so is the old slot of a meeting moved to before the window.
+- **Repeats kept their UTC time, not their local time.** "7:40am on the 4th Thursday" was repeated as 12:40 UTC, which is 6:40am once the clocks go back in November. Rules now repeat the wall-clock time in the event's own zone. The same mistake would have put any repeating meeting at 7pm or later on the wrong weekday, since that is already past midnight UTC.
+- **What it hit:** *Tea with Tiona* (extra copies on Oct 22, Nov 26, Dec 24, Apr 22 and May 27) and *CAC Meeting* (Nov 25 and Dec 23), plus both series an hour early in January and February. Nothing else in the feed.
+- **Why the tests missed it:** `npm run check:ical` had no moved-occurrence case, and its daylight-saving cases were one-off events, not repeats. It now has eight cases for these, and each fails on the old parser.
+
+The general shape: *a recurrence repeats a wall clock, not an instant.*
+
 ## Reference
 
 - **School:** Blackshear Elementary Fine Arts Academy, 1712 E. 11th St., Austin, TX 78702 (Austin ISD)
