@@ -1523,6 +1523,12 @@ The general shape: *a cron schedule on a shared service is a request, not a prom
 
 The general shape: *a recurrence repeats a wall clock, not an instant.*
 
+**F64 - `npm run dev` showed no images at all, because the adapter reads the Images binding by a fixed name.** Found 2026-11-03 while adding a sponsor logo ([PR #69](https://github.com/Blackshear-PTA/blackshear-pta-website/pull/69)). Every image on every page failed in dev, old ones included, with a 500 and `images.input is not a function`. Builds and the live site were never affected.
+
+- **The cause:** with `imageService: 'compile'`, `@astrojs/cloudflare` sends dev's `/_image` requests to its `image-transform-endpoint`, which calls the Images binding as `env.IMAGES`. It ignores `imagesBindingName`, which is `CF_IMAGES` here because `IMAGES` is the R2 bucket for announcement photos. So it called `.input()` on a bucket. Still the case in 14.4.4 (the latest) and 15.0.0-beta.5.
+- **The fix:** a dev-only integration in `astro.config.mjs` serves images as they are in dev, through the adapter's passthrough endpoint. Builds are unchanged and still optimize every image with sharp. Remove it once the adapter reads the configured name.
+- **A trap on the way:** Astro's generic endpoint, the usual dev passthrough, does not work here either. It fetches the file back over HTTP, and in this dev server that request reaches the Worker first (`run_worker_first`) and gets the 404 page. Vite's own URLs, such as `/@vite/client`, get the same 404 when requested, so hot reload may not be working in dev either. That was not looked into.
+
 ## Reference
 
 - **School:** Blackshear Elementary Fine Arts Academy, 1712 E. 11th St., Austin, TX 78702 (Austin ISD)

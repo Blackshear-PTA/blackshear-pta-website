@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, fontProviders } from 'astro/config';
+import { defineConfig, fontProviders, passthroughImageService } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 import { fontFamilies } from './src/font-families.mjs';
@@ -144,6 +144,47 @@ const workerProxy = {
   configure: explainWorkerDown,
 };
 
+/**
+ * Serves images as they are under `astro dev`, instead of through the adapter.
+ *
+ * WHY THIS IS HERE. With `imageService: 'compile'`, the adapter sends dev's
+ * /_image requests to an endpoint that transforms them with the Cloudflare
+ * Images binding - and that endpoint reads `env.IMAGES` by name, ignoring
+ * `imagesBindingName` below. In this project `IMAGES` is the R2 bucket, which
+ * has no `.input()`, so every image on every page failed in dev with a 500 and
+ * "images.input is not a function" (TASKS.md F64). Still the case in adapter
+ * 14.4.4 and 15.0.0-beta.5, checked 2026-11-03.
+ *
+ * This swaps in the passthrough service, which serves each file unresized, and
+ * the adapter's passthrough endpoint, which reads the file through the ASSETS
+ * binding. Pages still lay images out at the right size; the files are just
+ * the originals. NOT Astro's generic endpoint, which the adapter pairs with
+ * passthrough in dev: it fetches the file back over HTTP, and here that request
+ * goes to the Worker first (`run_worker_first`) and gets the 404 page.
+ *
+ * It runs after the adapter's own setup, because Astro puts the adapter first,
+ * so it has the last word.
+ *
+ * Dev only. A build never sees it and still optimizes every image with sharp.
+ * Remove it once the adapter's endpoint reads the configured binding name.
+ *
+ * @type {import('astro').AstroIntegration}
+ */
+const devImagesAsIs = {
+  name: 'blackshear-dev-images-as-is',
+  hooks: {
+    'astro:config:setup': ({ command, updateConfig }) => {
+      if (command !== 'dev') return;
+      updateConfig({
+        image: {
+          service: passthroughImageService(),
+          endpoint: { entrypoint: '@astrojs/cloudflare/image-passthrough-endpoint' },
+        },
+      });
+    },
+  },
+};
+
 export default defineConfig({
   site: 'https://blackshearpta.org',
   output: 'static',
@@ -190,6 +231,7 @@ export default defineConfig({
      */
     imagesBindingName: 'CF_IMAGES',
   }),
+  integrations: [devImagesAsIs],
   build: {
     // Emit /about/index.html rather than /about.html so Workers' asset
     // handler serves clean URLs without redirect games.
