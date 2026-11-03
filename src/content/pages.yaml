@@ -325,6 +325,8 @@ sponsors:
     # Every business sponsor together, one size: the Fundraising chair decided
     # against grouping them by level (2026-10-26). Big Bend, Kruger's, Thayne's
     # and Thoughtbarn were added that day, from their banners on the fence.
+    # IMPRES Technology Solutions added 2026-11-03, its full-color SVG from Jon,
+    # trimmed to the drawing.
     - heading: "Thank you to our 2026-2027 sponsors"
       body:
         - "We're already buzzing along with these sponsors this year."
@@ -344,6 +346,9 @@ sponsors:
         - src: "../assets/sponsors/2026-2027/hush-house.png"
           name: "Hush House"
           href: "https://www.hush.house"
+        - src: "../assets/sponsors/2026-2027/impres.svg"
+          name: "IMPRES Technology Solutions"
+          href: "https://www.imprestechnology.com"
         - src: "../assets/sponsors/2026-2027/industry-eastside.jpg"
           name: "Industry (Eastside)"
           href: "https://eastside.industrytx.com"
