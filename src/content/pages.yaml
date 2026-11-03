@@ -328,7 +328,8 @@ sponsors:
     # IMPRES Technology Solutions added 2026-11-03, its full-color SVG from Jon,
     # trimmed to the drawing. The same day (Jon): Butler, Design Lab 44, Figure 8,
     # Thoughtbarn and TSO swapped for the logos on their own sites, all drawn on
-    # white or transparent now. TSO's lettering is white there and red here.
+    # white or transparent now. TSO's lettering is white there and black here,
+    with the red takeout box unchanged (Jon's pick).
     - heading: "Thank you to our 2026-2027 sponsors"
       body:
         - "We're already buzzing along with these sponsors this year."
