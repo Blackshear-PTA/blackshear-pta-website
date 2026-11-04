@@ -448,7 +448,8 @@ sponsors:
     # 2026-11-04 (Jon's picks): Antone's, Austin Classical Guitar, Cabo Bob's,
     # Design Lab 44, Hai Hospitality, Katie Ann Clay and Loro off their colored
     # backgrounds, in the versions on their own sites drawn for white. See
-    # TASKS.md A51 step 14.
+    # TASKS.md A51 step 14. Batch's new stacked logo is on its own site's dark
+    # (#211F1D), as Jon picked, since its cyan is too pale for white.
     - heading: "Thank you to the following for donating to our 13th Little EAST silent auction"
       logos:
         - src: "../assets/sponsors/little-east-2026/antones.png"
