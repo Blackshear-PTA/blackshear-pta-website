@@ -326,7 +326,10 @@ sponsors:
     # against grouping them by level (2026-10-26). Big Bend, Kruger's, Thayne's
     # and Thoughtbarn were added that day, from their banners on the fence.
     # IMPRES Technology Solutions added 2026-11-03, its full-color SVG from Jon,
-    # trimmed to the drawing.
+    # trimmed to the drawing. The same day (Jon): Butler, Design Lab 44, Figure 8,
+    # Thoughtbarn and TSO swapped for the logos on their own sites, all drawn on
+    # white or transparent now. TSO's lettering is white there and black here,
+    with the red takeout box unchanged (Jon's pick).
     - heading: "Thank you to our 2026-2027 sponsors"
       body:
         - "We're already buzzing along with these sponsors this year."
@@ -337,10 +340,10 @@ sponsors:
         - src: "../assets/sponsors/2026-2027/butler.png"
           name: "Butler"
           href: "https://withbutler.com"
-        - src: "../assets/sponsors/2026-2027/designlab44.jpg"
-          name: "DesignLab44"
+        - src: "../assets/sponsors/2026-2027/designlab44.png"
+          name: "Design Lab 44 Productions"
           href: "https://designlab44.wixsite.com/portfolio"
-        - src: "../assets/sponsors/2026-2027/figure-8-coffee.jpg"
+        - src: "../assets/sponsors/2026-2027/figure-8-coffee.png"
           name: "Figure 8 Coffee Purveyors"
           href: "https://www.figure8coffeepurveyors.com"
         - src: "../assets/sponsors/2026-2027/hush-house.png"
@@ -373,11 +376,11 @@ sponsors:
         - src: "../assets/sponsors/2026-2027/thaynes-baking-co.png"
           name: "Thayne's Baking Co."
           href: "https://thaynesbakingco.com"
-        - src: "../assets/sponsors/2026-2027/thoughtbarn.jpg"
+        - src: "../assets/sponsors/2026-2027/thoughtbarn.svg"
           name: "Thoughtbarn"
           href: "https://thoughtbarn.com"
-        - src: "../assets/sponsors/2026-2027/tso.jpg"
-          name: "TSO"
+        - src: "../assets/sponsors/2026-2027/tso.png"
+          name: "Tso Chinese"
           href: "https://tso.company"
     # These families paid for recognition, so listing them is the point of the
     # tier. Note for the board: these are children's first names with family
