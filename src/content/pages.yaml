@@ -445,6 +445,9 @@ sponsors:
     # Olde Soul. The chair is making the final auction donor banner, which may
     # replace or reorder all of this. The choices worth a second look are in
     # TASKS.md A51.
+    # 2026-11-04 (Jon's picks): Austin Classical Guitar, Design Lab 44, Hai
+    # Hospitality, Katie Ann Clay and Loro off their colored squares, in the
+    # versions on their own sites drawn for white. See TASKS.md A51 step 14.
     - heading: "Thank you to the following for donating to our 13th Little EAST silent auction"
       logos:
         - src: "../assets/sponsors/little-east-2026/antones.jpg"
@@ -453,7 +456,7 @@ sponsors:
         - src: "../assets/sponsors/little-east-2026/antonellis.png"
           name: "Antonelli's Cheese Shop"
           href: "https://www.antonellischeese.com"
-        - src: "../assets/sponsors/little-east-2026/austin-classical-guitar.jpg"
+        - src: "../assets/sponsors/little-east-2026/austin-classical-guitar.png"
           name: "Austin Classical Guitar"
           href: "https://austinclassicalguitar.org"
         - src: "../assets/sponsors/little-east-2026/austin-symphony.jpg"
@@ -474,23 +477,23 @@ sponsors:
         - src: "../assets/sponsors/little-east-2026/crux.jpg"
           name: "Crux Climbing Center"
           href: "https://www.cruxclimbingcenter.com"
-        - src: "../assets/sponsors/little-east-2026/designlab44.jpg"
-          name: "DesignLab44"
+        - src: "../assets/sponsors/2026-2027/designlab44.png"
+          name: "Design Lab 44 Productions"
           href: "https://designlab44.wixsite.com/portfolio"
-        - src: "../assets/sponsors/little-east-2026/hai-hospitality.jpg"
-          name: "HAI Hospitality"
+        - src: "../assets/sponsors/little-east-2026/hai-hospitality.svg"
+          name: "Hai Hospitality"
           href: "https://www.haihospitality.com"
         - src: "../assets/sponsors/little-east-2026/kalimotxo.jpg"
           name: "Kalimotxo"
           href: "https://kalimotxoatx.com"
-        - src: "../assets/sponsors/little-east-2026/katie-ann-clay.jpg"
+        - src: "../assets/sponsors/little-east-2026/katie-ann-clay.svg"
           name: "Katie Ann Clay"
           href: "https://www.katieannclay.com"
         - src: "../assets/sponsors/little-east-2026/wildflower-center.jpg"
           name: "Lady Bird Johnson Wildflower Center"
           href: "https://www.wildflower.org"
-        - src: "../assets/sponsors/little-east-2026/loro.jpg"
-          name: "Loro"
+        - src: "../assets/sponsors/little-east-2026/loro.svg"
+          name: "Loro Asian Smokehouse & Bar"
           href: "https://www.loroeats.com"
         - src: "../assets/sponsors/little-east-2026/mothers-ruin.jpg"
           name: "Mother's Ruin"
