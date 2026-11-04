@@ -1,6 +1,7 @@
 import { defineCollection, type SchemaContext } from 'astro:content';
 import { z } from 'astro/zod';
-import { file } from 'astro/loaders';
+// Not `file` from 'astro/loaders': that one builds from a stale cache when a file will not load (F65).
+import { strictFile } from './lib/strict-file';
 
 /**
  * Blackshear PTA - content schema.
@@ -189,7 +190,7 @@ const pageSection = ({ image }: SchemaContext) =>
   });
 
 const pages = defineCollection({
-  loader: file('src/content/pages.yaml'),
+  loader: strictFile('src/content/pages.yaml'),
   schema: (context) => z.object({
     meta: z.object({
       title: z.string(),
@@ -231,7 +232,7 @@ const pages = defineCollection({
 });
 
 const site = defineCollection({
-  loader: file('src/content/site.yaml'),
+  loader: strictFile('src/content/site.yaml'),
   schema: z.object({
     identity: z.object({
       name: z.string(),
@@ -259,7 +260,7 @@ const site = defineCollection({
 });
 
 const home = defineCollection({
-  loader: file('src/content/home.yaml'),
+  loader: strictFile('src/content/home.yaml'),
   schema: z.object({
     meta: z.object({
       title: z.string(),

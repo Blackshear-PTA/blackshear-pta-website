@@ -108,6 +108,28 @@ near any free-tier ceiling. The real benefit is not publishing a new Worker
 version identical to the one before it, which is what makes the deploy history
 mean something.
 
+## A content file that will not load stops the build
+
+`home.yaml`, `pages.yaml` and `site.yaml` load through `strictFile()` in
+`src/lib/strict-file.ts`, not Astro's own `file()`. Astro's loader logs a file
+it cannot read and carries on with whatever its cache holds, and Workers Builds
+restores that cache between deploys, so one missing `#` could deploy the
+previous content and report success (F65 in [TASKS.md](../TASKS.md)).
+`strictFile()` makes it a failed build that names the file, line and column:
+
+```
+[ERROR] [strict-file-loader] Error reading data from src/content/pages.yaml
+src/content/pages.yaml did not load, so the build stops rather than use the copy in Astro's cache (TASKS.md F65).
+bad indentation of a mapping entry in "src/content/pages.yaml" (332:5)
+```
+
+The GitHub check only says the build failed. Those lines are in the build log
+in the dashboard (**Workers & Pages** -> `blackshear-pta` -> **Deployments** ->
+the build), since the account token cannot read Builds (F60). `npm run build`
+and `npm run check` fail the same way here, as does starting `npm run dev`. A
+save that breaks the file while the dev server is already running only logs,
+so a half-finished edit does not stop it; the next build catches it.
+
 ## Response headers
 
 `public/_headers` is a Cloudflare Workers static-asset feature, invisible to
