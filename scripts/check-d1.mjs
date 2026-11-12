@@ -24,6 +24,7 @@
  * passes --experimental-sqlite and the warning is expected.
  */
 import { DatabaseSync } from 'node:sqlite';
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -163,7 +164,7 @@ console.log('schema and migrations:');
 }
 
 {
-  // The Weekly Buzz imports (0003 for #1 to #9, then one a week from 0006):
+  // The Weekly Buzz imports (0003 for #1 to #9, then 0006 and 0009):
   // safe to re-run like 0002, every post published, and every flyer they
   // point at shipped in public/weekly-buzz/.
   const db = fresh({ laterImports: true });
@@ -174,7 +175,7 @@ console.log('schema and migrations:');
   const after = await listAll(db);
   eq('the Weekly Buzz imports are safe to re-run', after.length, before.length);
   const buzz = after.filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
-  eq('they hold Weekly Buzz #1 to #10', buzz.length, 10);
+  eq('they hold Weekly Buzz #1 to #12', buzz.length, 12);
   eq('none of them is a draft', buzz.some((p) => p.draft), false);
   const flyers = buzz.flatMap((p) => [...p.body.matchAll(/\]\((\/weekly-buzz\/[^)]+)\)/g)].map((m) => m[1]));
   const shipped = new Set(readdirSync(join(root, 'public/weekly-buzz')).map((f) => `/weekly-buzz/${f}`));
@@ -218,7 +219,8 @@ console.log('schema and migrations:');
   // a post that already has photos is left alone.
   const FLYERS = join(MIGRATIONS, '0008_weekly_buzz_flyers_as_photos.sql');
   const db = fresh({ laterImports: true });
-  const buzz = (await listAll(db)).filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
+  // 0008 is about #1 to #10, the posts that existed when it was written.
+  const buzz = (await listAll(db)).filter((p) => /-weekly-buzz-([1-9]|10)$/.test(p.slug));
   eq('no Weekly Buzz has a picture left in its text after 0008', buzz.filter((p) => p.body.includes('](/weekly-buzz/')).map((p) => p.slug), []);
   eq('nine have covers, all but #8', buzz.filter((p) => p.cover).length, 9);
   eq('every cover is its post\'s first photo', buzz.every((p) => !p.cover || p.images[0]?.key === p.cover), true);
@@ -241,6 +243,47 @@ console.log('schema and migrations:');
   before.db.exec(readFileSync(FLYERS, 'utf8'));
   const after = await getAny(before, nine.slug);
   eq('a post that already has photos is left as it is', [after.images, after.body], [theirs, nine.body]);
+}
+
+{
+  // Weekly Buzz #11 and #12 (0009): published, each week's flyer its cover,
+  // every photo a file kept in assets/announcements/ under its content-hash
+  // name (the name scripts/upload-photos.mjs gave it in the bucket), and the
+  // pin moved from #10 to #12. Running it again changes nothing, and a pin
+  // that has moved off #10 in /admin in the meantime is left where it is.
+  const BUZZ_11_12 = join(MIGRATIONS, '0009_import_weekly_buzz_11_12.sql');
+  const upTo = (last) => {
+    const db = new ShimDb(new DatabaseSync(':memory:'));
+    for (const name of migrationFiles().filter((m) => m < last)) {
+      db.db.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
+    }
+    return db;
+  };
+  // As on the live site: Jon pinned #10 in /admin (no migration says so).
+  const db = upTo('0009');
+  eq('(setup: #10 pinned in /admin)', await setPinned(db, '2026-10-26-weekly-buzz-10', true, write), 'ok');
+  db.db.exec(readFileSync(BUZZ_11_12, 'utf8'));
+  const eleven = await getAny(db, '2026-11-04-weekly-buzz-11');
+  const twelve = await getAny(db, '2026-11-09-weekly-buzz-12');
+  eq('#11 and #12 are in and published', [eleven?.draft, twelve?.draft], [false, false]);
+  eq('each has its flyer as its cover', [eleven?.cover === eleven?.images[0]?.key, twelve?.cover === twelve?.images[0]?.key], [true, true]);
+  eq('#11 has six pictures and #12 eleven', [eleven?.images.length, twelve?.images.length], [6, 11]);
+  const dir = join(root, 'assets/announcements');
+  const kept = new Set(readdirSync(dir).map((f) => createHash('sha256').update(readFileSync(join(dir, f))).digest('hex').slice(0, 32) + '.jpg'));
+  const unknown = [...eleven.images, ...twelve.images].map((i) => i.key).filter((k) => !kept.has(k));
+  eq('every photo is a file in assets/announcements/, by its hash', unknown, []);
+  eq('#12 is pinned and #10 no longer', [twelve.pinned, (await getAny(db, '2026-10-26-weekly-buzz-10')).pinned], [true, false]);
+  const rows = () => listEdits(db, 500).then((all) => all.filter((e) => e.slug.includes('weekly-buzz-1')).length);
+  const n = await rows();
+  db.db.exec(readFileSync(BUZZ_11_12, 'utf8'));
+  eq('running it again writes nothing more', await rows(), n);
+  eq('and leaves the pin on #12', (await getAny(db, twelve.slug)).pinned, true);
+
+  // Before 0009: somebody pins #9 in /admin instead.
+  const before = upTo('0009');
+  eq('(setup: #9 pinned in /admin)', await setPinned(before, '2026-10-19-weekly-buzz-9', true, write), 'ok');
+  before.db.exec(readFileSync(BUZZ_11_12, 'utf8'));
+  eq('a pin moved in the meantime stays where it is', [(await getAny(before, '2026-10-19-weekly-buzz-9')).pinned, (await getAny(before, '2026-11-09-weekly-buzz-12')).pinned], [true, false]);
 }
 
 {
