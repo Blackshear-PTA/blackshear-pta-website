@@ -1,0 +1,127 @@
+# Blackshear PTA - the secret scan's settings for this repository.
+#
+# A pre-commit hook on the maintainer's machine runs Gitleaks over every
+# commit's staged changes. Without this file it uses a machine-wide config;
+# with it, this one. The rules down to the REPO-SPECIFIC line are a copy of
+# that machine-wide config, so nothing is lost by having a file of our own.
+# The allowlist at the bottom is why this file exists (2026-11-16).
+#
+# What it adds to Gitleaks' built-in rules:
+#   1. A tracked .claude/settings.local.json, which can hold approved commands
+#      word for word, secrets included.
+#   2. A tracked real .env file.
+#   3. Credentials typed into commands: PGPASSWORD=, sshpass -p, mysql -p,
+#      sqlcmd -P, --password, a password inside a URL, a literal bearer token.
+#
+# Run it over the tracked tree, the files GitHub sees:
+#   d=$(mktemp -d) && git archive HEAD | tar -x -C "$d" && \
+#     gitleaks dir "$d" --config .gitleaks.toml --redact
+
+title = "Blackshear PTA Gitleaks config"
+
+[extend]
+useDefault = true
+# Asana client IDs are not secrets (the client SECRET has its own rule), and
+# this rule fires on Asana task and project GIDs, which fill our docs.
+disabledRules = ["asana-client-id"]
+
+# Placeholders and well-known test values. Matched against the secret itself.
+[[allowlists]]
+description = "Placeholders and a sequential test key, never real secrets"
+regexes = [
+  '''(?i)^(?:your[_-]|<[^>]*>$|\$\{|\{\{|x{6,}$|\*{6,}$)''',
+]
+stopwords = ["0123456789abcdef"]
+
+[[rules]]
+id = "claude-settings-local-tracked"
+description = "Claude Code's personal settings file is tracked. It stores approved commands word for word, secrets included. Run git rm --cached on it, and ignore .claude/* with !.claude/settings.json."
+path = '''(?:^|/)\.claude/settings\.local\.json$'''
+
+[[rules]]
+id = "dotenv-file-tracked"
+description = "A real .env file is tracked. Commit an .env.example with empty or placeholder values instead. Its contents are still scanned by every other rule."
+path = '''(?:^|/)\.env(?:\.[A-Za-z0-9_-]+)?$'''
+[[rules.allowlists]]
+# .env.test is the CRA frontend's test config (REACT_APP_* keys, no values).
+paths = ['''(?:^|/)\.env\.(?:example|sample|template|defaults|test)$''']
+
+[[rules]]
+id = "pgpassword-inline"
+description = "Postgres password set inline (PGPASSWORD=...)"
+regex = '''PGPASSWORD=["']?([^\s"'$`{}()<>]{6,})'''
+secretGroup = 1
+entropy = 2.5
+keywords = ["pgpassword"]
+[[rules.allowlists]]
+stopwords = ["postgres", "password", "changeme", "example", "placeholder", "redacted", "xxxxxx"]
+
+[[rules]]
+id = "sshpass-inline"
+description = "Password given to sshpass on the command line"
+regex = '''sshpass\s+-p\s*["']?([^\s"'$`]{6,})'''
+secretGroup = 1
+keywords = ["sshpass"]
+
+[[rules]]
+id = "mysql-inline-password"
+description = "Password passed to the mysql client as -p<password>"
+regex = '''\bmysql(?:dump|admin)?\b[^\n]*?\s-p["']?([^\s"'$`-][^\s"'$`]{5,})'''
+secretGroup = 1
+entropy = 2.5
+keywords = ["mysql"]
+[[rules.allowlists]]
+stopwords = ["postgres", "password", "changeme", "example", "placeholder", "redacted", "xxxxxx"]
+
+[[rules]]
+id = "sqlcmd-inline-password"
+description = "Password passed to sqlcmd or bcp as -P"
+regex = '''\b(?:sqlcmd|bcp)\b[^\n]*?\s-P\s+["']?([^\s"'$`-][^\s"'$`]{5,})'''
+secretGroup = 1
+entropy = 2.5
+keywords = ["sqlcmd", "bcp"]
+[[rules.allowlists]]
+stopwords = ["postgres", "password", "changeme", "example", "placeholder", "redacted", "xxxxxx"]
+
+[[rules]]
+id = "cli-password-flag"
+description = "Literal value passed to a --password flag"
+regex = '''(?i)--password[=\s]+["']?([^\s"'$`<>{}%-][^\s"'$`<>{}]{5,})'''
+secretGroup = 1
+entropy = 3.0
+keywords = ["--password"]
+[[rules.allowlists]]
+stopwords = ["postgres", "password", "changeme", "example", "placeholder", "redacted", "xxxxxx"]
+
+[[rules]]
+id = "url-embedded-credential"
+description = "Password embedded in a URL (scheme://user:password@host)"
+regex = '''\b[a-z][a-z0-9+.-]{1,20}://[^\s:/?#@"'`<>]{1,64}:([^\s:/?#@"'`<>$]{8,128})@[A-Za-z0-9.-]+'''
+secretGroup = 1
+entropy = 3.0
+keywords = ["://"]
+[[rules.allowlists]]
+stopwords = ["postgres", "password", "changeme", "example", "placeholder", "redacted", "xxxxxx"]
+
+[[rules]]
+id = "authorization-bearer-literal"
+description = "Literal bearer token"
+regex = '''(?i)\bbearer\s+([a-z0-9_~+/.=-]{24,})'''
+secretGroup = 1
+entropy = 3.5
+keywords = ["bearer"]
+
+# ---------------------------------------------------------------------------
+# REPO-SPECIFIC ALLOWLIST. Everything above this line is the shared copy; keep
+# it as it is. Add a false positive below as an [[allowlists]]
+# entry, narrowed with targetRules plus a path or line regex, and a
+# description saying why it is not a secret. Never allowlist a real
+# credential: rotate it, then remove it.
+# ---------------------------------------------------------------------------
+
+[[allowlists]]
+description = "Announcement photo names in migrations and in the D1 checks that test them. A photo in the bucket is named by the first 32 hex characters of its SHA-256 plus its extension (src/worker/images.ts, scripts/upload-photos.mjs), so a migration that attaches photos names them that way. A hash of a public picture is not a secret, but generic-api-key reads one after \"key\": as an API key. The commit hook first stopped one with migration 0010; 0007 to 0009 predate the hook."
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''(?:^|/)(?:migrations/[^/]+\.sql|scripts/check-d1\.mjs)$''']
+regexes = ['''^[0-9a-f]{32}\.(?:jpg|png)$''']
