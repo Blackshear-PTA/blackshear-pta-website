@@ -164,7 +164,7 @@ console.log('schema and migrations:');
 }
 
 {
-  // The Weekly Buzz imports (0003 for #1 to #9, then 0006 and 0009):
+  // The Weekly Buzz imports (0003 for #1 to #9, then 0006, 0009 and 0010):
   // safe to re-run like 0002, every post published, and every flyer they
   // point at shipped in public/weekly-buzz/.
   const db = fresh({ laterImports: true });
@@ -175,7 +175,7 @@ console.log('schema and migrations:');
   const after = await listAll(db);
   eq('the Weekly Buzz imports are safe to re-run', after.length, before.length);
   const buzz = after.filter((p) => /-weekly-buzz-\d+$/.test(p.slug));
-  eq('they hold Weekly Buzz #1 to #12', buzz.length, 12);
+  eq('they hold Weekly Buzz #1 to #13', buzz.length, 13);
   eq('none of them is a draft', buzz.some((p) => p.draft), false);
   const flyers = buzz.flatMap((p) => [...p.body.matchAll(/\]\((\/weekly-buzz\/[^)]+)\)/g)].map((m) => m[1]));
   const shipped = new Set(readdirSync(join(root, 'public/weekly-buzz')).map((f) => `/weekly-buzz/${f}`));
@@ -284,6 +284,46 @@ console.log('schema and migrations:');
   eq('(setup: #9 pinned in /admin)', await setPinned(before, '2026-10-19-weekly-buzz-9', true, write), 'ok');
   before.db.exec(readFileSync(BUZZ_11_12, 'utf8'));
   eq('a pin moved in the meantime stays where it is', [(await getAny(before, '2026-10-19-weekly-buzz-9')).pinned, (await getAny(before, '2026-11-09-weekly-buzz-12')).pinned], [true, false]);
+}
+
+{
+  // Weekly Buzz #13 (0010), the same checks as 0009: published, the flyer its
+  // cover, every photo a file kept in assets/announcements/ under its
+  // content-hash name, and the pin moved from #12 to #13. Running it again
+  // changes nothing, and a pin moved off #12 in /admin beforehand stays put.
+  const BUZZ_13 = join(MIGRATIONS, '0010_import_weekly_buzz_13.sql');
+  const upTo = (last) => {
+    const db = new ShimDb(new DatabaseSync(':memory:'));
+    for (const name of migrationFiles().filter((m) => m < last)) {
+      db.db.exec(readFileSync(join(MIGRATIONS, name), 'utf8'));
+    }
+    return db;
+  };
+  // As on the live site: #12 pinned. 0009 put it there only because Jon had
+  // pinned #10 in /admin, which no migration says, so pin #12 directly.
+  const db = upTo('0010');
+  eq('(setup: #12 pinned)', await setPinned(db, '2026-11-09-weekly-buzz-12', true, write), 'ok');
+  db.db.exec(readFileSync(BUZZ_13, 'utf8'));
+  const thirteen = await getAny(db, '2026-11-16-weekly-buzz-13');
+  eq('#13 is in and published', thirteen?.draft, false);
+  eq('its flyer is its cover', thirteen?.cover === thirteen?.images[0]?.key, true);
+  eq('#13 has eight pictures, each with a description and a size', thirteen?.images.filter((i) => i.alt && i.width && i.height).length, 8);
+  const dir = join(root, 'assets/announcements');
+  const kept = new Set(readdirSync(dir).map((f) => createHash('sha256').update(readFileSync(join(dir, f))).digest('hex').slice(0, 32) + '.jpg'));
+  eq('every photo is a file in assets/announcements/, by its hash', thirteen.images.map((i) => i.key).filter((k) => !kept.has(k)), []);
+  eq('#13 is pinned and #12 no longer', [thirteen.pinned, (await getAny(db, '2026-11-09-weekly-buzz-12')).pinned], [true, false]);
+  eq('only one post is pinned', (await listAll(db)).filter((p) => p.pinned).length, 1);
+  const rows = () => listEdits(db, 500).then((all) => all.filter((e) => e.slug.includes('weekly-buzz-1')).length);
+  const n = await rows();
+  db.db.exec(readFileSync(BUZZ_13, 'utf8'));
+  eq('running it again writes nothing more', await rows(), n);
+  eq('and leaves the pin on #13', (await getAny(db, thirteen.slug)).pinned, true);
+
+  // Before 0010: somebody pins #11 in /admin instead.
+  const before = upTo('0010');
+  eq('(setup: #11 pinned in /admin)', await setPinned(before, '2026-11-04-weekly-buzz-11', true, write), 'ok');
+  before.db.exec(readFileSync(BUZZ_13, 'utf8'));
+  eq('a pin moved in the meantime stays where it is', [(await getAny(before, '2026-11-04-weekly-buzz-11')).pinned, (await getAny(before, '2026-11-16-weekly-buzz-13')).pinned], [true, false]);
 }
 
 {
